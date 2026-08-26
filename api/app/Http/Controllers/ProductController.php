@@ -10,10 +10,12 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-
-        $products = Product::all();
+        $products = Product::paginate(
+            $request->input('per_page', 10)
+        );
+        
         return response()->json([
             'message' => 'Products retrieved successfully',
             'products' => $products->with('stock')

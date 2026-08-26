@@ -29,6 +29,8 @@ Route::group([
 
     Route::apiResource('products.stocks', StockController::class);
     Route::apiResource('products', ProductController::class);
+    Route::apiResource('user', UserController::class);
+
     Route::post('2fa-register', RegisterController::class . '@twofa');    
     Route::post('logout',AuthController::class . '@logout');
     Route::post('refresh',AuthController::class . '@refresh');

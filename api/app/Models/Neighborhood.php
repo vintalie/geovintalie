@@ -19,4 +19,5 @@ class Neighborhood extends Model
     public function streets(){
         return $this->hasMany(Street::class);
     }
+    
 }

@@ -15,8 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('abbreviation')->unique();
-            $table->foreign('abbreviation')->references('code')->on('countries')->onDelete('cascade');
-            
+            $table->foreignId('countries_id')->constrained('countries')->onDelete('cascade');
 
             $table->timestamps();
         });
