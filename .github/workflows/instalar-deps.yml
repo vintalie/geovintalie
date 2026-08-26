@@ -21,7 +21,7 @@ jobs:
             # ============================================
             # 🔧 VARIÁVEIS – ALTERE AQUI OS CAMINHOS REAIS
             # ============================================
-            REPO_DIR="/var/www/geovintalie"               # onde o repositório está clonado
+            REPO_DIR="/var/www/html/geovintalie"               # onde o repositório está clonado
             ENV_API="/var/www/.env.api"                  # caminho do .env do Laravel
             ENV_FRONTEND="/var/www/.env.frontend"        # caminho do .env do frontend (se existir)
             PHP_BIN="php"                                # normalmente 'php' já está no PATH
