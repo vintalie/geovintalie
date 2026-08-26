@@ -1,69 +1,105 @@
-name: Instalar dependências (Laravel + Frontend Vite)
+name: Deploy to VPS (Alpine)
 
 on:
-  pull_request:
+  push:
     branches:
       - main
-      - develop
-      # - homolog  # adicione outras branches se necessário
+      - development
 
 jobs:
-  install-and-validate:
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Faz o "git pull" automático (baixa o código do PR)
-      - name: Checkout do código
-        uses: actions/checkout@v4
-
-      # =============================================
-      #  BACKEND - LARAVEL (/api)
-      # =============================================
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - name: Executar deploy via SSH
+        uses: appleboy/ssh-action@v1.0.0
         with:
-          php-version: '8.2'          # Use a mesma versão do seu projeto
-          extensions: mbstring, pdo, mysql, zip, intl, gd
-          coverage: none
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            # ============================================
+            # 🔧 VARIÁVEIS – ALTERE AQUI OS CAMINHOS REAIS
+            # ============================================
+            REPO_DIR="/var/www/geovintalie"               # onde o repositório está clonado
+            ENV_API="/var/www/.env.api"                  # caminho do .env do Laravel
+            ENV_FRONTEND="/var/www/.env.frontend"        # caminho do .env do frontend (se existir)
+            PHP_BIN="php"                                # normalmente 'php' já está no PATH
+            COMPOSER_BIN="composer"                      # 'composer' no PATH
+            NPM_BIN="npm"                                # 'npm' no PATH
 
-      # Cache do Composer para acelerar as próximas execuções
-      - name: Cache Composer
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/composer
-          key: ${{ runner.os }}-composer-${{ hashFiles('api/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
+            # ============================================
+            # INÍCIO DO DEPLOY
+            # ============================================
+            set -e  # para o script se algum comando falhar
 
-      - name: Instalar dependências do Laravel (Composer)
-        run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
-        working-directory: ./api
+            echo "🔄 Entrando no diretório do repositório..."
+            cd "$REPO_DIR" || { echo "❌ Diretório $REPO_DIR não encontrado"; exit 1; }
 
-      # (Opcional) Cria um .env dummy para evitar erros em comandos Artisan
-      - name: Criar .env para testes
-        run: cp .env.example .env
-        working-directory: ./api
+            # Identifica a branch atual (main ou development)
+            CURRENT_BRANCH=$(git branch --show-current)
+            echo "📌 Branch atual: $CURRENT_BRANCH"
 
-      # (Opcional) Roda migrações ou testes para validar o PR
-      # - name: Rodar testes do Laravel
-      #   run: php artisan test
-      #   working-directory: ./api
+            echo "⬇️  Fazendo git pull da branch $CURRENT_BRANCH..."
+            git pull origin "$CURRENT_BRANCH"
 
-      # =============================================
-      #  FRONTEND - TYPESCRIPT + VITE (/frontend)
-      # =============================================
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'           # Use a versão LTS ou a do seu projeto
-          cache: 'npm'
-          cache-dependency-path: './frontend/package-lock.json'
+            # ============================================
+            # BACKEND – LARAVEL
+            # ============================================
+            echo "🐘 Instalando dependências do Laravel..."
+            cd api
+            $COMPOSER_BIN install --no-interaction --optimize-autoloader --no-dev
 
-      - name: Instalar dependências do Frontend (npm)
-        run: npm ci                     # "npm ci" é mais rápido e seguro que "npm install" em CI
-        working-directory: ./frontend
+            echo "📄 Copiando .env do Laravel..."
+            cp "$ENV_API" .env
 
-      # (MUITO RECOMENDADO) Roda o build para validar se o TypeScript não quebrou
-      - name: Validar build do Vite (TypeScript)
-        run: npm run build
-        working-directory: ./frontend
+            echo "🗄️  Rodando migrações (--force para produção)..."
+            $PHP_BIN artisan migrate --force
+
+            echo "🧹 Limpando caches do Laravel..."
+            $PHP_BIN artisan config:cache
+            $PHP_BIN artisan route:cache
+            $PHP_BIN artisan view:cache
+
+            # (Opcional) Se usar filas, reinicie o worker
+            # $PHP_BIN artisan queue:restart
+
+            cd ..
+
+            # ============================================
+            # FRONTEND – VITE + TYPESCRIPT
+            # ============================================
+            echo "🖥️  Instalando dependências do frontend..."
+            cd frontend
+            $NPM_BIN ci
+
+            echo "🏗️  Fazendo build com Vite (produção)..."
+            $NPM_BIN run build
+
+            echo "📄 Copiando .env do frontend (se necessário)..."
+            # O Vite normalmente usa .env durante o build, mas se você precisar em tempo de execução
+            if [ -f "$ENV_FRONTEND" ]; then
+              cp "$ENV_FRONTEND" .env
+            else
+              echo "⚠️  Arquivo $ENV_FRONTEND não encontrado – ignorando."
+            fi
+
+            cd ..
+
+            # ============================================
+            # REINÍCIO DE SERVIÇOS (OPCIONAL)
+            # ============================================
+            echo "🔄 Reiniciando PHP-FPM (se estiver rodando)..."
+            # No Alpine, normalmente é: rc-service php-fpm83 restart
+            # Ajuste para a versão do PHP que você instalou (8.4)
+            if command -v rc-service &> /dev/null; then
+              sudo rc-service php-fpm84 restart || echo "⚠️  php-fpm84 não encontrado, tentando php-fpm..."
+              sudo rc-service php-fpm restart || echo "⚠️  php-fpm não encontrado, ignorando."
+            else
+              echo "ℹ️  rc-service não disponível – reinicie manualmente se necessário."
+            fi
+
+            # Se usar supervisor para filas, reinicie o worker:
+            # supervisorctl restart laravel-worker:*
+
+            echo "✅ Deploy concluído com sucesso!"
