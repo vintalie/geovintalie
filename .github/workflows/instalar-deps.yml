@@ -1,0 +1,69 @@
+name: Instalar dependências (Laravel + Frontend Vite)
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      # - homolog  # adicione outras branches se necessário
+
+jobs:
+  install-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Faz o "git pull" automático (baixa o código do PR)
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # =============================================
+      #  BACKEND - LARAVEL (/api)
+      # =============================================
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'          # Use a mesma versão do seu projeto
+          extensions: mbstring, pdo, mysql, zip, intl, gd
+          coverage: none
+
+      # Cache do Composer para acelerar as próximas execuções
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer
+          key: ${{ runner.os }}-composer-${{ hashFiles('api/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Instalar dependências do Laravel (Composer)
+        run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
+        working-directory: ./api
+
+      # (Opcional) Cria um .env dummy para evitar erros em comandos Artisan
+      - name: Criar .env para testes
+        run: cp .env.example .env
+        working-directory: ./api
+
+      # (Opcional) Roda migrações ou testes para validar o PR
+      # - name: Rodar testes do Laravel
+      #   run: php artisan test
+      #   working-directory: ./api
+
+      # =============================================
+      #  FRONTEND - TYPESCRIPT + VITE (/frontend)
+      # =============================================
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'           # Use a versão LTS ou a do seu projeto
+          cache: 'npm'
+          cache-dependency-path: './frontend/package-lock.json'
+
+      - name: Instalar dependências do Frontend (npm)
+        run: npm ci                     # "npm ci" é mais rápido e seguro que "npm install" em CI
+        working-directory: ./frontend
+
+      # (MUITO RECOMENDADO) Roda o build para validar se o TypeScript não quebrou
+      - name: Validar build do Vite (TypeScript)
+        run: npm run build
+        working-directory: ./frontend
