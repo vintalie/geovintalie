@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 
 
-#[Fillable(['name','code'])]
+#[Fillable(['name'])]
 class Country extends Model
 {
     use HasFactory;

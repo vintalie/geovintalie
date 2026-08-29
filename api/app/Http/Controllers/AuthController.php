@@ -6,6 +6,8 @@ use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Resources\UserResource;
+
 
 class AuthController extends Controller
 {
@@ -38,10 +40,12 @@ class AuthController extends Controller
             'token' => $token
         ], 200);
     }
-    function me(){
+    public function me()
+    {
+        $user = Auth::user();
         return response()->json([
             'message' => 'User information retrieved successfully',
-            'user' => Auth::user()
+            'user' => new UserResource($user)
         ], 200);
     }
 

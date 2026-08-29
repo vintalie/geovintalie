@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\State;
+use App\Http\Resources\StateResource;
+use Exception;
 use Illuminate\Http\Request;
 
 class StateController extends Controller
@@ -12,15 +14,21 @@ class StateController extends Controller
      */
     public function index(Request $request)
     {
-        $states = State::paginate(
-            $request->input('per_page', 10)
-        );
+        $perPage = $request->input('per_page', 10);
 
-        return response()->json([
-            'message' => 'States retrieved successfully',
-            'states' => $states->with('country')
-        ], 200);
+        try{
+            $perPage = $request->input('per_page', 10);
+            $states = State::with('country')->paginate($perPage);
+            return StateResource::collection($states);
+            
+        }catch(Exception $err){
+            return response()->json([
+                'message' => 'Erro Interno do servidor',
+                'err' => $err
+            ], 500);
+        };
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -29,6 +37,7 @@ class StateController extends Controller
     {
         $validated = request()->validate([
             'name' => 'required|string|max:255',
+            'abbreviation' => 'required|string|max:2',
             'country_id' => 'required|exists:countries,id',
         ]);
         $states = State::create($validated);
@@ -46,6 +55,7 @@ class StateController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'country_id' => 'required|exists:countries,id',
+            'abbreviation' => 'required|string|max:2',
         ]);
         $state = State::create($validated);
         return response()->json([
@@ -57,12 +67,18 @@ class StateController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(State $state)
-    {
-        return response()->json([
-            'message' => 'State retrieved successfully',
-            'state' => $state->cities()->countrys()
-        ], 200);
+    public function show($id)
+{
+        try {
+            // Carrega o estado com o país relacionado
+            $state = State::with('country')->findOrFail($id);
+            return new StateResource($state);
+        } catch (\Exception $err) {
+            return response()->json([
+                'message' => 'Estado não encontrado',
+                'error' => $err->getMessage()
+            ], 404);
+        }
     }
 
     /**
@@ -72,6 +88,7 @@ class StateController extends Controller
     {
         $validated = request()->validate([
             'name' => 'required|string|max:255',
+            'abbreviation' => 'required|string|max:2',
             'country_id' => 'required|exists:countries,id',
         ]);
         $state->update($validated);
@@ -88,6 +105,7 @@ class StateController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'abbreviation' => 'required|string|max:2',
             'country_id' => 'required|exists:countries,id',
         ]);
         $state->update($validated);

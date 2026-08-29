@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Country;
+use Exception;
 use Illuminate\Http\Request;
 
 class CountryController extends Controller
@@ -12,14 +13,20 @@ class CountryController extends Controller
      */
     public function index(Request $request)
     {
-        $countries = Country::paginate(
-            $request->input('per_page', 10)
-        );
+        $perPage = $request->input('per_page', 10);
         
-        return response()->json([
-            'message' => 'Countries retrieved successfully',
-            'countries' => $countries->with('states')
+        try{
+            return response()->json([
+                'message' => 'Countries retrieved successfully',
+                'countries' => Country::with('states')->paginate($perPage)
         ], 200);
+            
+        }catch(Exception $err){
+            return response()->json([
+                'message' => 'Erro Interno do servidor',
+                'err' => $err
+            ], 500);
+        };
     }
 
     /**
@@ -29,7 +36,6 @@ class CountryController extends Controller
     {
         $validated = request()->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:countries,code',
         ]);
         $countries = Country::create($validated);
         return response()->json([
@@ -45,7 +51,6 @@ class CountryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:countries,code',
         ]);
         $country = Country::create($validated);
         return response()->json([
@@ -72,7 +77,6 @@ class CountryController extends Controller
     {
         $validated = request()->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:countries,code,' . $country->id,
         ]);
         $country->update($validated);
         return response()->json([
@@ -88,7 +92,6 @@ class CountryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:countries,code,' . $country->id,
         ]);
         $country->update($validated);
         return response()->json([

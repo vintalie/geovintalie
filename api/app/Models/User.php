@@ -28,7 +28,16 @@ class User extends Authenticatable implements JWTSubject
      *
      * @return array<string, string>
      */
+    protected $attributes = [
+        'tipo_id' => 1, // valor padrão que existe na tabela user_types
+    ];
 
+    public function UserType() {
+        return $this->belongsTo(UserType::class, 'tipo_id');
+    }
+    public function getTipoNome(){
+        return $this->tipo?->nome;
+    }
     public function getUserConfigs(){
         return $this->hasOne(ConfigsInterface::class);
     }

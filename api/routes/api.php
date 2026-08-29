@@ -46,10 +46,12 @@ Route::group([
         
     ], function($router) {
         Route::apiResource('countries.states.cities.streets', StateController::class);
+        Route::apiResource('countries.states', StateController::class);
+        Route::apiResource('states.countries', StateController::class);
+
         
         Route::apiResource('states', StateController::class);
         Route::apiResource('streets', StreetController::class);
-        Route::apiResource('states', StateController::class);
         Route::apiResource('cities', CityController::class);
         Route::apiResource('countries', CountryController::class);
         Route::apiResource('neighborhoods', NeighborhoodController::class);
