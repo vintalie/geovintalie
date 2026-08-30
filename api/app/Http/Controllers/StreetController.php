@@ -15,27 +15,28 @@ class StreetController extends Controller
         $streets = Street::paginate(
             $request->input('per_page', 10)
         );
+        
         return response()->json([
             'message' => 'Streets retrieved successfully',
-            'streets' => $streets->with('neighborhood')
+            'streets' => $streets
         ], 200);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request)
+    public function create()
     {
-        $validated = $request->validate([
+        $validated = request()->validate([
             'name' => 'required|string|max:255',
             'neighborhood_id' => 'required|exists:neighborhoods,id',
+
         ]);
-        $streets = Street::create($validated);
+        $street = Street::create($validated);
         return response()->json([
             'message' => 'Street created successfully',
-            'street' => $streets->with('neighborhood')
+            'street' => $street
         ], 201);
-        
     }
 
     /**
@@ -43,16 +44,18 @@ class StreetController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validated = request()->validate([
             'name' => 'required|string|max:255',
             'neighborhood_id' => 'required|exists:neighborhoods,id',
+
         ]);
         $street = Street::create($validated);
         return response()->json([
             'message' => 'Street created successfully',
-            'street' => $street->with('neighborhood')
+            'street' => $street
         ], 201);
     }
+
 
     /**
      * Display the specified resource.
@@ -61,7 +64,7 @@ class StreetController extends Controller
     {
         return response()->json([
             'message' => 'Street retrieved successfully',
-            'street' => $street->with('neighborhood')
+            'street' => $street
         ], 200);
     }
 
@@ -73,11 +76,12 @@ class StreetController extends Controller
         $validated = request()->validate([
             'name' => 'required|string|max:255',
             'neighborhood_id' => 'required|exists:neighborhoods,id',
+
         ]);
         $street->update($validated);
         return response()->json([
-            'message' => 'Street updated successfully',
-            'street' => $street->with('neighborhood')
+            'message' => 'Country updated successfully',
+            'street' => $street       
         ], 200);
     }
 
@@ -89,11 +93,12 @@ class StreetController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'neighborhood_id' => 'required|exists:neighborhoods,id',
+
         ]);
         $street->update($validated);
         return response()->json([
             'message' => 'Street updated successfully',
-            'street' => $street->with('neighborhood')
+            'street' => $street
         ], 200);
     }
 
@@ -104,7 +109,7 @@ class StreetController extends Controller
     {
         $street->delete();
         return response()->json([
-            'message' => 'Street deleted successfully'
+            'message' => 'street deleted successfully',
         ], 200);
     }
 }

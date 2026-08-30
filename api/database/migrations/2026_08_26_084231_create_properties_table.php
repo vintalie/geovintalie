@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\ForeignIdColumnDefinition;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -20,15 +21,16 @@ return new class extends Migration
             $table->string('cover_image');
             $table->string('content_html');
             $table->string('additional_info');
-            $table->string('contact1_email')->nullable(false);
-            $table->string('contact2_email');
+            $table->string('contact1_email');
+            $table->string('contact2_email')->nullable(false);
             $table->string('number1')->nullable(false);
             $table->string('number2');
             $table->string('number3');
+            $table->foreignId('street_id')->constrained('streets');
+            $table->foreignId('user_id')->constrained('users');
 
 
             
-            $table->foreignId('street_id')->constrained('street')->onDelete('cascade');
             $table->timestamps();
         });
     }

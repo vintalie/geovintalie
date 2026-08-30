@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('streets', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('neighborhood_id')->constrained('neighborhood')->onDelete('cascade');
+            $table->foreignId('neighborhood_id')->constrained('neighborhoods');
             $table->timestamps();
         });
     }

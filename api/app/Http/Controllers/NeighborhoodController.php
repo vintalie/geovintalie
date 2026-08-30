@@ -16,10 +16,9 @@ class NeighborhoodController extends Controller
             $request->input('per_page', 10)
         );
         
-
         return response()->json([
             'message' => 'Neighborhoods retrieved successfully',
-            'neighborhoods' => $neighborhoods->with('city')
+            'neighborhoods' => $neighborhoods
         ], 200);
     }
 
@@ -28,13 +27,16 @@ class NeighborhoodController extends Controller
      */
     public function create()
     {
-        $neighborhoods = Neighborhood::create([
-            'name' => 'New Neighborhood',
-            'city_id' => 1, // Replace with a valid city ID
+        $validated = request()->validate([
+            'name' => 'required|string|max:255',
+            'city_id' => 'required|exists:cities,id',
+
         ]);
+        $neighborhood = Neighborhood::create($validated);
+        dd($neighborhood);
         return response()->json([
             'message' => 'Neighborhood created successfully',
-            'neighborhood' => $neighborhoods
+            'neighborhood' => $neighborhood
         ], 201);
     }
 
@@ -43,15 +45,29 @@ class NeighborhoodController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = request()->validate([
+            'name' => 'required|string|max:255',
+            'city_id' => 'required|exists:cities,id',
+
+            
+        ]);
+        $neighborhood = Neighborhood::create($validated);
+        return response()->json([
+            'message' => 'Neighborhood created successfully',
+            'neighborhood' => $neighborhood
+        ], 201);
     }
+
 
     /**
      * Display the specified resource.
      */
     public function show(Neighborhood $neighborhood)
     {
-        //
+        return response()->json([
+            'message' => 'Neighborhood retrieved successfully',
+            'neighborhood' => $neighborhood
+        ], 200);
     }
 
     /**
@@ -59,7 +75,16 @@ class NeighborhoodController extends Controller
      */
     public function edit(Neighborhood $neighborhood)
     {
-        //
+        $validated = request()->validate([
+            'name' => 'required|string|max:255',
+            'city_id' => 'required|exists:cities,id',
+
+        ]);
+        $neighborhood->update($validated);
+        return response()->json([
+            'message' => 'Country updated successfully',
+            'neighborhood' => $neighborhood       
+        ], 200);
     }
 
     /**
@@ -67,7 +92,16 @@ class NeighborhoodController extends Controller
      */
     public function update(Request $request, Neighborhood $neighborhood)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'city_id' => 'required|exists:cities,id',
+
+        ]);
+        $neighborhood->update($validated);
+        return response()->json([
+            'message' => 'Neighborhood updated successfully',
+            'neighborhood' => $neighborhood
+        ], 200);
     }
 
     /**
@@ -75,6 +109,9 @@ class NeighborhoodController extends Controller
      */
     public function destroy(Neighborhood $neighborhood)
     {
-        //
+        $neighborhood->delete();
+        return response()->json([
+            'message' => 'neighborhood deleted successfully',
+        ], 200);
     }
 }

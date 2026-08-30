@@ -4,15 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\Property;
 use Illuminate\Http\Request;
+use Exception;
 
 class PropertyController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $propertys = Property::paginate(
+            $request->input('per_page', 10)
+        );
+
+        return response()->json([
+            'message'    => 'Propertys retrieved successfully',
+            'propertys'  => $propertys
+        ], 200);
     }
 
     /**
@@ -20,7 +28,24 @@ class PropertyController extends Controller
      */
     public function create()
     {
-        //
+        $validated = request()->validate([
+            'name'             => 'required|string|max:255',
+            'complement'       => 'required|string|max:255',
+            'main_image'       => 'required|string|max:255',
+            'cover_image'      => 'required|string|max:255',
+            'content_html'     => 'required|string|max:255',
+            'additional_info'  => 'required|string|max:255',
+            'contact1_email'   => 'required|string|max:255', // como esta
+            'contact2_email'   => 'required|string|max:255', // o seu to
+            'number1'           => 'required|string|max:255',// hoje?
+            'number2'          => 'required|string|max:255',
+            'number3'          => 'required|string|max:255',
+        ]);
+        $property = Property::create($validated);
+        return response()->json([
+            'message'   => 'Property created sucessfully',
+            'propery'   => $property 
+        ]);
     }
 
     /**
@@ -28,7 +53,24 @@ class PropertyController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = request()->validate([
+            'name'             => 'required|string|max:255',
+            'complement'       => 'required|string|max:255',
+            'main_image'       => 'required|string|max:255',
+            'cover_image'      => 'required|string|max:255',
+            'content_html'     => 'required|string|max:255',
+            'additional_info'  => 'required|string|max:255',
+            'contact1_email'   => 'required|string|max:255', // como esta
+            'contact2_email'   => 'required|string|max:255', // o seu to
+            'number1'           => 'required|string|max:255',// hoje?
+            'number2'          => 'required|string|max:255',
+            'number3'          => 'required|string|max:255',
+        ]);
+        $property = Property::create($validated);
+        return response()->json([
+            'message'   => 'Property created sucessfully',
+            'propery'   => $property 
+        ]);
     }
 
     /**
@@ -36,7 +78,11 @@ class PropertyController extends Controller
      */
     public function show(Property $property)
     {
-        //
+        try{}catch(Exception $err){
+
+        }
+
+
     }
 
     /**

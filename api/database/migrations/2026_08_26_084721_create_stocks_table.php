@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('stocks', function (Blueprint $table) {
             $table->id();
-            $table->integer('quantity');
-            $table->string('type');
+            $table->integer('value');
+            $table->string('color');
+            $table->string('size');
+            $table->string('q_type');
             $table->foreignId('product_id')->constrained('product')->onDelete('cascade');
+            $table->foreignId('property_id')->constrained('property')->onDelete('cascade');
             $table->timestamps();
         });
     }

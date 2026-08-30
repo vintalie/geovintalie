@@ -6,12 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 
-#[fillable(['value','type','disabled']) ]
+#[fillable(['name','tipo','img_main']) ]
 class Product extends Model
 {
     use HasFactory;
 
     public function stock(){
-
+        return $this->hasMany(Stock::class);
+    }
+    public function product(){
+        return $this->hasMany(Property::class);
     }
 }

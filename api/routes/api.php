@@ -11,6 +11,10 @@ use App\Http\Controllers\CountryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StreetController;
+use App\Http\Controllers\PropertyController;
+use App\Http\Controllers\ProductsController;
+
+
 use App\Http\Controllers\SearchController;
 
 use Illuminate\Support\Facades\Route;
@@ -28,7 +32,11 @@ Route::group([
 
 
     Route::apiResource('products.stocks', StockController::class);
+
+    Route::apiResource('propertys', PropertyController::class);
     Route::apiResource('products', ProductController::class);
+    Route::apiResource('propertys.products', PropertyController::class);
+    
     Route::apiResource('user', UserController::class);
 
     Route::post('2fa-register', RegisterController::class . '@twofa');    
@@ -48,8 +56,10 @@ Route::group([
         Route::apiResource('countries.states.cities.streets', StateController::class);
         Route::apiResource('countries.states', StateController::class);
         Route::apiResource('states.countries', StateController::class);
+        Route::apiResource('countries.states.cities', CityController::class);
 
         
+
         Route::apiResource('states', StateController::class);
         Route::apiResource('streets', StreetController::class);
         Route::apiResource('cities', CityController::class);
@@ -62,18 +72,14 @@ Route::group([
     #registro de usuario e confirmação de conta/2FA
     Route::post('register', RegisterController::class . '@register');    
     Route::post('verify-email', RegisterController::class . '@verify_email');    
-    
-    Route::group([
 
-        'prefix' => 'auth',
-        'middleware' => ['jwt.auth', 'role:admin'],
-        
-    ], function($router) {
-        
-        Route::apiResource('user', UserController::class);
-    
-    });
 
+
+    Route::apiResource('propertys', PropertyController::class);
+    Route::apiResource('products', ProductController::class);
+    Route::apiResource('propertys.products', PropertyController::class);
+
+    
 
 
 Route::get('s', SearchController::class . '@search');

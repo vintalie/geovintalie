@@ -23,6 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        DB::statement('PRAGMA foreign_keys = OFF');
+        Schema::dropIfExists('cities');
+        Schema::dropIfExists('states');
         Schema::dropIfExists('countries');
+        DB::statement('PRAGMA foreign_keys = ON');
     }
 };
