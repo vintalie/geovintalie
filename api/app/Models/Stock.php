@@ -10,7 +10,7 @@ class Stock extends Model
     public function property(){
         $this->belongsTo(Property::class);
     }
-    public function stock(){
+    public function products(){
         $this->belongsToMany(Product::class);
     }
 }

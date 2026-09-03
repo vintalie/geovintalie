@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Models\ConfigsInterface;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
 
@@ -35,7 +36,12 @@ class User extends Authenticatable implements JWTSubject
     public function UserType() {
         return $this->belongsTo(UserType::class, 'tipo_id');
     }
-    public function getProperties(){
+
+    public function products(){
+        return $this->hasMany(Property::products());
+
+    }
+    public function properties(){
         return $this->hasMany(Property::class);
     }
     public function getUserConfigs(){
