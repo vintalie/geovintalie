@@ -12,13 +12,13 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $products = Product::paginate(
+        $products = Product::with('stock')->paginate(
             $request->input('per_page', 10)
         );
         
         return response()->json([
             'message' => 'Products retrieved successfully',
-            'products' => $products->with('stock')
+            'products' => $products
         ], 200);
     }
 

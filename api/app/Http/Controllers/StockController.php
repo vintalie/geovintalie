@@ -14,12 +14,12 @@ class StockController extends Controller
      */
     public function show(Request $request, Product $product)
     {
-        $stock = Stock::paginate(
+        $stock = Stock::with('product')->paginate(
             $request->input('per_page', 10)
         );
         return response()->json([
             'message' => 'Stock retrieved successfully',
-            'stock' => $stock->with('product')
+            'stock' => $stock
         ], 200);
     }
 
