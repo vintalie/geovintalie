@@ -33,9 +33,9 @@ Route::group([
 
     Route::apiResource('products.stocks', StockController::class);
 
-    Route::apiResource('propertys', PropertyController::class);
+    Route::apiResource('properties', PropertyController::class);
     Route::apiResource('products', ProductController::class);
-    Route::apiResource('propertys.products', PropertyController::class);
+    Route::apiResource('properties.products', PropertyController::class);
     
     Route::apiResource('user', UserController::class);
 
@@ -75,9 +75,9 @@ Route::group([
 
 
 
-    Route::apiResource('propertys', PropertyController::class);
-    Route::apiResource('products', ProductController::class);
-    Route::apiResource('propertys.products', PropertyController::class);
+Route::apiResource('properties', PropertyController::class);
+Route::apiResource('products', ProductController::class);
+Route::apiResource('properties.products', PropertyController::class);
 
     
 
