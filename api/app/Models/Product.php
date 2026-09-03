@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 
-#[fillable(['name','tipo','img_main']) ]
+    
+#[fillable(['name','tipo','img_main','user_id' ]) ]
 class Product extends Model
 {
     use HasFactory;

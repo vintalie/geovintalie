@@ -16,7 +16,7 @@ return new class extends Migration
             $table->integer('value');
             $table->string('color');
             $table->string('size');
-            $table->string('q_type');
+            $table->string('quantity');
             $table->foreignId('product_id')->constrained('product')->onDelete('cascade');
             $table->foreignId('property_id')->constrained('property')->onDelete('cascade');
             $table->timestamps();
