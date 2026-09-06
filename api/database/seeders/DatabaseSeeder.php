@@ -26,5 +26,6 @@ class DatabaseSeeder extends Seeder
             'tipo_id' => 1, 
             'email' => 'test@example.com',
         ]);
+        
     }
 }

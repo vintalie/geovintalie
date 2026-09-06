@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\City;
+use App\Http\Resources\CityResource;
 use Illuminate\Http\Request;
+use Exception;
 
 class CityController extends Controller
 {
@@ -12,14 +14,19 @@ class CityController extends Controller
      */
     public function index(Request $request)
     {
-        $cities = City::paginate(
-            $request->input('per_page', 10)
-        );
-        
-        return response()->json([
-            'message' => 'Cities retrieved successfully',
-            'cities' => $cities
-        ], 200);
+        $perPage = $request->input('per_page', 10);
+
+        try{
+            $perPage = $request->input('per_page', 10);
+            $cities = City::with('state')->paginate($perPage);
+            return CityResource::collection($cities);
+            
+        }catch(Exception $err){
+            return response()->json([
+                'message' => 'Erro Interno do servidor',
+                'err' => $err
+            ], 500);
+        };
     }
 
     /**

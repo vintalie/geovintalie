@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Neighborhood;
 use Illuminate\Http\Request;
-
+use App\Http\Resources\NeighborhoodResource;
+use Exception;
 class NeighborhoodController extends Controller
 {
     /**
@@ -12,14 +13,19 @@ class NeighborhoodController extends Controller
      */
     public function index(Request $request)
     {
-        $neighborhoods = Neighborhood::paginate(
-            $request->input('per_page', 10)
-        );
-        
-        return response()->json([
-            'message' => 'Neighborhoods retrieved successfully',
-            'neighborhoods' => $neighborhoods
-        ], 200);
+        $perPage = $request->input('per_page', 10);
+
+        try{
+            $perPage = $request->input('per_page', 10);
+            $neighborhoods = Neighborhood::with('city')->paginate($perPage);
+            return NeighborhoodResource::collection($neighborhoods);
+            
+        }catch(Exception $err){
+            return response()->json([
+                'message' => 'Erro Interno do servidor',
+                'err' => $err
+            ], 500);
+        };
     }
 
     /**

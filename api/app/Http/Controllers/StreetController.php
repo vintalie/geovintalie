@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Street;
 use Illuminate\Http\Request;
-
+use App\Http\Resources\StreetResource;
+use Exception;
 class StreetController extends Controller
 {
     /**
@@ -12,14 +13,19 @@ class StreetController extends Controller
      */
     public function index(Request $request)
     {
-        $streets = Street::paginate(
-            $request->input('per_page', 10)
-        );
-        
-        return response()->json([
-            'message' => 'Streets retrieved successfully',
-            'streets' => $streets
-        ], 200);
+        $perPage = $request->input('per_page', 10);
+
+        try{
+            $perPage = $request->input('per_page', 10);
+            $streets = Street::with('neighborhood')->paginate($perPage);
+            return StreetResource::collection($streets);
+            
+        }catch(Exception $err){
+            return response()->json([
+                'message' => 'Erro Interno do servidor',
+                'err' => $err
+            ], 500);
+        };
     }
 
     /**
