@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getState, createState, updateState } from '../../../api/location';
 import type { State } from '../../../types';
@@ -21,7 +21,7 @@ const StateFormPage = () => {
   const loadState = async () => {
     try {
       // Usando country_id fixo 1 para simplicidade
-      const response = await getState(1, Number(id));
+      const response = await getState(Number(id));
       setForm(response.data);
     } catch (err: any) {
       setError(err.message);
@@ -37,11 +37,10 @@ const StateFormPage = () => {
     setLoading(true);
     try {
       const countryId = form.country_id || 1;
-      console.log(form)
       if (isEdit) {
         await updateState(countryId, Number(id), form);
       } else {
-        await createState(countryId, form);
+        await createState(form);
       }
       navigate('/states');
     } catch (err: any) {

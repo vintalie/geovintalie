@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   getProducts,
   createProduct,
@@ -45,7 +45,7 @@ const ProductsWithStocks: React.FC = () => {
   const [showStockModal, setShowStockModal] = useState(false);
   const [editingStock, setEditingStock] = useState<Stocks | null>(null);
   const [stockForm, setStockForm] = useState<Partial<StocksFormData>>({
-    value: 0,
+    value: '0',
     color: '',
     size: '',
     q_type: '',
@@ -113,7 +113,7 @@ const ProductsWithStocks: React.FC = () => {
     }
   };
 
-  const openEditProduct = (product: Product) => {
+  const openEditProduct = (product: Products) => {
     setEditingProduct(product);
     setProductForm({
       name: product.name,
@@ -162,7 +162,7 @@ const ProductsWithStocks: React.FC = () => {
       }
       setShowStockModal(false);
       setEditingStock(null);
-      setStockForm({ value: 0, color: '', size: '', q_type: '' });
+      setStockForm({ value: '0', color: '', size: '', q_type: '' });
       await fetchStocks(selectedProductId);
     } catch (error) {
       console.error(error);
@@ -182,7 +182,7 @@ const ProductsWithStocks: React.FC = () => {
     }
   };
 
-  const openEditStock = (stock: Stock) => {
+  const openEditStock = (stock: Stocks) => {
     setEditingStock(stock);
     setStockForm({
       value: stock.value,
@@ -195,7 +195,7 @@ const ProductsWithStocks: React.FC = () => {
 
   const openNewStock = () => {
     setEditingStock(null);
-    setStockForm({ value: 0, color: '', size: '', q_type: '' });
+    setStockForm({ value: '0', color: '', size: '', q_type: '' });
     setShowStockModal(true);
   };
 
@@ -420,8 +420,8 @@ const ProductsWithStocks: React.FC = () => {
                 <input
                   type="number"
                   placeholder="Valor"
-                  value={stockForm.value ?? 0}
-                  onChange={(e) => setStockForm({ ...stockForm, value: parseInt(e.target.value) || 0 })}
+                  value={stockForm.value ?? '0'}
+                  onChange={(e) => setStockForm({ ...stockForm, value: e.target.value })}
                   className="w-full border p-2 rounded"
                   required
                 />
