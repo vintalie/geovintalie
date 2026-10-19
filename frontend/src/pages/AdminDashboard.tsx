@@ -26,10 +26,10 @@ export default function AdminDashboard() {
   };
 
   return (
-    <main className="p-6 md:p-10 space-y-6 bg-slate-950 text-slate-100 min-h-screen">
+    <main className="p-6 md:p-10 space-y-6 bg-stone-950 text-stone-100 min-h-screen">
       <header className="flex items-center gap-3">
-        <Table2 size={28} aria-hidden="true" />
-        <h2 className="text-3xl font-extrabold">Painel Administrador</h2>
+        <Table2 size={28} className="text-amber-400" aria-hidden="true" />
+        <h2 className="text-3xl font-extrabold">Administração — Tabela Editável</h2>
       </header>
       <p className="text-slate-400">Esta tabela permite editar qualquer campo do banco de dados. Apenas o ID da propriedade/produto é usado como referência de chave estrangeira.</p>
 
