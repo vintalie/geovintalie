@@ -28,6 +28,10 @@ const Sidebar = () => {
         <NavLink to="/streets" className={({ isActive }) => `block p-3 ${isActive ? 'bg-gray-700' : ''}`}>Ruas</NavLink>
         <NavLink to="/properties" className={({ isActive }) => `block p-3 ${isActive ? 'bg-gray-700' : ''}`}>Propriedades</NavLink>
         <NavLink to="/products" className={({ isActive }) => `block p-3 ${isActive ? 'bg-gray-700' : ''}`}>Produtos</NavLink>
+        <NavLink to="/institutional" className={({ isActive }) => `block p-3 ${isActive ? 'bg-gray-700' : ''}`}>Institucional</NavLink>
+        <NavLink to="/map" className={({ isActive }) => `block p-3 ${isActive ? 'bg-gray-700' : ''}`}>Mapa</NavLink>
+        <NavLink to="/user" className={({ isActive }) => `block p-3 ${isActive ? 'bg-gray-700' : ''}`}>Painel do Usuário</NavLink>
+        <NavLink to="/admin" className={({ isActive }) => `block p-3 ${isActive ? 'bg-gray-700' : ''}`}>Painel Admin</NavLink>
         <NavLink to="/profile" className={({ isActive }) => `block p-3 ${isActive ? 'bg-gray-700' : ''}`}>Perfil</NavLink>
       </nav>
       <button onClick={handleLogout} className="p-4 bg-red-600 hover:bg-red-700 text-left">

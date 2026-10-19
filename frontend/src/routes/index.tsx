@@ -16,6 +16,10 @@ import PropertyList from '../pages/Property/PropertyList';
 import PropertyFormPage from '../pages/Property/PropertyFormPage';
 import StreetFormPage from '../pages/Locations/Streets/StreetFormPage';
 import Profile from '../pages/Profile';
+import Institutional from '../pages/Institutional';
+import AdminDashboard from '../pages/AdminDashboard';
+import UserDashboard from '../pages/UserDashboard';
+import MapPage from '../pages/MapPage';
 import Layout from '../components/Layout/Layout';
 import LayoutProducts from '../components/Layout/LayoutProducts';
 import ProductsWithStocks from '../pages/Products/ProductsWithStocks';
@@ -84,6 +88,10 @@ export const AppRoutes = () => {
           </Route>
 
 
+          <Route path="institutional" element={<Institutional />} />
+          <Route path="admin" element={<AdminDashboard />} />
+          <Route path="user" element={<UserDashboard />} />
+          <Route path="map" element={<MapPage />} />
           <Route path="/products" element={<ProductsWithStocks />} />
 
         </Route>
