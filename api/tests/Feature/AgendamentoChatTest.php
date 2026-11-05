@@ -158,7 +158,7 @@ class AgendamentoChatTest extends TestCase
         $providerToken = $this->obterTokenParaUsuario($prestador['usuario']);
 
         $agendamento = $this->criarAgendamento($clientToken, $prestador['provider']->id);
-        $id = $agendamento->json('id');
+        $id = $agendamento->json('data.id');
 
         // Prestador confirma
         $this->withHeader('Authorization', "Bearer {$providerToken}")
@@ -175,7 +175,7 @@ class AgendamentoChatTest extends TestCase
         $prestador = $this->criarPrestadorAtivo();
 
         $agendamento = $this->criarAgendamento($clientToken, $prestador['provider']->id);
-        $id = $agendamento->json('id');
+        $id = $agendamento->json('data.id');
 
         $this->withHeader('Authorization', "Bearer {$clientToken}")
             ->patch("{$this->base}/agendamentos/{$id}", ['status' => 'confirmado'])
@@ -188,7 +188,7 @@ class AgendamentoChatTest extends TestCase
         $prestador = $this->criarPrestadorAtivo();
 
         $agendamento = $this->criarAgendamento($clientToken, $prestador['provider']->id);
-        $id = $agendamento->json('id');
+        $id = $agendamento->json('data.id');
 
         $this->withHeader('Authorization', "Bearer {$clientToken}")
             ->delete("{$this->base}/agendamentos/{$id}")
@@ -204,7 +204,7 @@ class AgendamentoChatTest extends TestCase
         $providerToken = $this->obterTokenParaUsuario($prestador['usuario']);
 
         $agendamento = $this->criarAgendamento($clientToken, $prestador['provider']->id);
-        $id = $agendamento->json('id');
+        $id = $agendamento->json('data.id');
 
         $this->withHeader('Authorization', "Bearer {$providerToken}")
             ->patch("{$this->base}/agendamentos/{$id}", ['status' => 'confirmado']);
@@ -221,7 +221,7 @@ class AgendamentoChatTest extends TestCase
         $intrusoToken = $this->obterToken('intruso');
 
         $agendamento = $this->criarAgendamento($clientToken, $prestador['provider']->id);
-        $id = $agendamento->json('id');
+        $id = $agendamento->json('data.id');
 
         $this->withHeader('Authorization', "Bearer {$intrusoToken}")
             ->get("{$this->base}/agendamentos/{$id}")
@@ -287,7 +287,7 @@ class AgendamentoChatTest extends TestCase
 
         $conversa = $this->withHeader('Authorization', "Bearer {$clientToken}")
             ->post("{$this->base}/conversas", ['provider_id' => $prestador['provider']->id])
-            ->json('id');
+            ->json('data.id');
 
         // Cliente envia mensagem
         $envio = $this->withHeader('Authorization', "Bearer {$clientToken}")
@@ -321,7 +321,7 @@ class AgendamentoChatTest extends TestCase
 
         $conversa = $this->withHeader('Authorization', "Bearer {$clientToken}")
             ->post("{$this->base}/conversas", ['provider_id' => $prestador['provider']->id])
-            ->json('id');
+            ->json('data.id');
 
         $this->withHeader('Authorization', "Bearer {$intrusoToken}")
             ->post("{$this->base}/conversas/{$conversa}/mensagens", ['body' => 'intrusao'])

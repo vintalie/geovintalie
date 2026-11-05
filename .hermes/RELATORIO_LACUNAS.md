@@ -188,3 +188,27 @@
 - B3: Recomendação por IA
 - B6: Mensageria com histórico e arquivos
 
+
+---
+
+## ATUALIZAÇÃO R2 — $(date '+%Y-%m-%d %H:%M:%S')
+
+### Concluído no R2:
+- A2: Google Business Profile OAuth 2.0 (redirect/callback, listagem de contas)
+- B4: Agendamento e chat interno (modelos, controladores, rotas)
+- B5: Avaliações mútuas (cliente ↔ prestador)
+- C2: Observabilidade (logs estruturados, métricas, health check)
+- C3: Fluxo completo de consentimento LGPD (frontend + backend)
+- C6: Testes frontend e E2E (Vitest + Cypress/Playwright)
+
+### PRs e Issues:
+- Issues #6-#23 criadas no GitHub
+- PR feature/scopes-r2-2026 → main criado
+
+### Próximo ciclo (R3):
+- A4: Geração automática de sites/landing pages SEO local
+- A5: Relatórios de inteligência (mapas de calor)
+- A6: Módulo "Quero Revender"
+- B3: Recomendação por IA
+- B6: Mensageria com histórico e arquivos
+
