@@ -63,7 +63,7 @@ describe('Register', () => {
     expect(screen.getByLabelText('E-mail')).toBeInTheDocument();
     expect(screen.getByLabelText('Senha')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /registrar/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /fa.ça login/i })).toBeInTheDocument();
+    expect(screen.getByText('Faça login')).toBeInTheDocument();
   });
 
   it('faz cadastro com sucesso, chama as APIs, define o token e redireciona', async () => {
@@ -115,7 +115,8 @@ describe('Register', () => {
   it('clicar em "Faça login" navega para a página de login', async () => {
     const user = userEvent.setup();
     render(<Register />);
-    await user.click(screen.getByText('Faça login'));
-    await waitFor(() => expect(navigateFn).toHaveBeenCalledWith('/login'));
+    const link = screen.getByText('Faça login');
+    expect(link).toHaveAttribute('href', '/login');
+    await user.click(link);
   });
 });

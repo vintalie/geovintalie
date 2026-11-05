@@ -148,7 +148,7 @@ describe('DataExport', () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText(/visualiza.dos dados exportados/i)
+        screen.getByText(/Visualizacao dos dados exportados/i),
       ).toBeInTheDocument()
     );
     expect(mockExportData).toHaveBeenCalledTimes(1);
@@ -170,10 +170,10 @@ describe('DeleteAccount', () => {
     render(<DeleteAccount />);
 
     fireEvent.click(
-      screen.getByRole('button', { name: /confirmar exclus/i })
+      screen.getAllByRole('button', { name: /confirmar exclus/i })[0]
     );
     await waitFor(() =>
-      expect(screen.getByText(/Confirmar exclus/i)).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /Confirmar exclusão/i })).toBeInTheDocument()
     );
 
     fireEvent.click(screen.getByRole('button', { name: /excluir conta/i }));

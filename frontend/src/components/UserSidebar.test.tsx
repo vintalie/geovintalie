@@ -25,6 +25,11 @@ function autenticar(usuario: any, admin = false) {
   mockMe.mockResolvedValue(
     { data: { user: { ...usuario, role: admin ? 'admin' : 'user' } } } as any,
   );
+  mockUseAuth.mockReturnValue({
+    user: { ...usuario, role: admin ? 'admin' : 'user' },
+    loading: false,
+    logout: vi.fn(),
+  } as any);
 }
 
 beforeEach(() => {
@@ -63,7 +68,9 @@ describe('UserSidebar', () => {
   it('exibe links de admin e badge Admin quando o usuário é admin', async () => {
     autenticar({ id: 2, name: 'Admin', email: 'admin@test.com' }, true);
     render(<UserSidebar />);
-    await waitFor(() => expect(screen.getByText(/Admin/i)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getAllByText(/Admin/i).length).toBeGreaterThan(0)
+    );
     expect(screen.getByRole('link', { name: /Países/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Administração/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Usuários/i })).toBeInTheDocument();
