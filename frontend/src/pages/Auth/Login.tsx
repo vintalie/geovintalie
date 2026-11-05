@@ -19,13 +19,14 @@ const Login = () => {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
-  const { user, login: setAuth } = useAuth();
+  const { login: setAuth } = useAuth();
 
   useEffect(() => {
-    if (user) {
+    const token = localStorage.getItem('token');
+    if (token) {
       navigate('/');
     }
-  }, [user, navigate]);
+  }, [navigate]);
 
   const handleSubmit = async (e: FormEvent, mode: 'login' | 'register') => {
     e.preventDefault();
@@ -34,15 +35,13 @@ const Login = () => {
     try {
       if (mode === 'login') {
         const response = await login(email, password);
-        const { token, user: u } = response.data;
-        setAuth(token, u);
+        const { token } = response.data;
+        setAuth(token);
       } else {
         await registerApi(name, email, password);
-        await login(email, password);
-        // setAuth is called inside login via useAuth? No, we need to handle token
         const response = await login(email, password);
-        const { token, user: u } = response.data;
-        setAuth(token, u);
+        const { token } = response.data;
+        setAuth(token);
       }
       navigate('/');
     } catch (err: any) {
@@ -55,7 +54,7 @@ const Login = () => {
   return (
     <div className="min-h-screen grid-paper bg-background">
       <SiteHeader />
-      <div className="mx-auto max-w-md px-4 py-16">
+      <div className="mx-auto max-w-xl px-4 py-8 md:py-12">
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle className="text-2xl font-bold">Acesse sua conta</CardTitle>
@@ -156,13 +155,12 @@ const Login = () => {
               </TabsContent>
             </Tabs>
           </CardContent>
-          <CardFooter className="flex flex-col gap-2 text-center">
-            {error ? null : null}
+          <CardFooter className="flex flex-col gap-2 text-center pt-6">
             <p className="text-sm text-muted-foreground">
               Não tem conta?{' '}
               <button
                 onClick={() => {
-                  // Switch to register tab
+                  // Switch to register tab via tabs would need ref, using navigate as fallback
                 }}
                 className="text-primary hover:underline font-medium"
               >

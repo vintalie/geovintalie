@@ -14,7 +14,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (token) {
       me()
         .then((response) => {
-          setUser(response.data);
+          // A API retorna { message, user } ou { token, user } dependendo do endpoint
+          const userData = response.data.user ?? response.data;
+          setUser(userData);
         })
         .catch(() => {
           localStorage.removeItem('token');
@@ -26,9 +28,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const login = (token: string, user: User) => {
+  const login = (token: string) => {
     localStorage.setItem('token', token);
-    setUser(user);
+    // Após salvar o token, buscar dados do usuário
+    me()
+      .then((response) => {
+        const userData = response.data.user ?? response.data;
+        setUser(userData);
+      })
+      .catch(() => {
+        // Se falhar, pelo menos definimos que há um token
+        setUser({} as User);
+      })
+      .finally(() => setLoading(false));
   };
 
   const logout = () => {
