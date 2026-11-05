@@ -11,7 +11,6 @@ const CityFormPage = () => {
   const [error, setError] = useState('');
 
   const isEdit = !!id;
-  const countryId = 1; // fixo
 
   useEffect(() => {
     if (isEdit) {
@@ -21,7 +20,7 @@ const CityFormPage = () => {
 
   const loadCity = async () => {
     try {
-      const response = await getCity(countryId, 1, Number(id));
+      const response = await getCity(Number(id));
       setForm(response.data);
     } catch (err: any) {
       setError(err.message);
@@ -36,11 +35,10 @@ const CityFormPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const stateId = form.state_id || 1;
       if (isEdit) {
-        await updateCity(countryId, stateId, Number(id), form);
+        await updateCity(Number(id), form);
       } else {
-        await createCity(countryId, form);
+        await createCity(form);
       }
       navigate('/cities');
     } catch (err: any) {

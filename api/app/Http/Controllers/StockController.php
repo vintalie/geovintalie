@@ -45,13 +45,14 @@ class StockController extends Controller
      * Update the specified resource in storage.
      * Essa rota atualiza o estoque somando ao inves de sobrescrever diferente da rota de edição
      */
-    public function update(Request $request, Stock $stock)
+    public function update(Request $request, Product $product, Stock $stock)
     {
         $validated = $request->validate([
             'quantity' => 'required|integer|min:0',
         ]);
-        $stock->quantity = $stock->quantity + $request->input('quantity');
-        $stock->update($validated);
+        // Soma a quantidade ao estoque existente (não sobrescreve)
+        $stock->quantity = ((int) $stock->quantity) + ((int) $validated['quantity']);
+        $stock->save();
         return response()->json([
             'message' => 'Stock updated successfully',
             'stock' => $stock

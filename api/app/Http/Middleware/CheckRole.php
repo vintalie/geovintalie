@@ -4,12 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\UserTypeController;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
-use App\Models\User;
-use App\Http\Resources\UserResource;
-
 
 class CheckRole
 {
@@ -22,18 +17,15 @@ class CheckRole
      * @return mixed
      */
 
-
-
-
     public function handle(Request $request, Closure $next, ...$roles)
     {
-        // Verifica se o usuário está autenticado
-        if (!Auth::check()) {
-            abort(401, 'Não autenticado.');
+        // Autentica via JWT (guard 'api')
+        try {
+            /** @var \App\Models\User $user */
+            $user = JWTAuth::parseToken()->authenticate();
+        } catch (\Exception $e) {
+            abort(401, 'Token não fornecido ou inválido.');
         }
-
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
 
         // Carrega o relacionamento userType se ainda não foi carregado
         $user->loadMissing('userType');

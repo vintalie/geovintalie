@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//home/mario/Documentos/geovintalie/frontend/**)",
+      "Bash(done)",
+      "Bash(python3:*)",
+      "Bash(npm run:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(curl -s -I http://localhost:5173/)",
+      "Bash(curl -s http://localhost:5173/)",
+      "Bash(pkill -f vite)",
+      "Bash(grep -oE \"stone|amber\" /home/mario/Documentos/geovintalie/frontend/dist/assets/index-*.css)",
+      "Bash(grep -oE \"bg-stone-[0-9]+|text-amber-[0-9]+|backdrop-blur\" /home/mario/Documentos/geovintalie/frontend/dist/assets/index-*.css)",
+      "Bash(curl -s -L http://localhost:5173/)",
+      "Bash(echo \"3. Copiar /tmp/property-linker/src/index.css -> frontend/src/index.css\")",
+      "Bash(echo \"4. Copiar /tmp/property-linker/src/routes/index.tsx -> frontend/src/routes/index.tsx \\(tanstack\\)\")"
+    ]
+  }
+}

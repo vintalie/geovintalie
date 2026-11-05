@@ -1,21 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getStocks, getStoc, deleteStock } from '../../api/location';
-import type { Stock } from '../../types';
+import { getProperties, getProperty, deleteProperty } from '../../api/location';
+import type { Property } from '../../types';
 
 const PropertyList = () => {
   const [propertys, setPropertys] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [countryId, setCountryId] = useState<number | null>(null);
   const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
     // Para simplificar, vamos listar estados de um país fixo (ex: Brasil com id 1)
     // Em uma aplicação real, você poderia selecionar o país.
     // Aqui vamos usar o país com id 1 ou pedir para escolher.
-    const defaultCountry = 1;
-    setCountryId(defaultCountry);
     loadStates();
 
 
@@ -45,8 +42,8 @@ const PropertyList = () => {
   const handleDelete = async (id: number) => {
     if (!confirm('Tem certeza?')) return;
     try {
-      await deleteProperty(countryId!);
-      setPropertys(propertys.filter(s => s.id !== id));
+      await deleteProperty(id);
+      setPropertys(propertys.filter((s: Property) => s.id !== id));
     } catch (err: any) {
       alert('Erro ao deletar');
     }
@@ -79,7 +76,7 @@ const PropertyList = () => {
           </tr>
         </thead>
         <tbody>
-          {propertys.map(property => (
+          {propertys.map((property: Property) => (
             <tr key={property.id} className="border-t">
               <td className="p-2">{property.id}</td>
               <td className="p-2">{property.name}</td>

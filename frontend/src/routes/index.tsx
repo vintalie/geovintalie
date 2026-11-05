@@ -20,12 +20,14 @@ import Institutional from '../pages/Institutional';
 import AdminDashboard from '../pages/AdminDashboard';
 import UserDashboard from '../pages/UserDashboard';
 import MapPage from '../pages/MapPage';
+import ImportExport from '../pages/ImportExport';
 import Layout from '../components/Layout/Layout';
 import LayoutProducts from '../components/Layout/LayoutProducts';
 import ProductsWithStocks from '../pages/Products/ProductsWithStocks';
 
 // Dentro do <Routes>
 
+import type { JSX } from 'react';
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const { user, loading } = useAuth();
   if (loading) return <div>Carregando...</div>;
@@ -92,6 +94,7 @@ export const AppRoutes = () => {
           <Route path="admin" element={<AdminDashboard />} />
           <Route path="user" element={<UserDashboard />} />
           <Route path="map" element={<MapPage />} />
+          <Route path="import-export" element={<ImportExport />} />
           <Route path="/products" element={<ProductsWithStocks />} />
 
         </Route>

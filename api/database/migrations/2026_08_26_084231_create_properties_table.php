@@ -16,16 +16,16 @@ return new class extends Migration
             $table->id();
             $table->string('name')->nullable(false);
             $table->string('n_property')->nullable(false);
-            $table->string('complement');
-            $table->string('main_image');
-            $table->string('cover_image');
-            $table->string('content_html');
-            $table->string('additional_info');
-            $table->string('contact1_email');
-            $table->string('contact2_email')->nullable(false);
-            $table->string('number1')->nullable(false);
-            $table->string('number2');
-            $table->string('number3');
+            $table->string('complement')->nullable();
+            $table->string('main_image')->nullable();
+            $table->string('cover_image')->nullable();
+            $table->string('content_html')->nullable();
+            $table->string('additional_info')->nullable();
+            $table->string('contact1_email')->nullable();
+            $table->string('contact2_email')->nullable();
+            $table->string('number1')->nullable();
+            $table->string('number2')->nullable();
+            $table->string('number3')->nullable();
             $table->foreignId('street_id')->constrained('streets');
             $table->foreignId('user_id')->constrained('users');
 

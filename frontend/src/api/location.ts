@@ -16,7 +16,7 @@ export const getStates = (params?: { page?: number; per_page?: number }) => {
   return api.get('/api/auth/location/states', { params });
 };
 
-export const createState = (countryId: number, data: any) =>
+export const createState = (data: any) =>
   api.post(`/api/auth/location/states`, data);
 export const getState = (stateId: number) =>
   api.get(`/api/auth/location/states/${stateId}`);
