@@ -82,9 +82,9 @@ const StatesList = () => {
       <div>
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Estado: {singleState.name}</h1>
-          <Link to="/states" className="bg-gray-500 text-white p-2 rounded">
+          <Button asChild variant="default" size="sm">
             Voltar para lista
-          </Link>
+          </Button>
         </div>
         <table className="w-full border">
           <thead>
@@ -105,7 +105,7 @@ const StatesList = () => {
               <td className="p-2">
                 <Link to={`/states/${singleState.id}/edit`} className="text-blue-500 mr-2">
                   Editar
-                </Link>
+                </Button>
                 <button onClick={() => handleDelete(singleState.id)} className="text-red-500">
                   Excluir
                 </button>
@@ -125,9 +125,9 @@ const StatesList = () => {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Estados</h1>
-        <Link to="/states/new" className="bg-blue-500 text-white p-2 rounded">
+        <Button asChild variant="default" size="sm">
           Novo Estado
-        </Link>
+        </Button>
       </div>
 
       <table className="w-full border">
@@ -150,7 +150,7 @@ const StatesList = () => {
               <td className="p-2">
                 <Link to={`/states/${state.id}/edit`} className="text-blue-500 mr-2">
                   Editar
-                </Link>
+                </Button>
                 <button onClick={() => handleDelete(state.id)} className="text-red-500">
                   Excluir
                 </button>

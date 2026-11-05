@@ -1,6 +1,6 @@
 import { MessageCircle, Store, Boxes, MapPin, Code2, FileSpreadsheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SiteHeader } from '@/components/SiteHeader';
 
 const WHATSAPP = 'https://wa.me/5513981412290?text=' + encodeURIComponent('Olá, quero saber mais sobre o Mapa Local.');

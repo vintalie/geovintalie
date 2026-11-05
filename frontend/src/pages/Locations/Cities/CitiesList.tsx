@@ -43,9 +43,9 @@ const CitiesList = () => {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Cidades</h1>
-        <Link to="/cities/new" className="bg-blue-500 text-white p-2 rounded">
+        <Button asChild variant="default" size="sm">
           Novo País
-        </Link>
+        </Button>
       </div>
 
       <table className="w-full border">
@@ -69,7 +69,7 @@ const CitiesList = () => {
                   className="text-blue-500 mr-2"
                 >
                   Editar
-                </Link>
+                </Button>
                 <button
                   onClick={() => handleDelete(city.id)}
                   className="text-red-500"

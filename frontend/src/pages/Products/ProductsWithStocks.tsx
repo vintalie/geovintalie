@@ -9,6 +9,7 @@ import {
   updateStock,
   deleteStock,
 } from '../../api/location';
+import { Button } from "@/components/ui/button";
 import type { Products, Stocks } from '../../types';
 
 type ProductsFormData = Omit<Products, 'id' | 'created_at' | 'updated_at' | 'stock'>;
@@ -206,12 +207,9 @@ const ProductsWithStocks: React.FC = () => {
       <div className="w-1/2 border-r pr-4 overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Produtos</h2>
-          <button
-            onClick={openNewProduct}
-            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
+          <Button onClick={openNewProduct} variant="default" size="sm">
             + Novo Produto
-          </button>
+          </Button>
         </div>
 
         {loadingProducts && <p>Carregando...</p>}
@@ -266,12 +264,9 @@ const ProductsWithStocks: React.FC = () => {
             Estoques {selectedProductId ? `de ${products.find(p => p.id === selectedProductId)?.name || ''}` : ''}
           </h2>
           {selectedProductId && (
-            <button
-              onClick={openNewStock}
-              className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              + Novo Estoque
-            </button>
+            <Button onClick={openNewStock} variant="default" size="sm">
+                           + Novo Estoque
+                         </Button>
           )}
         </div>
 
@@ -396,12 +391,9 @@ const ProductsWithStocks: React.FC = () => {
                 >
                   Cancelar
                 </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
+                <Button type="submit" variant="default" size="sm">
                   Salvar
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -458,12 +450,9 @@ const ProductsWithStocks: React.FC = () => {
                 >
                   Cancelar
                 </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                >
-                  Salvar
-                </button>
+                <Button type="submit" variant="default" size="sm">
+                                  Salvar
+                                </Button>
               </div>
             </form>
           </div>

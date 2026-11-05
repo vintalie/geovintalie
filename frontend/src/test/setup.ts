@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import '@testing-library/jest-dom';
 
 // Polyfills de ambiente jsdom usados por componentes Radix/Router
