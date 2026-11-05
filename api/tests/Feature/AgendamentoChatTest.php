@@ -150,7 +150,7 @@ class AgendamentoChatTest extends TestCase
     {
         $clientToken = $this->obterToken('user');
         $prestador = $this->criarPrestadorAtivo();
-        $providerToken = $this->obterToken('provider');
+        $providerToken = $this->obterTokenParaUsuario($prestador['usuario']);
 
         $agendamento = $this->criarAgendamento($clientToken, $prestador['provider']->id);
         $id = $agendamento->json('id');
@@ -196,7 +196,7 @@ class AgendamentoChatTest extends TestCase
     {
         $clientToken = $this->obterToken('user');
         $prestador = $this->criarPrestadorAtivo();
-        $providerToken = $this->obterToken('provider');
+        $providerToken = $this->obterTokenParaUsuario($prestador['usuario']);
 
         $agendamento = $this->criarAgendamento($clientToken, $prestador['provider']->id);
         $id = $agendamento->json('id');
@@ -227,7 +227,7 @@ class AgendamentoChatTest extends TestCase
     {
         $clientToken = $this->obterToken('user');
         $prestador = $this->criarPrestadorAtivo();
-        $providerToken = $this->obterToken('provider');
+        $providerToken = $this->obterTokenParaUsuario($prestador['usuario']);
 
         $this->criarAgendamento($clientToken, $prestador['provider']->id);
 
@@ -278,7 +278,7 @@ class AgendamentoChatTest extends TestCase
     {
         $clientToken = $this->obterToken('user');
         $prestador = $this->criarPrestadorAtivo();
-        $providerToken = $this->obterToken('provider');
+        $providerToken = $this->obterTokenParaUsuario($prestador['usuario']);
 
         $conversa = $this->withHeader('Authorization', "Bearer {$clientToken}")
             ->post("{$this->base}/conversas", ['provider_id' => $prestador['provider']->id])

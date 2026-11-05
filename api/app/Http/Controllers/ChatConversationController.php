@@ -19,7 +19,7 @@ class ChatConversationController extends Controller
             ->with(['client', 'provider.user', 'messages.sender'])
             ->latest();
 
-        return \App\Http\Resources\ConversationResource::collection($query->paginate(20));
+        return ConversationResource::collection($query->paginate(20));
     }
 
     /** Criar (ou reutilizar) a conversa entre o cliente autenticado e um prestador. */

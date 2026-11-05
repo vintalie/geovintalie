@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCountry, createCountry, updateCountry } from '../../../api/location';
 import type { Country } from '../../../types';
+import { Button } from '../../../components/ui/button';
 
 const CountryFormPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -65,9 +66,9 @@ const CountryFormPage = () => {
           />
         </div>
 
-        <button type="submit" className="bg-blue-500 text-white p-2 rounded" disabled={loading}>
+        <Button type="submit" disabled={loading} className="w-full">
           {loading ? 'Salvando...' : 'Salvar'}
-        </button>
+        </Button>
       </form>
     </div>
   );

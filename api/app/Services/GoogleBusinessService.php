@@ -32,6 +32,16 @@ class GoogleBusinessService
         );
     }
 
+    public function scopes(): array
+    {
+        return $this->scopes;
+    }
+
+    public function isConfigured(): bool
+    {
+        return (bool) ($this->clientId && $this->clientSecret && $this->redirectUri);
+    }
+
     public function authorizeUrl(string $state): string
     {
         $query = http_build_query([
@@ -39,8 +49,8 @@ class GoogleBusinessService
             'redirect_uri'  => $this->redirectUri,
             'response_type' => 'code',
             'scope'         => implode(' ', $this->scopes),
-            'access_type'   => 'offline',
-            'prompt'        => 'consent',
+            'access_type'   => 'offline', // garante refresh_token
+            'prompt'        => 'consent', // garante refresh_token em re-autorizacoes
             'state'         => $state,
         ]);
 
@@ -106,14 +116,20 @@ class GoogleBusinessService
         return $response->json('accounts') ?? [];
     }
 
-    public function fetchLocations(string $accessToken, string $account): array
+    /**
+     * Lista os locais de uma conta específica ou de todas as contas acessíveis.
+     */
+    public function fetchLocations(string $accessToken, ?string $account = null): array
     {
-        $response = Http::withToken($accessToken)
-            ->get("{$this->baseUrl}/accounts/{$account}/locations");
+        $url = $account
+            ? "{$this->baseUrl}/accounts/{$account}/locations"
+            : "{$this->baseUrl}/locations";
+
+        $response = Http::withToken($accessToken)->get($url);
 
         if (! $response->successful()) {
             throw new RuntimeException(
-                'Falha ao listar locais da conta {$account}: ' . $response->body()
+                'Falha ao listar locais do Google Business Profile: ' . $response->body()
             );
         }
 
@@ -128,6 +144,23 @@ class GoogleBusinessService
         if (! $response->successful()) {
             throw new RuntimeException(
                 'Falha ao sincronizar o local {$location}: ' . $response->body()
+            );
+        }
+
+        return $response->json() ?? [];
+    }
+
+    /**
+     * Busca um local pelo resource name completo (ex: accounts/123/locations/456).
+     */
+    public function fetchLocationByName(string $accessToken, string $locationName): array
+    {
+        $response = Http::withToken($accessToken)
+            ->get("{$this->baseUrl}/{$locationName}");
+
+        if (! $response->successful()) {
+            throw new RuntimeException(
+                'Falha ao buscar dados do local {$locationName}: ' . $response->body()
             );
         }
 

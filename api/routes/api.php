@@ -21,9 +21,6 @@ use App\Http\Controllers\ProductLocatorController;
 use App\Http\Controllers\FeatureFlagController;
 use App\Http\Controllers\GoogleBusinessController;
 use App\Http\Controllers\ServiceSearchController;
-use App\Http\Controllers\UserConsentController;
-use App\Http\Controllers\PublicPropertyController;
-use App\Http\Controllers\AppointmentsController;
 use App\Http\Controllers\ConversationsController;
 use App\Http\Controllers\MessagesController;
 
@@ -99,8 +96,32 @@ Route::prefix('v2')->group(function () {
         Route::post('service-listings', [ServiceListingController::class, 'store']);
         Route::get('service-listings/{id}', [ServiceListingController::class, 'show']);
 
-        // Service Evaluations (Escopo B5) - criar avaliacao (autenticado)
-        Route::post('service-evaluations', [ServiceEvaluationController::class, 'store']);
+        // Avaliacoes mutuas cliente-prestador (Escopo B5)
+        Route::middleware(['jwt.auth'])->group(function () {
+            Route::post('service-evaluations', [ServiceEvaluationController::class, 'store']);
+        });
+        Route::get('service-providers/{provider_id}/evaluations', [ServiceEvaluationController::class, 'byProvider']);
+
+        // Service Evaluations (Escopo B5) - listar avaliacoes de um prestador (publico)
+        Route::get('service-providers/{provider_id}/evaluations', [ServiceEvaluationController::class, 'byProvider']);
+
+        // ============================================================================
+        // Escopo B4 - Agendamentos e Chat Interno
+        // ============================================================================
+
+        // Agendamentos (cliente cria; prestador atualiza status)
+        Route::get('appointments', [AppointmentController::class, 'index']);
+        Route::post('appointments', [AppointmentController::class, 'store']);
+        Route::get('appointments/{appointment}', [AppointmentController::class, 'show']);
+        Route::put('appointments/{appointment}', [AppointmentController::class, 'update']);
+        Route::delete('appointments/{appointment}', [AppointmentController::class, 'destroy']);
+
+        // Conversas e mensagens de chat interno (cliente <-> prestador)
+        Route::get('conversations', [ChatConversationController::class, 'index']);
+        Route::post('conversations', [ChatConversationController::class, 'store']);
+        Route::get('conversations/{conversation}', [ChatConversationController::class, 'show']);
+        Route::post('conversations/{conversation}/messages', [ChatMessageController::class, 'store']);
+        Route::post('messages/{message}/read', [ChatMessageController::class, 'markRead']);
 
         // Agendamentos e Chat Interno (Escopo B4) - autenticado
         Route::get('agendamentos', [AppointmentsController::class, 'index']);
@@ -144,6 +165,7 @@ Route::prefix('v2')->group(function () {
     });
 
     // Google Business Profile (Escopo A2) - fluxo OAuth 2.0
+    Route::get('google-business/accounts', [GoogleBusinessController::class, 'accounts']);
     Route::get('google-business/auth/redirect', [GoogleBusinessController::class, 'authorize']);
     Route::get('google-business/callback', [GoogleBusinessController::class, 'callback']);
 

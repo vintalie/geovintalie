@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\GoogleBusinessConnection;
+use App\Models\GoogleBusinessToken;
 use App\Models\User;
 use App\Services\GoogleBusinessService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -22,6 +21,10 @@ class GoogleBusinessController extends Controller
      */
     public function authorize(Request $request): RedirectResponse
     {
+        if (!$this->service->isConfigured()) {
+            abort(Response::HTTP_INTERNAL_SERVER_ERROR, 'Google Business Profile OAuth nao esta configurado no servidor.');
+        }
+
         $user = $request->user();
 
         $payload = json_encode([
@@ -37,15 +40,13 @@ class GoogleBusinessController extends Controller
 
     /**
      * Callback do Google OAuth 2.0. Troca o codigo pelo token e salva na base do usuario.
+     * Chamado pelo navegador do usuario apos a consentimento no Google; identifica o
+     * usuario pelo parametro `state` assinado (nao exige autenticacao JWT).
      */
     public function callback(Request $request)
     {
         if ($request->has('error')) {
-            return response()->json([
-                'message' => 'Autorizacao cancelada pelo Google: ' . $request->error,
-                'error' => $request->error,
-                'description' => $request->error_description,
-            ], Response::HTTP_BAD_REQUEST);
+            return $this->finishWithError('Autorizacao cancelada pelo Google: ' . $request->error);
         }
 
         $request->validate([
@@ -57,29 +58,36 @@ class GoogleBusinessController extends Controller
 
         $tokens = $this->service->exchangeCode($request->code);
 
-        $connection = GoogleBusinessConnection::updateOrCreate(
+        $accessToken = $tokens['access_token'] ?? '';
+        $accountId = null;
+        $accountName = null;
+
+        // Descobre a conta do Google Business Profile do usuario (se houver).
+        try {
+            $accounts = $this->service->fetchAccounts($accessToken);
+            $account = $accounts[0] ?? null;
+            $accountId = $account['name'] ?? null;
+            $accountName = $account['accountName'] ?? $account['displayName'] ?? null;
+        } catch (\Throwable $e) {
+            // Nao bloqueia o fluxo por causa da listagem de contas.
+        }
+
+        GoogleBusinessToken::updateOrCreate(
             ['user_id' => $userId],
             [
-                'access_token'  => $tokens['access_token'] ?? null,
-                'refresh_token' => $tokens['refresh_token'] ?? null,
-                'token_type'    => $tokens['token_type'] ?? null,
-                'expires_at'    => isset($tokens['expires_in'])
+                'google_account_id'   => $accountId,
+                'google_account_name' => $accountName,
+                'access_token'        => $accessToken,
+                'refresh_token'       => $tokens['refresh_token'] ?? null,
+                'token_type'          => $tokens['token_type'] ?? 'Bearer',
+                'expires_at'          => isset($tokens['expires_in'])
                     ? now()->addSeconds((int) $tokens['expires_in'])
                     : null,
-                'scope'         => $tokens['scope'] ?? null,
-                'last_synced_at' => null,
+                'scopes'              => implode(' ', $this->service->scopes()),
             ]
         );
 
-        return response()->json([
-            'message' => 'Conta do Google Business conectada com sucesso.',
-            'data' => [
-                'user_id' => $userId,
-                'token_type' => $connection->token_type,
-                'expires_at' => $connection->expires_at,
-                'scope' => $connection->scope,
-            ],
-        ]);
+        return $this->finishWithSuccess();
     }
 
     /**
@@ -87,25 +95,45 @@ class GoogleBusinessController extends Controller
      */
     public function accounts(Request $request)
     {
-        $connection = $this->getConnection($request->user());
-        $accessToken = $this->resolveAccessToken($connection);
+        $token = $this->resolveToken($request);
+        $accessToken = $this->resolveAccessToken($token);
+
+        try {
+            $accounts = $this->service->fetchAccounts($accessToken);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Falha ao listar contas do Google Business Profile.',
+                'error' => $e->getMessage(),
+            ], 502);
+        }
 
         return response()->json([
-            'data' => $this->service->fetchAccounts($accessToken),
+            'message' => 'Contas do Google Business Profile listadas com sucesso.',
+            'data' => $accounts,
         ]);
     }
 
     /**
-     * Lista os locais de uma conta do Google Business Profile.
+     * Lista os locais (estabelecimentos) de uma conta.
      */
     public function locations(Request $request, string $account)
     {
-        $connection = $this->getConnection($request->user(), $account);
-        $accessToken = $this->resolveAccessToken($connection);
+        $token = $this->resolveToken($request);
+        $accessToken = $this->resolveAccessToken($token);
+
+        try {
+            $locations = $this->service->fetchLocations($accessToken, $account);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Falha ao listar locais do Google Business Profile.',
+                'error' => $e->getMessage(),
+            ], 502);
+        }
 
         return response()->json([
+            'message' => 'Locais listados com sucesso.',
             'account' => $account,
-            'data' => $this->service->fetchLocations($accessToken, $account),
+            'data' => $locations,
         ]);
     }
 
@@ -114,72 +142,92 @@ class GoogleBusinessController extends Controller
      */
     public function sync(Request $request, string $account, string $location)
     {
-        $connection = $this->getConnection($request->user(), $account);
-        $accessToken = $this->resolveAccessToken($connection);
+        $token = $this->resolveToken($request);
+        $accessToken = $this->resolveAccessToken($token);
 
-        $locationData = $this->service->fetchLocation($accessToken, $account, $location);
+        try {
+            $profile = $this->service->fetchLocation($accessToken, $account, $location);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Falha ao sincronizar dados do perfil empresarial.',
+                'error' => $e->getMessage(),
+            ], 502);
+        }
 
-        $connection->update(['last_synced_at' => now()]);
+        $token->update(['profile_data' => $profile]);
 
         return response()->json([
-            'account' => $account,
-            'location' => $locationData,
-            'synced_at' => $connection->fresh()->last_synced_at,
+            'message' => 'Perfil empresarial sincronizado com sucesso.',
+            'data' => $profile,
         ]);
     }
 
     /**
-     * Revoga o token e desconta o Google Business Profile do usuario.
+     * Revoga o token no Google e remove a integracao do banco do usuario.
      */
     public function disconnect(Request $request)
     {
-        $user = $request->user();
-        $connection = GoogleBusinessConnection::where('user_id', $user->id)->first();
+        $token = GoogleBusinessToken::where('user_id', $request->user()->id)->first();
 
-        if ($connection?->refresh_token && $connection->token_type) {
-            $this->service->revokeToken($connection->refresh_token);
+        if ($token?->getPlainRefreshToken()) {
+            try {
+                $this->service->revokeToken($token->getPlainRefreshToken());
+            } catch (\Throwable $e) {
+                // Nao bloqueia a desligacao local por falha na revogacao remota.
+            }
         }
 
-        $connection?->delete();
+        $token?->delete();
 
         return response()->json([
-            'message' => 'Conta do Google Business desconectada com sucesso.',
+            'message' => 'Integracao com o Google Business Profile removida com sucesso.',
         ]);
     }
 
-    protected function getConnection(User $user, ?string $account = null): GoogleBusinessConnection
-    {
-        $connection = GoogleBusinessConnection::where('user_id', $user->id)->first();
+    /* ------------------------------------------------------------------ */
+    /* Helpers                                                            */
+    /* ------------------------------------------------------------------ */
 
-        if (! $connection) {
-            abort(Response::HTTP_NOT_FOUND, 'Nenhuma conta do Google Business conectada para este usuario.');
+    protected function resolveToken(Request $request): GoogleBusinessToken
+    {
+        $token = GoogleBusinessToken::where('user_id', $request->user()->id)->first();
+
+        if (!$token) {
+            abort(Response::HTTP_NOT_FOUND, 'Nenhuma integracao com o Google Business Profile encontrada para este usuario. Acesse /authorize primeiro.');
         }
 
-        return $connection;
+        return $token;
     }
 
-    protected function resolveAccessToken(GoogleBusinessConnection $connection): string
+    /**
+     * Retorna o access token valido, renovando automaticamente se estiver expirado.
+     */
+    protected function resolveAccessToken(GoogleBusinessToken $token): string
     {
-        if (! $connection->expiradoOuProximoDeExpirar()) {
-            return $connection->access_token;
+        if (!$token->isExpired()) {
+            return $token->getPlainAccessToken();
         }
 
-        if (! $connection->refresh_token) {
+        if (!$token->getPlainRefreshToken()) {
             abort(Response::HTTP_UNAUTHORIZED, 'O token de acesso expirou e nao eh possivel renova-lo. Reconecte a conta.');
         }
 
-        $tokens = $this->service->refreshAccessToken($connection->refresh_token);
+        $refreshed = $this->service->refreshAccessToken($token->getPlainRefreshToken());
 
-        $connection->update([
-            'access_token' => $tokens['access_token'] ?? $connection->access_token,
-            'expires_at'   => isset($tokens['expires_in'])
-                ? now()->addSeconds((int) $tokens['expires_in'])
-                : $connection->expires_at,
+        $token->update([
+            'access_token' => $refreshed['access_token'] ?? $token->getPlainAccessToken(),
+            'token_type'   => $refreshed['token_type'] ?? $token->token_type,
+            'expires_at'   => isset($refreshed['expires_in'])
+                ? now()->addSeconds((int) $refreshed['expires_in'])
+                : $token->expires_at,
         ]);
 
-        return $tokens['access_token'] ?? $connection->access_token;
+        return $refreshed['access_token'] ?? $token->getPlainAccessToken();
     }
 
+    /**
+     * Valida o parametro state assinado e retorna o id do usuario.
+     */
     protected function validateState(string $state): int
     {
         $decoded = base64_decode($state, true);
@@ -188,12 +236,12 @@ class GoogleBusinessController extends Controller
         }
 
         [$payload, $signature] = explode('.', $decoded, 2);
-        if (! $payload || ! $signature || ! hash_equals($signature, hash_hmac('sha256', $payload, config('app.key')))) {
+        if (!$payload || !$signature || !hash_equals($signature, hash_hmac('sha256', $payload, config('app.key')))) {
             abort(Response::HTTP_BAD_REQUEST, 'Estado da autorizacao invalido.');
         }
 
         $data = json_decode($payload, true);
-        if (! $data || ! isset($data['u'], $data['t'])) {
+        if (!$data || !isset($data['u'], $data['t'])) {
             abort(Response::HTTP_BAD_REQUEST, 'Estado da autorizacao invalido.');
         }
 
@@ -202,10 +250,36 @@ class GoogleBusinessController extends Controller
         }
 
         $user = User::find((int) $data['u']);
-        if (! $user) {
+        if (!$user) {
             abort(Response::HTTP_NOT_FOUND, 'Usuario da autorizacao nao encontrado.');
         }
 
         return (int) $data['u'];
+    }
+
+    protected function finishWithSuccess(): RedirectResponse|\Illuminate\Http\JsonResponse
+    {
+        $frontend = config('google_business.frontend_redirect_uri');
+
+        if ($frontend) {
+            return redirect(rtrim($frontend, '/') . '?google_business=success');
+        }
+
+        return response()->json([
+            'message' => 'Autorizacao com o Google Business Profile concluida com sucesso. Tokens salvos.',
+        ], 200);
+    }
+
+    protected function finishWithError(string $message): RedirectResponse|\Illuminate\Http\JsonResponse
+    {
+        $frontend = config('google_business.frontend_redirect_uri');
+
+        if ($frontend) {
+            return redirect(rtrim($frontend, '/') . '?google_business=error&message=' . urlencode($message));
+        }
+
+        return response()->json([
+            'message' => $message,
+        ], 400);
     }
 }

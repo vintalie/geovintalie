@@ -20,7 +20,7 @@ echo (strpos($out, 'service_evaluations') !== false ? "tabela service_evaluation
     'name' => 'ff_service_evaluations',
 ], ['description' => 'B5', 'enabled' => true, 'rollout_percentage' => 100]);
 
-$tipo = \App\Models\UserType::firstOrCreate(['nome' => 'user'], ['nome' => 'user']);
+$tipo = \App\Models\UserType::where('nome', 'user')->first() ?? \App\Models\UserType::forceCreate(['nome' => 'user']);
 
 $evaluator = \App\Models\User::factory()->create([
     'email' => 'e@t.com', 'password' => bcrypt('x'), 'tipo_id' => $tipo->id,
@@ -38,7 +38,7 @@ $listing = \App\Models\ServiceListing::create([
 ]);
 
 $controller = new \App\Http\Controllers\ServiceEvaluationController();
-Request::setUserResolver(fn() => $evaluator);
+$req->setUserResolver(fn() => $evaluator);
 
 $req = Request::create('/v2/service-evaluations', 'POST', [], [], [], [], json_encode([
     'service_listing_id' => $listing->id,
@@ -65,7 +65,7 @@ echo "list first rating: ".($data['data'][0]['rating'] ?? 'n/a')."\n";
 echo "list first evaluator: ".($data['data'][0]['evaluator']['name'] ?? 'n/a')."\n";
 
 // erro: auto-avaliacao
-Request::setUserResolver(fn() => $pUser);
+$selfReq->setUserResolver(fn() => $pUser);
 $selfReq = Request::create('/v2/service-evaluations', 'POST', [], [], [], [], json_encode([
     'service_listing_id' => $listing->id,
     'service_provider_id' => $provider->id,
@@ -76,7 +76,7 @@ $selfResp = $controller->store($selfReq);
 echo "auto-avaliacao status: ".$selfResp->getStatusCode()."\n";
 
 // erro: nota invalida
-Request::setUserResolver(fn() => $evaluator);
+$req->setUserResolver(fn() => $evaluator);
 $badReq = Request::create('/v2/service-evaluations', 'POST', [], [], [], [], json_encode([
     'service_listing_id' => $listing->id,
     'service_provider_id' => $provider->id,
