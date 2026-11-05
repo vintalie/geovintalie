@@ -218,7 +218,7 @@ class AgendamentoChatTest extends TestCase
     {
         $clientToken = $this->obterToken('user');
         $prestador = $this->criarPrestadorAtivo();
-        $intrusoToken = $this->obterToken('user');
+        $intrusoToken = $this->obterToken('intruso');
 
         $agendamento = $this->criarAgendamento($clientToken, $prestador['provider']->id);
         $id = $agendamento->json('id');
@@ -317,7 +317,7 @@ class AgendamentoChatTest extends TestCase
     {
         $clientToken = $this->obterToken('user');
         $prestador = $this->criarPrestadorAtivo();
-        $intrusoToken = $this->obterToken('user');
+        $intrusoToken = $this->obterToken('intruso');
 
         $conversa = $this->withHeader('Authorization', "Bearer {$clientToken}")
             ->post("{$this->base}/conversas", ['provider_id' => $prestador['provider']->id])

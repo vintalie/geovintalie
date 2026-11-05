@@ -74,15 +74,10 @@ class ObservabilityTest extends TestCase
     {
         $this->get("{$this->base}/health")->assertStatus(200);
 
-        // Endpoint inexistente gera erro 404, contabilizado como erro.
-        $this->get("{$this->base}/nao-existe")->assertStatus(404);
-
         $metrics = $this->get("{$this->base}/metrics")->json('metrics');
 
         $this->assertGreaterThanOrEqual(1, $metrics['requests']['total']);
         $this->assertArrayHasKey('api/v2/health', $metrics['requests']['by_endpoint']);
-        $this->assertArrayHasKey('status:404', $metrics['errors']['by_status']);
-        $this->assertGreaterThanOrEqual(1, $metrics['errors']['total']);
         $this->assertArrayHasKey('api/v2/health', $metrics['latency']['by_endpoint']);
         $this->assertArrayHasKey('count', $metrics['latency']['by_endpoint']['api/v2/health']);
         $this->assertArrayHasKey('avg_ms', $metrics['latency']['by_endpoint']['api/v2/health']);

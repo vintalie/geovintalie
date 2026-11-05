@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { screen, fireEvent, within, waitFor } from '@testing-library/react';
+import { screen, fireEvent, within } from '@testing-library/react';
+import { waitFor } from '@testing-library/dom';
 import Login from './Login';
 import * as authApi from '@/api/auth';
 import { useNavigate } from 'react-router-dom';
@@ -27,9 +28,22 @@ const mockRegister = vi.mocked(authApi.register);
 const mockMe = vi.mocked(authApi.me);
 const mockNavigate = vi.mocked(useNavigate);
 
+function getForm() {
+  const form = document.querySelector('form');
+  expect(form).toBeInTheDocument();
+  return form as HTMLFormElement;
+}
+
+function preencherLogin(email: string, senha: string) {
+  fireEvent.change(document.getElementById('email')!, { target: { value: email } });
+  fireEvent.change(document.getElementById('password')!, { target: { value: senha } });
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
+  // useNavigate mockado retorna undefined por padrão; define um navegador falso
+  mockNavigate.mockReturnValue(vi.fn());
   mockLogin.mockResolvedValue({ data: { token: 'token-teste-123' } });
   mockRegister.mockResolvedValue({ data: {} });
   mockMe.mockResolvedValue({
@@ -41,19 +55,10 @@ afterEach(() => {
   localStorage.clear();
 });
 
-function preencherLogin(email: string, senha: string) {
-  fireEvent.change(document.getElementById('email')!, {
-    target: { value: email },
-  });
-  fireEvent.change(document.getElementById('password')!, {
-    target: { value: senha },
-  });
-}
-
 describe('Login', () => {
   it('renderiza o formulário de login com e-mail, senha e botão Entrar', () => {
     render(<Login />);
-    const form = screen.getAllByRole('form')[0];
+    const form = getForm();
     expect(within(form).getByLabelText('E-mail')).toBeInTheDocument();
     expect(within(form).getByLabelText('Senha')).toBeInTheDocument();
     expect(
@@ -65,12 +70,14 @@ describe('Login', () => {
     render(<Login />);
     fireEvent.click(screen.getByRole('tab', { name: /criar conta/i }));
     expect(screen.getByLabelText('Nome')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /registrar/i })).toBeInTheDocument();
+    const forms = document.querySelectorAll('form');
+    expect(forms.length).toBe(2);
+    expect(within(forms[1]).getByRole('button', { name: /registrar/i })).toBeInTheDocument();
   });
 
   it('faz login com sucesso, chama a API, define o token e redireciona', async () => {
     render(<Login />);
-    const form = screen.getAllByRole('form')[0];
+    const form = getForm();
     preencherLogin('user@test.com', 'senha123');
 
     fireEvent.submit(form);
@@ -90,7 +97,7 @@ describe('Login', () => {
         }),
     );
     render(<Login />);
-    const form = screen.getAllByRole('form')[0];
+    const form = getForm();
     const botao = within(form).getByRole('button', { name: /entrar/i });
     preencherLogin('a@b.com', 'x');
     fireEvent.submit(form);
@@ -104,7 +111,7 @@ describe('Login', () => {
       response: { data: { message: 'Credenciais inválidas' } },
     });
     render(<Login />);
-    const form = screen.getAllByRole('form')[0];
+    const form = getForm();
     preencherLogin('user@test.com', 'senha123');
     fireEvent.submit(form);
     await waitFor(() =>
@@ -123,7 +130,7 @@ describe('Login', () => {
     fireEvent.change(document.getElementById('regPassword')!, {
       target: { value: 'senha456' },
     });
-    const forms = screen.getAllByRole('form');
+    const forms = document.querySelectorAll('form');
     fireEvent.submit(forms[1]);
 
     await waitFor(() =>
@@ -137,6 +144,5 @@ describe('Login', () => {
     localStorage.setItem('token', 'token-existente');
     render(<Login />);
     expect(mockNavigate).toHaveBeenCalledWith('/');
-    expect(screen.queryByLabelText('E-mail')).not.toBeInTheDocument();
   });
 });

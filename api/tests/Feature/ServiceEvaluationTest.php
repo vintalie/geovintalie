@@ -21,7 +21,9 @@ class ServiceEvaluationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        fwrite(STDERR, "\nDEBUG setUp categorias ANTES do seed: ".\App\Models\ServiceCategory::count()."\n");
         $this->artisan('db:seed', ['--class' => 'DatabaseSeeder']);
+        fwrite(STDERR, "DEBUG setUp categorias DEPOIS do seed: ".\App\Models\ServiceCategory::count()."\n");
     }
 
     /** Avaliacoes mutuas (Escopo B5) --------------------------------------- */
@@ -268,6 +270,128 @@ class ServiceEvaluationTest extends TestCase
         $response = $this->get("{$this->base}/v2/service-providers/{$prestador->id}/evaluations");
         $response->assertStatus(200);
         $this->assertEquals([], $response->json('data'));
+    }
+
+    public function test_nao_permite_avaliacao_sem_agendamento_concluido_retorna_403(): void
+    {
+        $tipo = UserType::firstOrCreate(['nome' => 'user'], ['nome' => 'user']);
+
+        $avaliador = User::factory()->create([
+            'email' => 'cliente7@teste.com',
+            'password' => bcrypt('senha123'),
+            'tipo_id' => $tipo->id,
+        ]);
+        $prestadorUser = User::factory()->create([
+            'email' => 'prestador7@teste.com',
+            'password' => bcrypt('senha123'),
+            'tipo_id' => $tipo->id,
+        ]);
+        $prestador = ServiceProvider::create([
+            'user_id' => $prestadorUser->id,
+            'business_name' => 'Sem Contratacao',
+        ]);
+        $categoria = ServiceCategory::create(['name' => 'W', 'slug' => 'w']);
+        $servico = ServiceListing::create([
+            'provider_id' => $prestador->id,
+            'category_id' => $categoria->id,
+            'title' => 'Servico',
+        ]);
+
+        // Sem qualquer agendamento.
+        $token = $this->obterTokenDoUsuario($avaliador);
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->post("{$this->base}/v2/service-evaluations", [
+                'service_listing_id' => $servico->id,
+                'service_provider_id' => $prestador->id,
+                'rating' => 4,
+            ])
+            ->assertStatus(403);
+
+        // Agendamento pendente nao autoriza avaliacao.
+        Appointment::create([
+            'client_id' => $avaliador->id,
+            'provider_id' => $prestador->id,
+            'date' => '2026-11-10',
+            'time' => '14:00',
+            'status' => Appointment::STATUS_PENDENTE,
+            'valor' => 150.00,
+        ]);
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->post("{$this->base}/v2/service-evaluations", [
+                'service_listing_id' => $servico->id,
+                'service_provider_id' => $prestador->id,
+                'rating' => 4,
+            ])
+            ->assertStatus(403);
+
+        $this->assertDatabaseMissing('service_evaluations', [
+            'service_listing_id' => $servico->id,
+            'evaluator_id' => $avaliador->id,
+        ]);
+    }
+
+    public function test_calcula_media_de_notas_no_perfil_do_prestador(): void
+    {
+        $tipo = UserType::firstOrCreate(['nome' => 'user'], ['nome' => 'user']);
+
+        $prestadorUser = User::factory()->create([
+            'email' => 'prestador8@teste.com',
+            'password' => bcrypt('senha123'),
+            'tipo_id' => $tipo->id,
+        ]);
+        $prestador = ServiceProvider::create([
+            'user_id' => $prestadorUser->id,
+            'business_name' => 'Media Notas',
+        ]);
+        $categoria = ServiceCategory::create(['name' => 'V', 'slug' => 'v']);
+
+        $ratings = [5, 3];
+        foreach ($ratings as $index => $rating) {
+            $cliente = User::factory()->create([
+                'email' => "cliente_media_{$index}@teste.com",
+                'password' => bcrypt('senha123'),
+                'tipo_id' => $tipo->id,
+            ]);
+            $servico = ServiceListing::create([
+                'provider_id' => $prestador->id,
+                'category_id' => $categoria->id,
+                'title' => "Servico {$index}",
+            ]);
+            Appointment::create([
+                'client_id' => $cliente->id,
+                'provider_id' => $prestador->id,
+                'date' => '2026-11-10',
+                'time' => '14:00',
+                'status' => Appointment::STATUS_CONCLUIDO,
+                'valor' => 100.00,
+            ]);
+            $token = $this->obterTokenDoUsuario($cliente);
+            $this->withHeader('Authorization', "Bearer {$token}")
+                ->post("{$this->base}/v2/service-evaluations", [
+                    'service_listing_id' => $servico->id,
+                    'service_provider_id' => $prestador->id,
+                    'rating' => $rating,
+                    'comment' => "Comentario {$index}",
+                ])
+                ->assertStatus(201);
+        }
+
+        // Media no perfil do prestador.
+        $this->assertDatabaseHas('service_providers', [
+            'id' => $prestador->id,
+            'average_rating' => 4.00,
+            'total_reviews' => 2,
+        ]);
+        $this->assertDatabaseHas('service_listings', [
+            'id' => $servico->id,
+            'average_rating' => 3.00,
+            'total_reviews' => 1,
+        ]);
+
+        // Listagem publica de avaliacoes do prestador.
+        $response = $this->get("{$this->base}/v2/service-providers/{$prestador->id}/evaluations");
+        $response->assertStatus(200);
+        $this->assertCount(2, $response->json('data'));
     }
 
     /* Helpers ----------------------------------------------------------- */

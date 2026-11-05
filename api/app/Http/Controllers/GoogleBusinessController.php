@@ -205,7 +205,11 @@ class GoogleBusinessController extends Controller
     protected function resolveAccessToken(GoogleBusinessToken $token): string
     {
         if (!$token->isExpired()) {
-            return $token->getPlainAccessToken();
+            $accessToken = $token->getPlainAccessToken();
+            if (! $accessToken) {
+                abort(Response::HTTP_UNAUTHORIZED, 'Nenhuma integracao com o Google Business Profile encontrada.');
+            }
+            return $accessToken;
         }
 
         if (!$token->getPlainRefreshToken()) {

@@ -37,16 +37,16 @@ class GoogleBusinessToken extends Model
     protected function accessToken(): Attribute
     {
         return Attribute::make(
-            get: fn (?string $value) => $value ? Crypt::decryptString($value) : null,
-            set: fn (?string $value) => $value ? Crypt::encryptString($value) : null,
+            get: fn () => ($value = $this->getAttribute('access_token_encrypted')) ? Crypt::decryptString($value) : null,
+            set: fn (?string $value) => $this->setAttribute('access_token_encrypted', $value ? Crypt::encryptString($value) : null),
         );
     }
 
     protected function refreshToken(): Attribute
     {
         return Attribute::make(
-            get: fn (?string $value) => $value ? Crypt::decryptString($value) : null,
-            set: fn (?string $value) => $value ? Crypt::encryptString($value) : null,
+            get: fn () => ($value = $this->getAttribute('refresh_token_encrypted')) ? Crypt::decryptString($value) : null,
+            set: fn (?string $value) => $this->setAttribute('refresh_token_encrypted', $value ? Crypt::encryptString($value) : null),
         );
     }
 
