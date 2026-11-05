@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getNeighborhood, createNeighborhood, updateNeighborhood } from '../../../api/location';
 import type { Neighborhood } from '../../../types';
+import { Button } from '../../../components/ui/button';
 
 const NeighborhoodFormPage = () => {
   const { id } = useParams<{ id: string }>();

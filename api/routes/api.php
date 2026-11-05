@@ -16,11 +16,16 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ServiceProviderController;
 use App\Http\Controllers\ServiceCategoryController;
 use App\Http\Controllers\ServiceListingController;
+use App\Http\Controllers\ServiceEvaluationController;
 use App\Http\Controllers\ProductLocatorController;
 use App\Http\Controllers\FeatureFlagController;
+use App\Http\Controllers\GoogleBusinessController;
 use App\Http\Controllers\ServiceSearchController;
 use App\Http\Controllers\UserConsentController;
 use App\Http\Controllers\PublicPropertyController;
+use App\Http\Controllers\AppointmentsController;
+use App\Http\Controllers\ConversationsController;
+use App\Http\Controllers\MessagesController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -93,6 +98,26 @@ Route::prefix('v2')->group(function () {
         Route::get('service-listings', [ServiceListingController::class, 'index']);
         Route::post('service-listings', [ServiceListingController::class, 'store']);
         Route::get('service-listings/{id}', [ServiceListingController::class, 'show']);
+
+        // Service Evaluations (Escopo B5) - criar avaliacao (autenticado)
+        Route::post('service-evaluations', [ServiceEvaluationController::class, 'store']);
+
+        // Agendamentos e Chat Interno (Escopo B4) - autenticado
+        Route::get('agendamentos', [AppointmentsController::class, 'index']);
+        Route::post('agendamentos', [AppointmentsController::class, 'store']);
+        Route::get('agendamentos/{id}', [AppointmentsController::class, 'show']);
+        Route::patch('agendamentos/{id}', [AppointmentsController::class, 'update']);
+        Route::delete('agendamentos/{id}', [AppointmentsController::class, 'destroy']);
+
+        // Conversas (Escopo B4)
+        Route::get('conversas', [ConversationsController::class, 'index']);
+        Route::post('conversas', [ConversationsController::class, 'store']);
+        Route::post('conversas/open', [ConversationsController::class, 'open']);
+        Route::get('conversas/{id}', [ConversationsController::class, 'show']);
+
+        // Mensagens (Escopo B4)
+        Route::get('conversas/{conversation}/mensagens', [MessagesController::class, 'index']);
+        Route::post('conversas/{conversation}/mensagens', [MessagesController::class, 'store']);
     });
 
     // Service Categories - publico (Escopo B1, B2)
@@ -106,6 +131,9 @@ Route::prefix('v2')->group(function () {
     // Service Search - publico (Escopo B2)
     Route::get('service-search', [ServiceSearchController::class, 'index']);
 
+    // Service Evaluations (Escopo B5) - listar avaliacoes de um prestador (publico)
+    Route::get('service-providers/{provider_id}/evaluations', [ServiceEvaluationController::class, 'byProvider']);
+
     // User Consent - LGPD (Escopo C3) - autenticado
     Route::middleware(['jwt.auth'])->group(function () {
         Route::get('user-consents', [UserConsentController::class, 'index']);
@@ -115,10 +143,27 @@ Route::prefix('v2')->group(function () {
         Route::delete('user-consents/account', [UserConsentController::class, 'deleteAccount']);
     });
 
+    // Google Business Profile (Escopo A2) - fluxo OAuth 2.0
+    Route::get('google-business/auth/redirect', [GoogleBusinessController::class, 'authorize']);
+    Route::get('google-business/callback', [GoogleBusinessController::class, 'callback']);
+
+    Route::middleware(['jwt.auth'])->group(function () {
+        Route::get('google-business/accounts', [GoogleBusinessController::class, 'accounts']);
+        Route::get('google-business/accounts/{account}/locations', [GoogleBusinessController::class, 'locations']);
+        Route::get('google-business/accounts/{account}/locations/{location}', [GoogleBusinessController::class, 'sync']);
+        Route::delete('google-business/disconnect', [GoogleBusinessController::class, 'disconnect']);
+    });
+
     // Public Properties - Vitrine digital pública (Escopo A3) - sem autenticação
     Route::prefix('public')->group(function () {
         Route::get('properties', [PublicPropertyController::class, 'index']);
         Route::get('properties/{id}', [PublicPropertyController::class, 'show']);
     });
+
+    // ============================================================================
+    // Observabilidade (Escopo C2)
+    // ============================================================================
+    Route::get('health', \App\Http\Controllers\Observability\HealthController::class)->name('health');
+    Route::get('metrics', \App\Http\Controllers\Observability\MetricsController::class)->name('metrics');
 });
 

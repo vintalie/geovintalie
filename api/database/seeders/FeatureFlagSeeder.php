@@ -44,6 +44,18 @@ class FeatureFlagSeeder extends Seeder
                 'enabled' => false,
                 'rollout_percentage' => 0,
             ],
+            [
+                'name' => 'ff_service_evaluations',
+                'description' => 'Habilitar sistema de avaliacoes mutuas cliente-prestador (Escopo B5)',
+                'enabled' => true,
+                'rollout_percentage' => 100,
+            ],
+            [
+                'name' => 'ff_agendamentos_chat',
+                'description' => 'Habilitar agendamentos e chat interno (Escopo B4)',
+                'enabled' => true,
+                'rollout_percentage' => 100,
+            ],
         ];
 
         foreach ($flags as $flag) {
