@@ -6,7 +6,7 @@ namespace App\Logging;
 
 use App\Observability\CorrelationContext;
 use Monolog\Logger;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class CorrelationProcessorTest extends TestCase
 {

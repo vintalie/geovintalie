@@ -14,7 +14,7 @@ class MetricsMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $start = hr_time(true);
+        $start = hrtime(true);
         $endpoint = $this->endpoint($request);
         $status = 500;
 
@@ -30,7 +30,7 @@ class MetricsMiddleware
 
             throw $e;
         } finally {
-            $ms = (hr_time(true) - $start) * 1000.0;
+            $ms = (hrtime(true) - $start) * 1000.0;
             MetricsRegistry::instance()->recordRequest($endpoint, $status, $ms);
         }
     }
