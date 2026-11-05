@@ -52,7 +52,7 @@ class ServiceEvaluationTest extends TestCase
 
         $categoria = ServiceCategory::create([
             'name' => 'Limpeza',
-            'slug' => 'limpeza',
+            'slug' => 'limpeza-avaliacao-concluido',
         ]);
 
         $servico = ServiceListing::create([
