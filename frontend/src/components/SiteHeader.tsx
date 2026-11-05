@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 import { LayoutDashboard, LogIn, LogOut, MapPinned, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 
 export function SiteHeader() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { toggleSidebar: _toggleSidebar } = useSidebar();
 
   function signOut() {
     logout();
@@ -25,11 +27,11 @@ export function SiteHeader() {
         <nav className="flex items-center gap-1">
           {user ? (
             <>
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/">
+              <SidebarTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-9">
                   <LayoutDashboard className="h-4 w-4" /> Painel
-                </Link>
-              </Button>
+                </Button>
+              </SidebarTrigger>
               {isAdmin && (
                 <Button asChild variant="ghost" size="sm">
                   <Link to="/admin">
