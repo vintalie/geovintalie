@@ -129,3 +129,16 @@ export interface Products {
   updated_at: string;
   stock?: Stocks[]; 
 }
+
+export interface UserConsent {
+  id: number;
+  user_id: number;
+  tipo: string; // ex.: 'termo_uso', 'politica_privacidade', 'marketing', 'cookies'
+  aceito: boolean;
+  aceito_em?: string | null;
+  revogado_em?: string | null;
+  criado_em?: string;
+  atualizado_em?: string;
+  titulo?: string;
+  descricao?: string | null;
+}

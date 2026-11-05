@@ -130,15 +130,15 @@ Route::prefix('v2')->group(function () {
         // Agendamentos e Chat Interno (Escopo B4) - autenticado
         Route::get('agendamentos', [AppointmentsController::class, 'index']);
         Route::post('agendamentos', [AppointmentsController::class, 'store']);
-        Route::get('agendamentos/{id}', [AppointmentsController::class, 'show']);
-        Route::patch('agendamentos/{id}', [AppointmentsController::class, 'update']);
-        Route::delete('agendamentos/{id}', [AppointmentsController::class, 'destroy']);
+        Route::get('agendamentos/{appointment}', [AppointmentsController::class, 'show']);
+        Route::patch('agendamentos/{appointment}', [AppointmentsController::class, 'update']);
+        Route::delete('agendamentos/{appointment}', [AppointmentsController::class, 'destroy']);
 
         // Conversas (Escopo B4)
         Route::get('conversas', [ConversationsController::class, 'index']);
         Route::post('conversas', [ConversationsController::class, 'store']);
         Route::post('conversas/open', [ConversationsController::class, 'open']);
-        Route::get('conversas/{id}', [ConversationsController::class, 'show']);
+        Route::get('conversas/{conversation}', [ConversationsController::class, 'show']);
 
         // Mensagens (Escopo B4)
         Route::get('conversas/{conversation}/mensagens', [MessagesController::class, 'index']);

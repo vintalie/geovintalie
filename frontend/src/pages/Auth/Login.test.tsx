@@ -64,6 +64,9 @@ function getLoginForm() {
 
 describe('Login', () => {
   it('renderiza o formulário de login com e-mail, senha e botão Entrar', () => {
+    render(<Login />);
+    // eslint-disable-next-line no-console
+    console.log('DEBUG FORMS:', document.querySelectorAll('form').length, 'BODY LEN:', document.body.innerHTML.length);
     const form = getLoginForm();
     expect(within(form).getByLabelText('E-mail')).toBeInTheDocument();
     expect(within(form).getByLabelText('Senha')).toBeInTheDocument();

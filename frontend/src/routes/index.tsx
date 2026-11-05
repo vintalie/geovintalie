@@ -21,6 +21,9 @@ import AdminDashboard from '../pages/AdminDashboard';
 import UserDashboard from '../pages/UserDashboard';
 import MapPage from '../pages/MapPage';
 import ImportExport from '../pages/ImportExport';
+import PrivacyConsent from '../pages/PrivacyConsent';
+import DataExport from '../pages/DataExport';
+import DeleteAccount from '../pages/DeleteAccount';
 import Layout from '../components/Layout/Layout';
 import LayoutProducts from '../components/Layout/LayoutProducts';
 import ProductsWithStocks from '../pages/Products/ProductsWithStocks';
@@ -91,6 +94,9 @@ export const AppRoutes = () => {
 
 
           <Route path="institutional" element={<Institutional />} />
+          <Route path="privacy-consent" element={<PrivacyConsent />} />
+          <Route path="data-export" element={<DataExport />} />
+          <Route path="delete-account" element={<DeleteAccount />} />
           <Route path="admin" element={<AdminDashboard />} />
           <Route path="user" element={<UserDashboard />} />
           <Route path="map" element={<MapPage />} />
