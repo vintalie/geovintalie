@@ -117,7 +117,7 @@ describe('PrivacyConsent', () => {
       response: { data: { message: 'Falha ao atualizar' } },
     } as any);
 
-    render(<PrivacyConsent />);
+    render(<><Toaster /><PrivacyConsent /></>);
 
     const switches = screen.getAllByRole('switch');
     fireEvent.click(switches[0]);

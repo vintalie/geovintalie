@@ -110,6 +110,10 @@ Route::prefix('v2')->group(function () {
         // Service Evaluations (Escopo B5) - listar avaliacoes de um prestador (publico)
         Route::get('service-providers/{provider_id}/evaluations', [ServiceEvaluationController::class, 'byProvider']);
 
+        // Avaliacoes mutuas (Escopo B5) - ff_reviews
+        Route::post('reviews', [ReviewController::class, 'store']);
+        Route::get('reviews', [ReviewController::class, 'index']);
+
         // ============================================================================
         // Escopo B4 - Agendamentos e Chat Interno
         // ============================================================================
@@ -160,6 +164,9 @@ Route::prefix('v2')->group(function () {
 
     // Service Evaluations (Escopo B5) - listar avaliacoes de um prestador (publico)
     Route::get('service-providers/{provider_id}/evaluations', [ServiceEvaluationController::class, 'byProvider']);
+
+    // Listagem publica de avaliacoes (reviews) de um prestador (Escopo B5)
+    Route::get('service-providers/{provider_id}/reviews', [ReviewController::class, 'byProvider']);
 
     // User Consent - LGPD (Escopo C3) - autenticado
     Route::middleware(['jwt.auth'])->group(function () {
