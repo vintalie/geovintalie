@@ -14,7 +14,8 @@ class MetricsMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $start = hrtime(true);
+        // hrtime(true) retorna nanossegundos (float); converte para segundos
+        $start = hrtime(true) / 1_000_000_000.0;
         $endpoint = $this->endpoint($request);
         $status = 500;
 
@@ -30,7 +31,7 @@ class MetricsMiddleware
 
             throw $e;
         } finally {
-            $ms = (hrtime(true) - $start) * 1000.0;
+            $ms = (hrtime(true) / 1_000_000_000.0 - $start) * 1000.0;
             MetricsRegistry::instance()->recordRequest($endpoint, $status, $ms);
         }
     }

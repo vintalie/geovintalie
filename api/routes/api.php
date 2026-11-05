@@ -164,11 +164,7 @@ Route::prefix('v2')->group(function () {
         Route::delete('user-consents/account', [UserConsentController::class, 'deleteAccount']);
     });
 
-    // Google Business Profile (Escopo A2) - fluxo OAuth 2.0
-    Route::get('google-business/accounts', [GoogleBusinessController::class, 'accounts']);
-    Route::get('google-business/auth/redirect', [GoogleBusinessController::class, 'authorize']);
-    Route::get('google-business/callback', [GoogleBusinessController::class, 'callback']);
-
+    // Google Business Profile (Escopo A2) - fluxo OAuth 2.0 (apenas autenticado)
     Route::middleware(['jwt.auth'])->group(function () {
         Route::get('google-business/accounts', [GoogleBusinessController::class, 'accounts']);
         Route::get('google-business/accounts/{account}/locations', [GoogleBusinessController::class, 'locations']);

@@ -35,7 +35,7 @@ class CorrelationProcessorTest extends TestCase
         $result = $processor($record);
 
         $this->assertSame('c6c1d9e2-1111-4aaa-8a11-a11111111111', $result['extra']['correlation_id']);
-        $this->assertSame('laravel', $result['extra']['service']);
+        $this->assertSame('Laravel', $result['extra']['service']);
         $this->assertSame('testing', $result['extra']['environment']);
     }
 

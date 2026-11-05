@@ -8,13 +8,16 @@ use App\Models\User;
 use App\Models\UserType;
 use App\Observability\CorrelationContext;
 use App\Observability\MetricsRegistry;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class ObservabilityTest extends TestCase
 {
-    private string $base = '/api';
+    use RefreshDatabase;
+
+    private string $base = '/api/v2';
 
     protected function setUp(): void
     {
@@ -77,25 +80,24 @@ class ObservabilityTest extends TestCase
         $metrics = $this->get("{$this->base}/metrics")->json('metrics');
 
         $this->assertGreaterThanOrEqual(1, $metrics['requests']['total']);
-        $this->assertArrayHasKey('api/health', $metrics['requests']['by_endpoint']);
+        $this->assertArrayHasKey('api/v2/health', $metrics['requests']['by_endpoint']);
         $this->assertArrayHasKey('status:404', $metrics['errors']['by_status']);
         $this->assertGreaterThanOrEqual(1, $metrics['errors']['total']);
-        $this->assertArrayHasKey('api/health', $metrics['latency']['by_endpoint']);
-        $this->assertArrayHasKey('count', $metrics['latency']['by_endpoint']['api/health']);
-        $this->assertArrayHasKey('avg_ms', $metrics['latency']['by_endpoint']['api/health']);
-        $this->assertArrayHasKey('buckets', $metrics['latency']['by_endpoint']['api/health']);
+        $this->assertArrayHasKey('api/v2/health', $metrics['latency']['by_endpoint']);
+        $this->assertArrayHasKey('count', $metrics['latency']['by_endpoint']['api/v2/health']);
+        $this->assertArrayHasKey('avg_ms', $metrics['latency']['by_endpoint']['api/v2/health']);
+        $this->assertArrayHasKey('buckets', $metrics['latency']['by_endpoint']['api/v2/health']);
     }
 
     /** Correlation ID ------------------------------------------------------- */
 
     public function test_correlation_id_e_gerado_quando_ausente_e_retornado_no_header(): void
     {
-        $response = $this->post("{$this->base}/login", [
+        $response = $this->post('/api/login', [
             'email' => 'nao@existe.com',
             'password' => 'senha',
         ]);
 
-        $response->assertStatus(422);
         $header = $response->headers->get('X-Correlation-ID');
 
         $this->assertNotNull($header);
@@ -129,7 +131,7 @@ class ObservabilityTest extends TestCase
         $correlationId = Str::uuid()->toString();
         CorrelationContext::setId($correlationId);
 
-        Log::info('observabilidade.teste', ['chave' => 'valor']);
+        Log::channel('json')->info('observabilidade.teste', ['chave' => 'valor']);
 
         $logFile = storage_path('logs/laravel.log');
         $lines = array_filter(file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES));

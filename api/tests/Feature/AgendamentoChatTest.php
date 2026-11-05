@@ -20,7 +20,8 @@ class AgendamentoChatTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->artisan('migrate:fresh', ['--force' => true]);
+        // O RefreshDatabase ja executa migrate:fresh; chamar novamente aqui
+        // dispararia VACUUM dentro da transacao aberta pelo teste (SQLite :memory:).
         $this->artisan('db:seed', ['--class' => 'DatabaseSeeder']);
     }
 

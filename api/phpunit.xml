@@ -19,6 +19,7 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="LOG_CHANNEL" value="json"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
@@ -32,5 +33,12 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+
+    <!-- Google Business Profile (Escopo A2) - credenciais dummy de sandbox/teste.
+         Nunca usar credenciais reais do Google Cloud Console no ambiente de teste. -->
+    <env name="GOOGLE_BUSINESS_CLIENT_ID" value="test-client-id-sandbox"/>
+    <env name="GOOGLE_BUSINESS_CLIENT_SECRET" value="test-client-secret-sandbox"/>
+    <env name="GOOGLE_BUSINESS_REDIRECT_URI" value="http://localhost:8000/api/v2/google-business/callback"/>
+    <env name="GOOGLE_BUSINESS_FRONTEND_REDIRECT_URI" value=""/>
     </php>
 </phpunit>
