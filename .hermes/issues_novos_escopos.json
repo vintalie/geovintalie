@@ -1,0 +1,97 @@
+{
+  "repository": "vintalie/geovintalie",
+  "base_branch": "main",
+  "note": "Criar estas issues via GitHub web (https://github.com/vintalie/geovintalie/issues/new) ou com GH_TOKEN configurado executando ./apply_github_issues.sh",
+  "issues": [
+    {
+      "title": "[Escopo A] A1 - Localizador de produtos com estoque em lojas físicas próximas",
+      "body": "## Escopo\nMódulo O2O / Varejo (inspirado na Gofind)\n\n## Descrição\nImplementar localizador de produtos com estoque em lojas físicas próximas. O consumidor busca um produto e o sistema retorna a loja mais próxima com estoque disponível e rota para chegar até ela.\n\n## Critérios de aceitação\n- [ ] Endpoint de busca de produtos por proximidade geográfica\n- [ ] Filtro por raio de distância (km)\n- [ ] Exibição de estoque disponível por loja\n- [ ] Geração de rota/link para mapas (OpenStreetMap/Google Maps)\n- [ ] Testes de integração passando\n\n## Referência\nUC-A1: Consumidor busca produto → sistema retorna loja mais próxima com estoque e rota.\n\n## Labels\n`escopo-a`, `o2o`, `varejo`, `prioridade: alta`, `feature`\n\n## Estimativa\nGrande (G)\n\n## Fase de release\nR1",
+      "labels": ["escopo-a", "o2o", "varejo", "prioridade: alta", "feature"]
+    },
+    {
+      "title": "[Escopo A] A2 - Gestão e sincronização de perfis no Google Business Profile",
+      "body": "## Escopo\nMódulo O2O / Varejo (inspirado na Gofind)\n\n## Descrição\nImplementar gestão e sincronização de perfis no Google Business Profile. Permitir que lojistas conectem seus perfis Google e sincronizem informações (endereço, telefone, horário, fotos, produtos).\n\n## Critérios de aceitação\n- [ ] Endpoint para conectar conta Google Business Profile (OAuth)\n- [ ] Sincronização de dados do perfil (nome, endereço, telefone, horário)\n- [ ] Sincronização de fotos e produtos\n- [ ] Uso de mocks/sandbox em ambiente de teste (sem credenciais reais)\n- [ ] Testes de contrato passando\n\n## Referência\nUC-A2: Indústria integra base de PDVs → perfis Google são criados/atualizados em lote.\n\n## Labels\n`escopo-a`, `o2o`, `google-business`, `integracao-externa`, `prioridade: alta`, `feature`\n\n## Estimativa\nGrande (G)\n\n## Fase de release\nR2",
+      "labels": ["escopo-a", "o2o", "google-business", "integracao-externa", "prioridade: alta", "feature"]
+    },
+    {
+      "title": "[Escopo A] A3 - Vitrine digital com estoque, preço e disponibilidade em tempo real",
+      "body": "## Escopo\nMódulo O2O / Varejo (inspirado na Gofind)\n\n## Descrição\nCriar vitrine digital pública onde consumidores visualizem estoque, preço e disponibilidade de produtos em tempo real nas lojas cadastradas.\n\n## Critérios de aceitação\n- [ ] Página pública de vitrine por propriedade/loja\n- [ ] Exibição de produtos com preço e estoque\n- [ ] Indicação de disponibilidade (disponível/esgotado)\n- [ ] Invalidação de cache para refletir estoque em tempo real\n- [ ] Testes de integração passando\n\n## Referência\nParcialmente atendido: existe Product/Stock no backend, mas não há vitrine pública.\n\n## Labels\n`escopo-a`, `o2o`, `vitrine`, `estoque`, `prioridade: alta`, `feature`\n\n## Estimativa\nMédio (M)\n\n## Fase de release\nR2",
+      "labels": ["escopo-a", "o2o", "vitrine", "estoque", "prioridade: alta", "feature"]
+    },
+    {
+      "title": "[Escopo A] A4 - Geração automática de sites/landing pages otimizados para SEO local",
+      "body": "## Escopo\nMódulo O2O / Varejo (inspirado na Gofind)\n\n## Descrição\nGerar automaticamente sites/landing pages otimizados para SEO local para cada propriedade cadastrada, com meta tags dinâmicas, URLs amigáveis e conteúdo estruturado.\n\n## Critérios de aceitação\n- [ ] Geração de página pública por propriedade\n- [ ] Meta tags dinâmicas (title, description, Open Graph)\n- [ ] URLs amigáveis (slug baseado no nome da loja)\n- [ ] Dados estruturados (schema.org LocalBusiness)\n- [ ] Sitemap automático\n\n## Labels\n`escopo-a`, `o2o`, `seo`, `landing-page`, `prioridade: media`, `feature`\n\n## Estimativa\nMédio (M)\n\n## Fase de release\nR3",
+      "labels": ["escopo-a", "o2o", "seo", "landing-page", "prioridade: media", "feature"]
+    },
+    {
+      "title": "[Escopo A] A5 - Relatórios de inteligência (mapas de calor oferta × demanda)",
+      "body": "## Escopo\nMódulo O2O / Varejo (inspirado na Gofind)\n\n## Descrição\nCriar relatórios de inteligência com mapas de calor cruzando oferta (produtos em estoque) × demanda (buscas/consumo) por região.\n\n## Critérios de aceitação\n- [ ] Endpoint de agregação de dados por região\n- [ ] Visualização de mapa de calor (oferta × demanda)\n- [ ] Filtro por período e categoria\n- [ ] Exportação de relatório\n\n## Labels\n`escopo-a`, `o2o`, `relatorios`, `inteligencia`, `mapa-de-calor`, `prioridade: media`, `feature`\n\n## Estimativa\nGrande (G)\n\n## Fase de release\nR3",
+      "labels": ["escopo-a", "o2o", "relatorios", "inteligencia", "mapa-de-calor", "prioridade: media", "feature"]
+    },
+    {
+      "title": "[Escopo A] A6 - Módulo \"Quero Revender\" (leads B2B indústria → lojista)",
+      "body": "## Escopo\nMódulo O2O / Varejo (inspirado na Gofind)\n\n## Descrição\nImplementar módulo \"Quero Revender\" onde lojistas sinalizam interesse em revender produtos de indústrias, gerando leads qualificados B2B.\n\n## Critérios de aceitação\n- [ ] Formulário de interesse em revenda (lojista → indústria)\n- [ ] Modelo de lead B2B (nome, empresa, produto de interesse, contato)\n- [ ] Notificação/alerta para indústria sobre novo lead\n- [ ] Dashboard de leads para indústria\n\n## Referência\nUC-A6: Lojista sinaliza interesse em revender → lead qualificado é gerado para a indústria.\n\n## Labels\n`escopo-a`, `o2o`, `revenda`, `leads`, `b2b`, `prioridade: baixa`, `feature`\n\n## Estimativa\nPequeno (P)\n\n## Fase de release\nR3",
+      "labels": ["escopo-a", "o2o", "revenda", "leads", "b2b", "prioridade: baixa", "feature"]
+    },
+    {
+      "title": "[Escopo B] B1 - Cadastro e gestão de prestadores de serviço",
+      "body": "## Escopo\nMarketplace de Serviços (inspirado em Fixi / ProFinder)\n\n## Descrição\nImplementar cadastro e gestão de prestadores de serviço, incluindo perfil, categorias de serviço, valores, disponibilidade e documentação.\n\n## Critérios de aceitação\n- [ ] Modelo de dados para prestador de serviço\n- [ ] Endpoint de cadastro de prestador\n- [ ] Perfil público do prestador (avaliações, categorias, preços)\n- [ ] Endpoint de atualização de perfil\n- [ ] Papel de usuário 'prestador' no sistema de autorização\n\n## Labels\n`escopo-b`, `marketplace`, `servicos`, `prestador`, `prioridade: alta`, `feature`\n\n## Estimativa\nMédio (M)\n\n## Fase de release\nR1",
+      "labels": ["escopo-b", "marketplace", "servicos", "prestador", "prioridade: alta", "feature"]
+    },
+    {
+      "title": "[Escopo B] B2 - Busca com filtros (categoria, localização, avaliação, preço)",
+      "body": "## Escopo\nMarketplace de Serviços (inspirado em Fixi / ProFinder)\n\n## Descrição\nImplementar busca avançada com filtros por categoria, localização, avaliação e preço para prestadores de serviço.\n\n## Critérios de aceitação\n- [ ] Endpoint de busca de prestadores com filtros\n- [ ] Filtro por categoria de serviço\n- [ ] Filtro por localização (cidade/estado/raio)\n- [ ] Filtro por avaliação mínima (estrelas)\n- [ ] Filtro por faixa de preço\n- [ ] Ordenação por relevância/distância/preço\n\n## Referência\nParcialmente atendido: existe endpoint /api/s genérico, mas sem filtros específicos de serviço.\n\n## Labels\n`escopo-b`, `marketplace`, `busca`, `filtros`, `prioridade: alta`, `feature`\n\n## Estimativa\nMédio (M)\n\n## Fase de release\nR1",
+      "labels": ["escopo-b", "marketplace", "busca", "filtros", "prioridade: alta", "feature"]
+    },
+    {
+      "title": "[Escopo B] B3 - Recomendação por IA a partir da descrição do problema",
+      "body": "## Escopo\nMarketplace de Serviços (inspirado em Fixi / ProFinder)\n\n## Descrição\nImplementar recomendação por IA: o cliente descreve o problema em linguagem natural, o sistema sugere a categoria mais adequada e prestadores disponíveis.\n\n## Critérios de aceitação\n- [ ] Endpoint de recepção de descrição do problema (texto livre)\n- [ ] Integração com provedor de IA (mock/sandbox em teste)\n- [ ] Retorno de categoria sugerida com confiança\n- [ ] Retorno de prestadores recomendados para a categoria\n- [ ] Testes de contrato passando\n\n## Referência\nUC-B1: Cliente descreve problema → IA sugere categoria → cliente escolhe prestador e agenda.\n\n## Labels\n`escopo-b`, `marketplace`, `ia`, `recomendacao`, `prioridade: media`, `feature`\n\n## Estimativa\nGrande (G)\n\n## Fase de release\nR3",
+      "labels": ["escopo-b", "marketplace", "ia", "recomendacao", "prioridade: media", "feature"]
+    },
+    {
+      "title": "[Escopo B] B4 - Agendamento, negociação e chat interno",
+      "body": "## Escopo\nMarketplace de Serviços (inspirado em Fixi / ProFinder)\n\n## Descrição\nImplementar sistema de agendamento de serviços, negociação entre cliente e prestador, e chat interno para comunicação.\n\n## Critérios de aceitação\n- [ ] Modelo de agendamento (data, hora, prestador, cliente, status)\n- [ ] Endpoint de criação de agendamento\n- [ ] Endpoint de aceitação/recusa por prestador\n- [ ] Chat interno (mensagens entre cliente e prestador)\n- [ ] Histórico de conversas\n\n## Referência\nUC-B4: Prestador gerencia agenda e aceita/recusa solicitações em tempo real.\n\n## Labels\n`escopo-b`, `marketplace`, `agendamento`, `chat`, `negociacao`, `prioridade: alta`, `feature`\n\n## Estimativa\nGrande (G)\n\n## Fase de release\nR2",
+      "labels": ["escopo-b", "marketplace", "agendamento", "chat", "negociacao", "prioridade: alta", "feature"]
+    },
+    {
+      "title": "[Escopo B] B5 - Sistema de avaliações mútuas (cliente ↔ prestador)",
+      "body": "## Escopo\nMarketplace de Serviços (inspirado em Fixi / ProFinder)\n\n## Descrição\nImplementar sistema de avaliações mútuas onde, após o serviço, cliente e prestador avaliam-se mutuamente com nota e comentário.\n\n## Critérios de aceitação\n- [ ] Modelo de avaliação (nota 1-5, comentário, avaliador, avaliado)\n- [ ] Endpoint de criação de avaliação após conclusão do serviço\n- [ ] Exibição de avaliações no perfil do prestador\n- [ ] Cálculo de média de notas\n- [ ] Apenas clientes que contrataram podem avaliar\n\n## Labels\n`escopo-b`, `marketplace`, `avaliacoes`, `notas`, `prioridade: alta`, `feature`\n\n## Estimativa\nMédio (M)\n\n## Fase de release\nR2",
+      "labels": ["escopo-b", "marketplace", "avaliacoes", "notas", "prioridade: alta", "feature"]
+    },
+    {
+      "title": "[Escopo B] B6 - Mensageria com histórico e compartilhamento de arquivos",
+      "body": "## Escopo\nMarketplace de Serviços (inspirado em Fixi / ProFinder)\n\n## Descrição\nImplementar mensageria interna com histórico de conversas e compartilhamento de arquivos (fotos, documentos) entre cliente e prestador.\n\n## Critérios de aceitação\n- [ ] Modelo de conversa e mensagem\n- [ ] Endpoint de listagem de conversas\n- [ ] Endpoint de envio de mensagem (texto)\n- [ ] Upload e download de anexos (arquivos)\n- [ ] Histórico persistente de conversas\n\n## Labels\n`escopo-b`, `marketplace`, `mensageria`, `arquivos`, `prioridade: media`, `feature`\n\n## Estimativa\nGrande (G)\n\n## Fase de release\nR3",
+      "labels": ["escopo-b", "marketplace", "mensageria", "arquivos", "prioridade: media", "feature"]
+    },
+    {
+      "title": "[Escopo C] C1 - Autenticação e autorização com papéis (consumidor, lojista, prestador, indústria, admin)",
+      "body": "## Escopo\nTransversal (aplicável a A e B)\n\n## Descrição\nExpandir o sistema de autenticação e autorização para incluir novos papéis: consumidor, lojista, prestador, indústria, admin. Implementar middleware granular por papel.\n\n## Critérios de aceitação\n- [ ] Novos papéis: consumidor, lojista, prestador, indústria (além de admin/user existentes)\n- [ ] Middleware de verificação de papel granular\n- [ ] Endpoints protegidos por papel específico\n- [ ] Não quebrar contratos existentes (versionamento se necessário)\n- [ ] Testes de autorização passando\n\n## Restrição\nNão quebrar contratos existentes do GeoVintalie. Mudanças incompatíveis exigem versionamento.\n\n## Labels\n`escopo-c`, `transversal`, `auth`, `autorizacao`, `papeis`, `prioridade: alta`, `feature`\n\n## Estimativa\nMédio (M)\n\n## Fase de release\nR1",
+      "labels": ["escopo-c", "transversal", "auth", "autorizacao", "papeis", "prioridade: alta", "feature"]
+    },
+    {
+      "title": "[Escopo C] C2 - Observabilidade (logs estruturados, métricas, tracing)",
+      "body": "## Escopo\nTransversal (aplicável a A e B)\n\n## Descrição\nImplementar observabilidade completa: logs estruturados, métricas de negócio e distributed tracing para debug e monitoramento.\n\n## Critérios de aceitação\n- [ ] Logs estruturados (JSON) com correlation ID\n- [ ] Métricas de negócio (requests, erros, latência por endpoint)\n- [ ] Distributed tracing (trace ID propagado entre serviços)\n- [ ] Health check endpoint\n- [ ] Alertas básicos em caso de erro alto\n\n## Labels\n`escopo-c`, `transversal`, `observabilidade`, `logs`, `metricas`, `tracing`, `prioridade: media`, `feature`\n\n## Estimativa\nGrande (G)\n\n## Fase de release\nR2",
+      "labels": ["escopo-c", "transversal", "observabilidade", "logs", "metricas", "tracing", "prioridade: media", "feature"]
+    },
+    {
+      "title": "[Escopo C] C3 - LGPD: consentimento, anonimização e direito ao esquecimento",
+      "body": "## Escopo\nTransversal (aplicável a A e B)\n\n## Descrição\nImplementar conformidade com LGPD: fluxo de consentimento de dados, anonimização e direito ao esquecimento (exclusão de dados pessoais).\n\n## Critérios de aceitação\n- [ ] Fluxo de consentimento de dados (opt-in)\n- [ ] Endpoint de exclusão de conta (direito ao esquecimento)\n- [ ] Anonimização de dados pessoais em exclusão\n- [ ] Exportação de dados pessoais (portabilidade)\n- [ ] Registro de consentimento com timestamp\n\n## Restrição\nExige revisão legal antes de implementar exclusão/anonimização.\n\n## Labels\n`escopo-c`, `transversal`, `lgpd`, `privacidade`, `anonimizacao`, `prioridade: media`, `feature`, `seguranca`\n\n## Estimativa\nMédio (M)\n\n## Fase de release\nR2",
+      "labels": ["escopo-c", "transversal", "lgpd", "privacidade", "anonimizacao", "prioridade: media", "feature", "seguranca"]
+    },
+    {
+      "title": "[Escopo C] C4 - Feature flags para liberação gradual dos novos módulos",
+      "body": "## Escopo\nTransversal (aplicável a A e B)\n\n## Descrição\nImplementar mecanismo de feature flags para liberação gradual dos novos módulos de A e B.\n\n## Critérios de aceitação\n- [ ] Sistema de feature flags (ativar/desativar módulos)\n- [ ] Feature flags obrigatórias em todo código novo de A e B\n- [ ] Endpoint de administração de flags\n- [ ] Flags persistentes (banco de dados ou config)\n\n## Labels\n`escopo-c`, `transversal`, `feature-flags`, `liberacao-gradual`, `prioridade: baixa`, `feature`\n\n## Estimativa\nPequeno (P)\n\n## Fase de release\nR1",
+      "labels": ["escopo-c", "transversal", "feature-flags", "liberacao-gradual", "prioridade: baixa", "feature"]
+    },
+    {
+      "title": "[Escopo C] C5 - Contratos de API versionados (OpenAPI) e testes de contrato",
+      "body": "## Escopo\nTransversal (aplicável a A e B)\n\n## Descrição\nCriar contratos de API versionados (OpenAPI/Swagger) e implementar testes de contrato para garantir compatibilidade.\n\n## Critérios de aceitação\n- [ ] Especificação OpenAPI versionada para todos os endpoints\n- [ ] Documentação pública da API (Scribe ou Swagger UI)\n- [ ] Testes de contrato para endpoints críticos\n- [ ] Versionamento de API (v1, v2 quando necessário)\n- [ ] Não quebrar contratos existentes sem versionamento\n\n## Referência\nParcialmente atendido: existe Scribe parcial (storage privado), mas não há OpenAPI versionado nem testes de contrato.\n\n## Labels\n`escopo-c`, `transversal`, `openapi`, `contrato`, `testes-de-contrato`, `prioridade: media`, `feature`\n\n## Estimativa\nMédio (M)\n\n## Fase de release\nR1",
+      "labels": ["escopo-c", "transversal", "openapi", "contrato", "testes-de-contrato", "prioridade: media", "feature"]
+    },
+    {
+      "title": "[Escopo C] C6 - Estratégia de testes (unitário, integração, E2E) com meta ≥ 80% nos módulos novos",
+      "body": "## Escopo\nTransversal (aplicável a A e B)\n\n## Descrição\nDefinir e implementar estratégia de testes: unitário, integração e E2E, com meta de cobertura ≥ 80% nos módulos novos de A e B.\n\n## Critérios de aceitação\n- [ ] Plano de testes documentado\n- [ ] Testes unitários para lógica de negócio\n- [ ] Testes de integração para endpoints\n- [ ] Testes E2E para fluxos críticos\n- [ ] Relatório de cobertura ≥ 80% nos módulos novos\n- [ ] Frontend com testes configurados (atualmente ausente)\n\n## Referência\nParcialmente atendido: backend tem 14 testes de feature passando. Frontend não tem testes. Não há E2E.\n\n## Labels\n`escopo-c`, `transversal`, `testes`, `cobertura`, `e2e`, `qualidade`, `prioridade: media`, `feature`\n\n## Estimativa\nGrande (G)\n\n## Fase de release\nR2",
+      "labels": ["escopo-c", "transversal", "testes", "cobertura", "e2e", "qualidade", "prioridade: media", "feature"]
+    }
+  ]
+}
