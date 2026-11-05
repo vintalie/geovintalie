@@ -53,8 +53,9 @@ const DeleteAccount = () => {
           <CardHeader>
             <CardTitle className="text-lg font-bold">Excluir minha conta</CardTitle>
             <CardDescription>
-              Esta acao e irreversível. Todos os seus dados pessoais serao
-              removidos permanentemente da Geovintalie, conforme a LGPD.
+              Esta acao e irreversivel. Seus dados pessoais serao excluidos ou
+              anonimizados de forma definitiva da Geovintalie, conforme o
+              direito ao esquecimento da LGPD, e nao poderao ser recuperados.
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Logging\CorrelationProcessor;
+use App\Observability\TraceContext;
 use App\Services\GoogleBusinessService;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -32,5 +34,18 @@ class AppServiceProvider extends ServiceProvider
         $loggerProperty->setAccessible(true);
         $monologLogger = $loggerProperty->getValue($channel);
         $monologLogger->pushProcessor(new CorrelationProcessor());
+
+        // Propagacao de trace ID nas chamadas de saida (client HTTP).
+        // Servicos podem encadear ->tracePropagation() para enviar X-Trace-ID
+        // para dependencias externas (ex: Google Business Profile).
+        PendingRequest::macro('tracePropagation', function () {
+            $request = $this;
+
+            foreach (TraceContext::headers() as $name => $value) {
+                $request = $request->withHeader($name, $value);
+            }
+
+            return $request;
+        });
     }
 }

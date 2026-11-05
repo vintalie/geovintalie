@@ -235,10 +235,11 @@ class GoogleBusinessTest extends TestCase
             ->assertStatus(200)
             ->assertJsonFragment(['title' => 'Loja Teste Sincronizada']);
 
-        $this->assertDatabaseHas('google_business_tokens', [
-            'user_id'              => $dados['user']->id,
-            'profile_data.title'   => 'Loja Teste Sincronizada',
-        ]);
+        $this->assertTrue(
+            GoogleBusinessToken::where('user_id', $dados['user']->id)
+                ->whereRaw("json_extract(profile_data, '$.title') = 'Loja Teste Sincronizada'")
+                ->exists()
+        );
     }
 
     public function test_sincronizar_sem_token_cadastrado_retorna_404(): void

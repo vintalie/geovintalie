@@ -4,14 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
+use App\Models\FeatureFlag;
 use App\Models\ServiceProvider;
 use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
+    private function requireFeatureFlag(Request $request): void
+    {
+        if (!FeatureFlag::isEnabled('ff_appointment')) {
+            abort(403, 'Agendamentos nao habilitados.');
+        }
+    }
+
     /** Listar agendamentos do cliente autenticado ou do prestador vinculado ao usuario. */
     public function index(Request $request)
     {
+        $this->requireFeatureFlag($request);
         $user = $request->user();
 
         $query = Appointment::with(['client', 'provider.user']);
@@ -42,6 +51,8 @@ class AppointmentController extends Controller
     /** Criar um agendamento (apenas clientes). */
     public function store(Request $request)
     {
+        $this->requireFeatureFlag($request);
+
         $user = $request->user();
 
         $data = $request->validate([
@@ -70,6 +81,8 @@ class AppointmentController extends Controller
     /** Exibir um agendamento (somente cliente ou prestador envolvidos). */
     public function show(Request $request, Appointment $appointment)
     {
+        $this->requireFeatureFlag($request);
+
         $user = $request->user();
 
         $appointment->load(['client', 'provider.user']);

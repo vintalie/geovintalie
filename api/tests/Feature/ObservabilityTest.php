@@ -138,6 +138,98 @@ class ObservabilityTest extends TestCase
         $this->assertSame($correlationId, $last['extra']['correlation_id'] ?? null);
     }
 
+    /** Trace ID ------------------------------------------------------------- */
+
+    public function test_trace_id_e_gerado_quando_ausente_e_retornado_no_header(): void
+    {
+        $response = $this->get("{$this->base}/health");
+
+        $response->assertStatus(200);
+        $header = $response->headers->get('X-Trace-ID');
+
+        $this->assertNotNull($header);
+        $this->assertTrue(Str::isUuid($header));
+        $this->assertSame($header, $response->json('trace_id'));
+    }
+
+    public function test_trace_id_fornecido_echoado_no_header(): void
+    {
+        $id = Str::uuid()->toString();
+
+        $response = $this->withHeader('X-Trace-ID', $id)
+            ->get("{$this->base}/health");
+
+        $response->assertStatus(200);
+        $this->assertSame($id, $response->headers->get('X-Trace-ID'));
+        $this->assertSame($id, $response->json('trace_id'));
+    }
+
+    public function test_rota_desconhecida_tambem_recebe_trace_id(): void
+    {
+        $response = $this->get("{$this->base}/qualquer-coisa");
+
+        $response->assertStatus(404);
+        $this->assertTrue(Str::isUuid($response->headers->get('X-Trace-ID')));
+    }
+
+    /** Logs estruturados ---------------------------------------------------- */
+
+    public function test_log_estruturado_da_requisicao_contem_correlation_e_trace_id(): void
+    {
+        $correlationId = Str::uuid()->toString();
+        $traceId = Str::uuid()->toString();
+
+        $this->withHeader('X-Correlation-ID', $correlationId)
+            ->withHeader('X-Trace-ID', $traceId)
+            ->get("{$this->base}/health")
+            ->assertStatus(200);
+
+        $lines = array_filter(file(storage_path('logs/laravel.log'), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES));
+
+        $handled = null;
+        foreach (array_reverse($lines) as $line) {
+            $decoded = json_decode($line, true);
+            if (is_array($decoded) && ($decoded['message'] ?? null) === 'http.request_handled') {
+                $handled = $decoded;
+                break;
+            }
+        }
+
+        $this->assertIsArray($handled, 'nenhum log http.request_handled encontrado');
+        $ctx = $handled['context'] ?? [];
+        $this->assertSame($correlationId, $ctx['correlation_id'] ?? null);
+        $this->assertSame($traceId, $ctx['trace_id'] ?? null);
+        $this->assertSame('GET', $ctx['method'] ?? null);
+        $this->assertSame('api/v2/health', $ctx['route'] ?? null);
+        $this->assertSame(200, $ctx['status_code'] ?? null);
+        $this->assertArrayHasKey('latency_ms', $ctx);
+    }
+
+    /** Health com servicos externos --------------------------------------- */
+
+    public function test_health_endpoint_retorna_checks_de_servicos_externos(): void
+    {
+        $response = $this->get("{$this->base}/health");
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'status',
+            'checked_at',
+            'service',
+            'environment',
+            'correlation_id',
+            'trace_id',
+            'checks' => [
+                'database' => ['status'],
+                'cache' => ['status'],
+                'logs' => ['status'],
+                'external_services' => [
+                    'google_oauth' => ['status'],
+                ],
+            ],
+        ]);
+    }
+
     /** Helpers -------------------------------------------------------------- */
 
     private function token(string $tipoNome): string

@@ -3,9 +3,12 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use App\Http\Middleware\CheckFeatureFlag;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\CorrelationIdMiddleware;
 use App\Http\Middleware\MetricsMiddleware;
+use App\Http\Middleware\StructuredRequestLoggingMiddleware;
+use App\Http\Middleware\TracingMiddleware;
 use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -17,12 +20,15 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'role' => CheckRole::class
+            'role'       => CheckRole::class,
+            'feature.flag' => CheckFeatureFlag::class,
         ]);
 
         $middleware->append([
             CorrelationIdMiddleware::class,
             MetricsMiddleware::class,
+            TracingMiddleware::class,
+            StructuredRequestLoggingMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

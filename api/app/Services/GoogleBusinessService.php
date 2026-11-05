@@ -59,7 +59,7 @@ class GoogleBusinessService
 
     public function exchangeCode(string $code): array
     {
-        $response = Http::post($this->tokenUri, [
+        $response = Http::timeout(3)->tracePropagation()->post($this->tokenUri, [
             'client_id'     => $this->clientId,
             'client_secret' => $this->clientSecret,
             'code'          => $code,
@@ -78,7 +78,7 @@ class GoogleBusinessService
 
     public function refreshAccessToken(string $refreshToken): array
     {
-        $response = Http::post($this->tokenUri, [
+        $response = Http::timeout(3)->tracePropagation()->post($this->tokenUri, [
             'client_id'     => $this->clientId,
             'client_secret' => $this->clientSecret,
             'refresh_token' => $refreshToken,
@@ -96,7 +96,7 @@ class GoogleBusinessService
 
     public function revokeToken(string $token): bool
     {
-        $response = Http::post('https://oauth2.googleapis.com/revoke', [
+        $response = Http::timeout(3)->tracePropagation()->post('https://oauth2.googleapis.com/revoke', [
             'token' => $token,
         ]);
 
@@ -105,7 +105,7 @@ class GoogleBusinessService
 
     public function fetchAccounts(string $accessToken): array
     {
-        $response = Http::withToken($accessToken)->get("{$this->baseUrl}/accounts");
+        $response = Http::withToken($accessToken)->tracePropagation()->get("{$this->baseUrl}/accounts");
 
         if (! $response->successful()) {
             throw new RuntimeException(
@@ -125,7 +125,7 @@ class GoogleBusinessService
             ? "{$this->baseUrl}/accounts/{$account}/locations"
             : "{$this->baseUrl}/locations";
 
-        $response = Http::withToken($accessToken)->get($url);
+        $response = Http::withToken($accessToken)->tracePropagation()->get($url);
 
         if (! $response->successful()) {
             throw new RuntimeException(
@@ -138,7 +138,7 @@ class GoogleBusinessService
 
     public function fetchLocation(string $accessToken, string $account, string $location): array
     {
-        $response = Http::withToken($accessToken)
+        $response = Http::withToken($accessToken)->tracePropagation()
             ->get("{$this->baseUrl}/accounts/{$account}/locations/{$location}");
 
         if (! $response->successful()) {
@@ -155,8 +155,7 @@ class GoogleBusinessService
      */
     public function fetchLocationByName(string $accessToken, string $locationName): array
     {
-        $response = Http::withToken($accessToken)
-            ->get("{$this->baseUrl}/{$locationName}");
+        $response = Http::withToken($accessToken)->tracePropagation()->get("{$this->baseUrl}/{$locationName}");
 
         if (! $response->successful()) {
             throw new RuntimeException(

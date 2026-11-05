@@ -19,71 +19,120 @@ const mockExportData = vi.mocked(consentApi.exportData);
 const mockDeleteAccount = vi.mocked(consentApi.deleteAccount);
 const mockUseAuth = vi.mocked(useAuth);
 
-const consentMock = {
+const consentMock = (overrides: Record<string, unknown> = {}) => ({
   id: 1,
   user_id: 7,
-  tipo: 'termo_uso',
+  tipo: 'marketing',
   aceito: false,
   aceito_em: null,
-  titulo: 'Termos de Uso',
-  descricao: 'Aceite os termos de uso da plataforma.',
-};
+  titulo: 'Marketing e comunicacoes',
+  descricao: 'Receba novidades e promocoes.',
+  ...overrides,
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
   mockUseAuth.mockReturnValue({
-    user: { id: 7, name: 'Usuário Teste', email: 'usuario@test.com' },
+    user: { id: 7, name: 'Usuario Teste', email: 'usuario@test.com' },
     loading: false,
     logout: vi.fn(),
   } as any);
 });
 
 describe('PrivacyConsent', () => {
-  it('renderiza a lista de consentimentos e permite aceitar/revogar', async () => {
-    mockGetConsents.mockResolvedValueOnce(
-      { data: { data: [consentMock] } } as any
-    );
+  const consentsPage = [
+    consentMock({ tipo: 'marketing', aceito: false }),
+    { ...consentMock({ id: 2, tipo: 'analytics', aceito: true }) },
+    { ...consentMock({ id: 3, tipo: 'third_party', aceito: false }) },
+  ];
+
+  it('renderiza os tres propósitos de consentimento (marketing, analytics, third_party)', async () => {
+    mockGetConsents.mockResolvedValue({ data: { data: consentsPage } } as any);
 
     render(<PrivacyConsent />);
 
     await waitFor(() =>
-      expect(screen.getByText('Termos de Uso')).toBeInTheDocument()
+      expect(screen.getByText('Marketing e comunicacoes')).toBeInTheDocument()
     );
-    expect(screen.getByText('Pendente')).toBeInTheDocument();
+    expect(
+      screen.getByText('Analytics e desempenho')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Compartilhamento com terceiros')
+    ).toBeInTheDocument();
     expect(mockGetConsents).toHaveBeenCalledTimes(1);
+  });
 
-    const switchEl = screen.getByRole('switch');
-    fireEvent.click(switchEl);
-    expect(mockAcceptConsent).toHaveBeenCalledWith('termo_uso');
+  it('aceita um consentimento de finalidade via POST /api/v2/user-consents', async () => {
+    mockGetConsents.mockResolvedValue({ data: { data: consentsPage } } as any);
+
+    render(<PrivacyConsent />);
 
     await waitFor(() =>
-      expect(screen.getByText('Consentimento aceito: Termos de Uso.')).toBeInTheDocument()
+      expect(screen.getByText('Marketing e comunicacoes')).toBeInTheDocument()
+    );
+
+    const switches = screen.getAllByRole('switch');
+    // marketing vem primeiro e esta nao aceito
+    expect(switches[0]).not.toBeChecked();
+    fireEvent.click(switches[0]);
+
+    expect(mockAcceptConsent).toHaveBeenCalledWith('marketing');
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Consentimento aceito: Marketing e comunicacoes./)
+      ).toBeInTheDocument()
     );
   });
 
-  it('revoga um consentimento já aceito', async () => {
-    mockGetConsents.mockResolvedValueOnce(
-      { data: { data: [{ ...consentMock, aceito: true }] } } as any
-    );
+  it('revoga um consentimento ja aceito via DELETE /api/v2/user-consents/:id', async () => {
+    mockGetConsents.mockResolvedValue({ data: { data: consentsPage } } as any);
 
     render(<PrivacyConsent />);
 
-    await waitFor(() => expect(screen.getByText('Aceito')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText('Analytics e desempenho')).toBeInTheDocument()
+    );
 
-    const switchEl = screen.getByRole('switch');
-    fireEvent.click(switchEl);
+    const switches = screen.getAllByRole('switch');
+    // analytics vem segundo e esta aceito
+    expect(switches[1]).toBeChecked();
+    fireEvent.click(switches[1]);
 
-    // Atualização otimística reflete a revogação imediatamente.
-    expect(screen.getByText('Revogado')).toBeInTheDocument();
-    expect(mockRevokeConsent).toHaveBeenCalledWith(1);
+    expect(mockRevokeConsent).toHaveBeenCalledWith(2);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Consentimento revogado: Analytics e desempenho./)
+      ).toBeInTheDocument()
+    );
+  });
+
+  it('faz rollback e exibe erro quando a atualizacao falha', async () => {
+    mockGetConsents.mockResolvedValue({ data: { data: consentsPage } } as any);
+    mockAcceptConsent.mockRejectedValueOnce({
+      response: { data: { message: 'Falha ao atualizar' } },
+    } as any);
+
+    render(<PrivacyConsent />);
+
+    const switches = screen.getAllByRole('switch');
+    fireEvent.click(switches[0]);
+
+    await waitFor(() =>
+      expect(screen.getByText(/Falha ao atualizar/)).toBeInTheDocument()
+    );
+    // estado reverte para nao aceito
+    expect(switches[0]).not.toBeChecked();
   });
 });
 
 describe('DataExport', () => {
   it('exporta os dados pessoais e dispara download', async () => {
     mockExportData.mockResolvedValueOnce(
-      { data: { name: 'Usuário Teste', emails: ['usuario@test.com'] } } as any
+      { data: { name: 'Usuario Teste', emails: ['usuario@test.com'] } } as any
     );
 
     const downloadSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click');
@@ -93,12 +142,12 @@ describe('DataExport', () => {
     fireEvent.click(screen.getByRole('button', { name: /exportar meus dados/i }));
 
     await waitFor(() =>
-      expect(
-        screen.getByText(/dados exportados com sucesso/i)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/dados exportados com sucesso/i)).toBeInTheDocument()
     );
     await waitFor(() =>
-      expect(screen.getByText('Visualização dos dados exportados')).toBeInTheDocument()
+      expect(
+        screen.getByText('Visualizacao dos dados exportados')
+      ).toBeInTheDocument()
     );
     expect(mockExportData).toHaveBeenCalledTimes(1);
     expect(downloadSpy).toHaveBeenCalled();
@@ -107,17 +156,17 @@ describe('DataExport', () => {
 });
 
 describe('DeleteAccount', () => {
-  it('exclui a conta após confirmação no diálogo', async () => {
+  it('exclui a conta apos confirmacao no dialogo', async () => {
     mockDeleteAccount.mockResolvedValueOnce({} as any);
 
     const { user } = mockUseAuth.mock.results[0].value;
     render(<DeleteAccount />);
 
     fireEvent.click(
-      screen.getByRole('button', { name: /confirmar exclusão de conta/i })
+      screen.getByRole('button', { name: /confirmar exclusao de conta/i })
     );
     await waitFor(() =>
-      expect(screen.getByText('Confirmar exclusão')).toBeInTheDocument()
+      expect(screen.getByText('Confirmar exclusao')).toBeInTheDocument()
     );
 
     fireEvent.click(screen.getByRole('button', { name: /excluir conta/i }));

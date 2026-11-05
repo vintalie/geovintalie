@@ -169,12 +169,16 @@ Route::prefix('v2')->group(function () {
     });
 
     // Google Business Profile (Escopo A2) - fluxo OAuth 2.0
-    // authorize/callback ficam fora do jwt.auth: o callback é chamado pelo navegador
-    // do usuario apos o consentimento no Google e identifica o usuario pelo state.
-    Route::get('google-business/auth/redirect', [GoogleBusinessController::class, 'authorize']);
+    // o callback é chamado pelo navegador do usuario apos o consentimento no Google
+    // e identifica o usuario pelo parametro state assinado (nao exige JWT).
     Route::get('google-business/callback', [GoogleBusinessController::class, 'callback']);
 
+    // Autorizacao OAuth: exige JWT para saber qual usuario esta conectando a conta.
     Route::middleware(['jwt.auth'])->group(function () {
+        Route::get('google-business/redirect', [GoogleBusinessController::class, 'authorize']);
+    });
+
+    Route::middleware(['jwt.auth', 'feature.flag:ff_o2o_locator'])->group(function () {
         Route::get('google-business/accounts', [GoogleBusinessController::class, 'accounts']);
         Route::get('google-business/accounts/{account}/locations', [GoogleBusinessController::class, 'locations']);
         Route::get('google-business/accounts/{account}/locations/{location}', [GoogleBusinessController::class, 'sync']);
