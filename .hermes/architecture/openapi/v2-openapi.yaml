@@ -1,0 +1,717 @@
+openapi: 3.0.3
+info:
+  title: GeoVintalie API
+  version: 2.0.0
+  description: "API do GeoVintalie - Versao 2. Novos endpoints para escopos A (O2O/Varejo), B (Marketplace de Servicos) e C (Transversal). Endpoints existentes mantidos na versao v1 para retrocompatibilidade."
+servers:
+  - url: http://localhost:8000/api/v2
+    description: Servidor de desenvolvimento local
+  - url: https://api.geovintalie.com/v2
+    description: Servidor de producao
+tags:
+  - name: auth
+    description: Autenticacao e autorizacao
+  - name: users
+    description: Gestao de usuarios e papeis
+  - name: feature-flags
+    description: Gerenciamento de feature flags
+  - name: service-providers
+    description: Cadastro e gestao de prestadores de servico (Escopo B1)
+  - name: service-categories
+    description: Categorias de servico (Escopo B1, B2)
+  - name: service-listings
+    description: Anuncios de servicos (Escopo B1, B2)
+  - name: product-locator
+    description: Localizador de produtos por proximidade (Escopo A1)
+  - name: service-search
+    description: Busca com filtros de servico (Escopo B2)
+paths:
+  /auth/me:
+    get:
+      tags: [auth]
+      summary: Obter dados do usuario autenticado
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dados do usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResource'
+        '401':
+          description: Nao autenticado
+  /auth/users:
+    get:
+      tags: [users]
+      summary: Listar usuarios (apenas admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: role
+          schema:
+            type: string
+            enum: [admin, user, public, consumer, retailer, provider, industry]
+          description: Filtrar por papel de usuario
+      responses:
+        '200':
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        '403':
+          description: Acesso negado
+  /auth/users/{id}:
+    get:
+      tags: [users]
+      summary: Obter usuario por ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados do usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResource'
+        '404':
+          description: Usuario nao encontrado
+  /feature-flags:
+    get:
+      tags: [feature-flags]
+      summary: Listar todas as feature flags
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de feature flags
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FeatureFlag'
+  /feature-flags/{name}:
+    patch:
+      tags: [feature-flags]
+      summary: Atualizar uma feature flag (apenas admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureFlagUpdate'
+      responses:
+        '200':
+          description: Flag atualizada
+        '403':
+          description: Acesso negado
+        '404':
+          description: Flag nao encontrada
+  /service-providers:
+    get:
+      tags: [service-providers]
+      summary: Listar prestadores de servico
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de prestadores
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ServiceProviderResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+    post:
+      tags: [service-providers]
+      summary: Cadastrar novo prestador de servico
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceProviderCreate'
+      responses:
+        '201':
+          description: Prestador criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceProviderResource'
+        '422':
+          description: Erro de validacao
+  /service-providers/{id}:
+    get:
+      tags: [service-providers]
+      summary: Obter prestador por ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados do prestador
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceProviderResource'
+        '404':
+          description: Prestador nao encontrado
+    put:
+      tags: [service-providers]
+      summary: Atualizar prestador
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceProviderUpdate'
+      responses:
+        '200':
+          description: Prestador atualizado
+        '404':
+          description: Prestador nao encontrado
+  /service-categories:
+    get:
+      tags: [service-categories]
+      summary: Listar categorias de servico
+      parameters:
+        - in: query
+          name: parent_id
+          schema:
+            type: integer
+          description: ID da categoria pai (para subcategorias)
+      responses:
+        '200':
+          description: Lista de categorias
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ServiceCategoryResource'
+  /service-listings:
+    get:
+      tags: [service-listings]
+      summary: Listar anuncios de servicos
+      parameters:
+        - in: query
+          name: provider_id
+          schema:
+            type: integer
+          description: Filtrar por prestador
+        - in: query
+          name: category_id
+          schema:
+            type: integer
+          description: Filtrar por categoria
+        - in: query
+          name: is_active
+          schema:
+            type: boolean
+            description: Filtrar por ativo/inativo
+      responses:
+        '200':
+          description: Lista de anuncios
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ServiceListingResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+    post:
+      tags: [service-listings]
+      summary: Criar novo anuncio de servico
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceListingCreate'
+      responses:
+        '201':
+          description: Anuncio criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceListingResource'
+  /service-listings/{id}:
+    get:
+      tags: [service-listings]
+      summary: Obter anuncio por ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados do anuncio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceListingResource'
+        '404':
+          description: Anuncio nao encontrado
+  /product-locator:
+    get:
+      tags: [product-locator]
+      summary: Localizar produtos por proximidade geografica (Escopo A1)
+      parameters:
+        - in: query
+          name: lat
+          schema:
+            type: number
+            format: float
+            required: true
+            description: Latitude do ponto de referencia
+        - in: query
+          name: lng
+          schema:
+            type: number
+            format: float
+            required: true
+            description: Longitude do ponto de referencia
+        - in: query
+          name: radius
+          schema:
+            type: number
+            format: float
+            default: 10
+            description: Raio de busca em km
+        - in: query
+          name: product_name
+          schema:
+            type: string
+            description: Nome do produto para buscar
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+            description: Limite de resultados
+      responses:
+        '200':
+          description: Produtos proximos encontrados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductLocationResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+  /service-search:
+    get:
+      tags: [service-search]
+      summary: Buscar servicos com filtros (Escopo B2)
+      parameters:
+        - in: query
+          name: category_id
+          schema:
+            type: integer
+            description: ID da categoria
+        - in: query
+          name: city
+          schema:
+            type: string
+            description: Cidade para filtrar
+        - in: query
+          name: state
+          schema:
+            type: string
+            description: Estado para filtrar
+        - in: query
+          name: min_rating
+          schema:
+            type: number
+            format: float
+            minimum: 0
+            maximum: 5
+            description: Avaliacao minima (estrelas)
+        - in: query
+          name: min_price
+          schema:
+            type: number
+            format: float
+            description: Preco minimo
+        - in: query
+          name: max_price
+          schema:
+            type: number
+            format: float
+            description: Preco maximo
+        - in: query
+          name: q
+          schema:
+            type: string
+            description: Busca por texto (titulo/descricao)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+            description: Limite de resultados
+      responses:
+        '200':
+          description: Resultados da busca
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ServiceListingSearchResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    UserResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        tipo_nome:
+          type: string
+          description: Nome do papel de usuario (admin, user, public, consumer, retailer, provider, industry)
+        email_verified_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Meta:
+      type: object
+      properties:
+        current_page:
+          type: integer
+        last_page:
+          type: integer
+        per_page:
+          type: integer
+        total:
+          type: integer
+        from:
+          type: integer
+        to:
+          type: integer
+    FeatureFlag:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        enabled:
+          type: boolean
+        rollout_percentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    FeatureFlagUpdate:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        rollout_percentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+    ServiceProviderResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        business_name:
+          type: string
+        cnpj_cpf:
+          type: string
+        description:
+          type: string
+        avatar_url:
+          type: string
+        cover_url:
+          type: string
+        average_rating:
+          type: number
+          format: float
+        total_reviews:
+          type: integer
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ServiceProviderCreate:
+      type: object
+      required:
+        - business_name
+      properties:
+        business_name:
+          type: string
+          maxLength: 255
+        cnpj_cpf:
+          type: string
+          maxLength: 20
+        description:
+          type: string
+    ServiceProviderUpdate:
+      type: object
+      properties:
+        business_name:
+          type: string
+          maxLength: 255
+        cnpj_cpf:
+          type: string
+          maxLength: 20
+        description:
+          type: string
+        avatar_url:
+          type: string
+        cover_url:
+          type: string
+        is_active:
+          type: boolean
+    ServiceCategoryResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        parent_id:
+          type: integer
+        icon:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    ServiceListingResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        provider_id:
+          type: integer
+        category_id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: float
+        price_type:
+          type: string
+          enum: [fixed, hourly, project]
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip_code:
+          type: string
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        is_active:
+          type: boolean
+        average_rating:
+          type: number
+          format: float
+        total_reviews:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ServiceListingCreate:
+      type: object
+      required:
+        - category_id
+        - title
+      properties:
+        category_id:
+          type: integer
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        price:
+          type: number
+          format: float
+        price_type:
+          type: string
+          enum: [fixed, hourly, project]
+          default: fixed
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip_code:
+          type: string
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+    ProductLocationResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        product_id:
+          type: integer
+        property_id:
+          type: integer
+        property_name:
+          type: string
+        product_name:
+          type: string
+        price:
+          type: number
+          format: float
+        stock_quantity:
+          type: integer
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+        distance_km:
+          type: number
+          format: float
+          description: Distancia calculada do ponto de referencia
+    ServiceListingSearchResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        provider_id:
+          type: integer
+        provider_name:
+          type: string
+        category_id:
+          type: integer
+        category_name:
+          type: string
+        title:
+          type: string
+        price:
+          type: number
+          format: float
+        city:
+          type: string
+        state:
+          type: string
+        average_rating:
+          type: number
+          format: float
+        total_reviews:
+          type: integer
+        distance_km:
+          type: number
+          format: float
+          description: Distancia calculada do ponto de referencia (se lat/lng fornecidos)

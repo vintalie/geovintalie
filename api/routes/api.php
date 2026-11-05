@@ -13,6 +13,12 @@ use App\Http\Controllers\StockController;
 use App\Http\Controllers\StreetController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\ServiceProviderController;
+use App\Http\Controllers\ServiceCategoryController;
+use App\Http\Controllers\ServiceListingController;
+use App\Http\Controllers\ProductLocatorController;
+use App\Http\Controllers\FeatureFlagController;
+use App\Http\Controllers\ServiceSearchController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -54,3 +60,48 @@ Route::post('register', RegisterController::class . '@register');
 Route::post('verify-email', RegisterController::class . '@verify_email');
 
 Route::get('s', SearchController::class . '@search');
+
+// ============================================================================
+// API v2 - Novos endpoints para escopos A, B, C (R1)
+// ============================================================================
+Route::prefix('v2')->group(function () {
+    // Auth - dados do usuario autenticado
+    Route::middleware(['jwt.auth'])->group(function () {
+        Route::get('auth/me', [AuthController::class, 'me']);
+
+        // Usuarios - apenas admin
+        Route::middleware(['role:admin'])->group(function () {
+            Route::get('auth/users', [UserController::class, 'index']);
+            Route::get('auth/users/{id}', [UserController::class, 'show']);
+        });
+
+        // Feature Flags
+        Route::get('feature-flags', [FeatureFlagController::class, 'index']);
+        Route::middleware(['role:admin'])->group(function () {
+            Route::patch('feature-flags/{name}', [FeatureFlagController::class, 'update']);
+        });
+
+        // Service Providers (Escopo B1)
+        Route::get('service-providers', [ServiceProviderController::class, 'index']);
+        Route::post('service-providers', [ServiceProviderController::class, 'store']);
+        Route::get('service-providers/{id}', [ServiceProviderController::class, 'show']);
+        Route::put('service-providers/{id}', [ServiceProviderController::class, 'update']);
+
+        // Service Listings (Escopo B1, B2)
+        Route::get('service-listings', [ServiceListingController::class, 'index']);
+        Route::post('service-listings', [ServiceListingController::class, 'store']);
+        Route::get('service-listings/{id}', [ServiceListingController::class, 'show']);
+    });
+
+    // Service Categories - publico (Escopo B1, B2)
+    Route::get('service-categories', [ServiceCategoryController::class, 'index']);
+
+    // Product Locator - autenticado (Escopo A1)
+    Route::middleware(['jwt.auth'])->group(function () {
+        Route::get('product-locator', [ProductLocatorController::class, 'index']);
+    });
+
+    // Service Search - publico (Escopo B2)
+    Route::get('service-search', [ServiceSearchController::class, 'index']);
+});
+
