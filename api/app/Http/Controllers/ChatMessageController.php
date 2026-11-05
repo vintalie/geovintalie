@@ -28,7 +28,7 @@ class ChatMessageController extends Controller
             'body' => $data['body'],
         ]);
 
-        return new MessageResource($message->load('sender'));
+        return (new MessageResource($message->load('sender')))->response($request)->setStatusCode(201);
     }
 
     /** Marcar uma mensagem como lida (somente destinatario). */

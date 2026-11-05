@@ -6,6 +6,7 @@ use App\Models\ServiceCategory;
 use App\Models\ServiceEvaluation;
 use App\Models\ServiceListing;
 use App\Models\ServiceProvider;
+use App\Models\Appointment;
 use App\Models\User;
 use App\Models\UserType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,7 +21,6 @@ class ServiceEvaluationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->artisan('migrate:fresh', ['--force' => true]);
         $this->artisan('db:seed', ['--class' => 'DatabaseSeeder']);
     }
 
@@ -60,6 +60,15 @@ class ServiceEvaluationTest extends TestCase
             'description' => 'Servico concluido',
             'price' => 150.00,
             'is_active' => true,
+        ]);
+
+        Appointment::create([
+            'client_id' => $avaliador->id,
+            'provider_id' => $prestador->id,
+            'date' => '2026-11-10',
+            'time' => '14:00',
+            'status' => Appointment::STATUS_CONCLUIDO,
+            'valor' => 150.00,
         ]);
 
         $token = $this->obterTokenDoUsuario($avaliador);

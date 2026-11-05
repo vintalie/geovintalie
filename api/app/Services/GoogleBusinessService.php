@@ -22,13 +22,13 @@ class GoogleBusinessService
         $config = config('google_business');
 
         return new self(
-            clientId: $config['client_id'],
-            clientSecret: $config['client_secret'],
-            redirectUri: $config['redirect_uri'],
-            authUri: $config['auth_uri'],
-            tokenUri: $config['token_uri'],
-            baseUrl: $config['base_url'],
-            scopes: $config['scopes'],
+            clientId:     $config['client_id'] ?? '',
+            clientSecret: $config['client_secret'] ?? '',
+            redirectUri:  $config['redirect_uri'] ?? '',
+            authUri:      $config['auth_uri'] ?? 'https://accounts.google.com/o/oauth2/v2/auth',
+            tokenUri:     $config['token_uri'] ?? 'https://oauth2.googleapis.com/token',
+            baseUrl:      $config['base_url'] ?? 'https://mybusinessbusinessinformation.googleapis.com/v1',
+            scopes:       $config['scopes'] ?? [],
         );
     }
 

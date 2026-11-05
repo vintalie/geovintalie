@@ -31,7 +31,11 @@ class AgendamentoChatTest extends TestCase
     {
         $tipo = UserType::firstOrCreate(['nome' => $tipoNome], ['nome' => $tipoNome]);
         $email = "{$tipoNome}@teste.com";
-        User::factory()->create(['email' => $email, 'password' => bcrypt('senha123'), 'tipo_id' => $tipo->id]);
+        // firstOrCreate evita unique violation em testes que chamam o helper duas vezes na mesma transacao
+        User::firstOrCreate(
+            ['email' => $email],
+            ['name' => ucfirst($tipoNome), 'password' => bcrypt('senha123'), 'tipo_id' => $tipo->id]
+        );
 
         return $this->loginUsuario($email, 'senha123');
     }
@@ -129,7 +133,7 @@ class AgendamentoChatTest extends TestCase
         $this->criarAgendamento($clientToken, $prestador['provider']->id, ['date' => now()->addDays(5)->toDateString()]);
 
         // Outro cliente nao deve ver estes agendamentos
-        $outroToken = $this->obterToken('user');
+        $outroToken = $this->obterToken('outro');
 
         $response = $this->withHeader('Authorization', "Bearer {$clientToken}")
             ->get("{$this->base}/agendamentos");

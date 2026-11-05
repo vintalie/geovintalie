@@ -57,7 +57,7 @@ class MessagesController extends Controller
             'body' => $request->body,
         ]);
 
-        return new MessageResource($message->load('sender'));
+        return (new MessageResource($message->load('sender')))->response($request)->setStatusCode(201);
     }
 
     /**

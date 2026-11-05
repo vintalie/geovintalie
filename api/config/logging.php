@@ -73,9 +73,6 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'formatter' => \Monolog\Formatter\JsonFormatter::class,
             'formatter_with' => [],
-            'processors' => [
-                \App\Logging\CorrelationProcessor::class,
-            ],
             'replace_placeholders' => true,
         ],
 

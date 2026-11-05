@@ -60,9 +60,9 @@ class ChatConversationController extends Controller
             ]);
         }
 
-        return new ConversationResource(
+        return (new ConversationResource(
             $conversation->load(['client', 'provider.user'])
-        );
+        ))->response($request)->setStatusCode(201);
     }
 
     /** Exibir conversa com mensagens (somente participantes). */

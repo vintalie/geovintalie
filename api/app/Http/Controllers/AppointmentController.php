@@ -62,9 +62,9 @@ class AppointmentController extends Controller
             'observacoes' => $data['observacoes'] ?? null,
         ]);
 
-        return new AppointmentResource(
+        return (new AppointmentResource(
             $appointment->load(['client', 'provider.user'])
-        );
+        ))->response($request)->setStatusCode(201);
     }
 
     /** Exibir um agendamento (somente cliente ou prestador envolvidos). */

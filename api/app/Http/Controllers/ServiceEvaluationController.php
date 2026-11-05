@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\ServiceEvaluationResource;
+use App\Models\Appointment;
 use App\Models\FeatureFlag;
 use App\Models\ServiceEvaluation;
 use App\Models\ServiceListing;
@@ -40,6 +41,16 @@ class ServiceEvaluationController extends Controller
             abort(403, 'Voce nao pode avaliar o proprio servico.');
         }
 
+        // Apenas o cliente que contratou o servico e ja o concluiu pode avaliar.
+        $contratou = Appointment::where('client_id', $user->id)
+            ->where('provider_id', $provider->id)
+            ->where('status', Appointment::STATUS_CONCLUIDO)
+            ->exists();
+
+        if (! $contratou) {
+            abort(403, 'Apenas clientes que contrataram o servico e ja o concluiram podem avalia-lo.');
+        }
+
         // Uma avaliacao por cliente por servico.
         $jaAvaliou = ServiceEvaluation::where('evaluator_id', $user->id)
             ->where('service_listing_id', $listing->id)
@@ -57,6 +68,7 @@ class ServiceEvaluationController extends Controller
         ]);
 
         $provider->recalculateRating();
+        $listing->recalculateRating();
 
         return new ServiceEvaluationResource(
             $evaluation->load('evaluator', 'provider')

@@ -73,7 +73,7 @@ class ConversationsController extends Controller
             ]);
         }
 
-        return new ConversationResource($conversation->load('client', 'provider.user'));
+        return (new ConversationResource($conversation->load('client', 'provider.user')))->response($request)->setStatusCode(201);
     }
 
     /**

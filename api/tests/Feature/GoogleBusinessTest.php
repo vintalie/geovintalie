@@ -43,7 +43,7 @@ class GoogleBusinessTest extends TestCase
         ]);
 
         $token = JWTAuth::fromUser($user);
-        JWTAuth::setUser($user);
+        auth()->guard('api')->setUser($user);
 
         return ['user' => $user, 'token' => $token];
     }
@@ -57,6 +57,20 @@ class GoogleBusinessTest extends TestCase
         ]);
 
         return base64_encode($payload . '.' . hash_hmac('sha256', $payload, config('app.key')));
+    }
+
+    private function vincularTokenDoUsuario(User $user): void
+    {
+        GoogleBusinessToken::create([
+            'user_id'                   => $user->id,
+            'google_account_id'         => 'accounts/123',
+            'google_account_name'       => 'Conta Teste',
+            'access_token_encrypted'    => Crypt::encryptString('access-token-em-uso'),
+            'refresh_token_encrypted'   => Crypt::encryptString('refresh-token-em-uso'),
+            'token_type'                => 'Bearer',
+            'expires_at'                => now()->addHours(1),
+            'scopes'                    => 'https://www.googleapis.com/auth/business.manage',
+        ]);
     }
 
     /** Autorizacao OAuth 2.0 --------------------------------------------- */
@@ -151,6 +165,7 @@ class GoogleBusinessTest extends TestCase
     {
         $dados = $this->autenticar();
         $this->serviceDeTeste();
+        $this->vincularTokenDoUsuario($dados['user']);
 
         Http::fake([
             'mybusinessbusinessinformation.googleapis.com/v1*' => Http::response([
@@ -176,6 +191,7 @@ class GoogleBusinessTest extends TestCase
     {
         $dados = $this->autenticar();
         $this->serviceDeTeste();
+        $this->vincularTokenDoUsuario($dados['user']);
 
         Http::fake([
             'mybusinessbusinessinformation.googleapis.com/v1*' => Http::response([
@@ -196,12 +212,7 @@ class GoogleBusinessTest extends TestCase
     {
         $dados = $this->autenticar();
         $this->serviceDeTeste();
-
-        $token = GoogleBusinessToken::create([
-            'user_id'                 => $dados['user']->id,
-            'access_token_encrypted'  => Crypt::encryptString('ya29.access-teste'),
-            'scopes'                  => 'https://www.googleapis.com/auth/business.manage',
-        ]);
+        $this->vincularTokenDoUsuario($dados['user']);
 
         Http::fake([
             'mybusinessbusinessinformation.googleapis.com/v1*' => Http::response([
@@ -225,17 +236,18 @@ class GoogleBusinessTest extends TestCase
             ->assertJsonFragment(['title' => 'Loja Teste Sincronizada']);
 
         $this->assertDatabaseHas('google_business_tokens', [
-            'id'             => $token->id,
-            'profile_data.title' => 'Loja Teste Sincronizada',
+            'user_id'              => $dados['user']->id,
+            'profile_data.title'   => 'Loja Teste Sincronizada',
         ]);
     }
 
     public function test_sincronizar_sem_token_cadastrado_retorna_404(): void
     {
-        $this->autenticar();
+        $dados = $this->autenticar();
         $this->serviceDeTeste();
 
-        $this->withHeader('Authorization', 'Bearer token-nao-existe')
+        // JWT valido, mas sem integracao Google Business Profile vinculada ao usuario.
+        $this->withHeader('Authorization', "Bearer {$dados['token']}")
             ->get("{$this->base}/accounts/123/locations/456")
             ->assertStatus(404);
     }
