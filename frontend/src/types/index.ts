@@ -2,6 +2,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  tipo_nome?: string;
   email_verified_at?: string;
   created_at: string;
   updated_at: string;
@@ -10,6 +11,7 @@ export interface User {
 export interface Country {
   id: number;
   name: string;
+  code?: string;
   created_at: string;
   updated_at: string;
 }
@@ -27,7 +29,8 @@ export interface State {
   id: number;
   name: string;
   country_id: number;
-  abbreviation: number;
+  abbreviation: string;
+  country_name?: string;
   created_at: string;
   updated_at: string;
 }
@@ -81,11 +84,11 @@ export interface Stocks {
   id: number;
   value: string;
   color: string;
-  size?:string;
-  quantity:number;
-  product_id:string;
-  property_id:string;
-
+  size?: string;
+  q_type?: string;
+  quantity?: number;
+  product_id: number;
+  property_id: number;
 }
 
 export interface Meta {
@@ -115,7 +118,7 @@ export interface Products {
   id: number;
   name: string;
   tipo: string;
-  valor: string;
+  price: string;
   img_main: string;
   img_cover: string;
   html: string;

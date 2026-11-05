@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { updateUser, me } from '../api/auth';
-import 'bootstrap'
 
 const Profile = () => {
   const { user, setUser } = useAuth();

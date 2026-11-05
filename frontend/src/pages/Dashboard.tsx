@@ -1,6 +1,4 @@
-import React from 'react';
 import { useAuth } from '../hooks/useAuth';
-import 'bootstrap'
 const Dashboard = () => {
   const { user } = useAuth();
   return (

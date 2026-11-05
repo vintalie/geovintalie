@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('color');
             $table->string('size');
             $table->string('quantity');
-            $table->foreignId('product_id')->constrained('product')->onDelete('cascade');
-            $table->foreignId('property_id')->constrained('property')->onDelete('cascade');
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->foreignId('property_id')->constrained('properties')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Links, Meta, PaginatedResponse } from '../types/pagination';
+import type { Links, Meta, PaginatedResponse } from '../types/index';
 
-type FetchFunction<T> = (page: number, perPage: number) => Promise<any>;
-type Extractor<T> = (response: any) => PaginatedResponse<T>;
+type FetchFunction = (page: number, perPage: number) => Promise<any>;
+type Extractor = (response: any) => PaginatedResponse<any>;
 
 interface UsePaginatedResourceOptions {
   perPage?: number;
@@ -11,8 +11,8 @@ interface UsePaginatedResourceOptions {
 }
 
 export function usePaginatedResource<T>(
-  fetchFn: FetchFunction<T>,
-  extractor?: Extractor<T>, // <-- AGORA O SEGUNDO PARÂMETRO É O EXTRACTOR
+  fetchFn: FetchFunction,
+  extractor?: Extractor, // <-- AGORA O SEGUNDO PARÂMETRO É O EXTRACTOR
   options: UsePaginatedResourceOptions = {} // <-- TERCEIRO PARÂMETRO SÃO AS OPÇÕES
 ) {
   const { perPage = 10, initialPage = 1 } = options;
@@ -32,7 +32,7 @@ export function usePaginatedResource<T>(
         const response = await fetchFn(pageToLoad, perPage);
 
         // Se tiver extractor, usa ele. Senão, tenta response.data ou a própria response
-        let paginated: PaginatedResponse<T>;
+        let paginated: PaginatedResponse<any>;
         if (extractor) {
           paginated = extractor(response);
         } else {

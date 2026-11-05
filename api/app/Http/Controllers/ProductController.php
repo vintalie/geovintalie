@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Property;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -15,27 +17,11 @@ class ProductController extends Controller
         $products = Product::with('stock')->paginate(
             $request->input('per_page', 10)
         );
-        
+
         return response()->json([
             'message' => 'Products retrieved successfully',
             'products' => $products
         ], 200);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $validated = request()->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
-        ]);
-        $products = Product::create($validated);
-        return response()->json([
-            'message' => 'Product created successfully',
-            'product' => $products
-        ], 201);
     }
 
     /**
@@ -45,8 +31,11 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'tipo' => 'nullable|string|max:255',
             'price' => 'required|numeric',
+            'property_id' => 'required|exists:properties,id',
         ]);
+        $validated['user_id'] = Auth::id();
         $product = Product::create($validated);
         return response()->json([
             'message' => 'Product created successfully',
@@ -54,9 +43,16 @@ class ProductController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    /** Display the products of a property. */
+    public function byProperty(Property $property)
+    {
+        return response()->json([
+            'message' => 'Products of property retrieved successfully',
+            'products' => $property->productStock,
+        ], 200);
+    }
+
+    /** Display the specified resource. */
     public function show(Product $product)
     {
         return response()->json([
@@ -65,9 +61,7 @@ class ProductController extends Controller
         ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+    /** Show the form for editing the specified resource. */
     public function edit(Product $product)
     {
         $validated = request()->validate([
@@ -81,9 +75,7 @@ class ProductController extends Controller
         ], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    /** Update the specified resource in storage. */
     public function update(Request $request, Product $product)
     {
         $validated = $request->validate([
@@ -97,9 +89,7 @@ class ProductController extends Controller
         ], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    /** Remove the specified resource from storage. */
     public function destroy(Product $product)
     {
         $product->delete();

@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('tipo');
-            $table->string('img_main');
-            $table->string('img_cover');
-            $table->longText('html');
-            $table->boolean('disabled');
+            $table->string('name')->nullable(false);
+            $table->string('tipo')->nullable();
+            $table->string('img_main')->nullable();
+            $table->string('img_cover')->nullable();
+            $table->longText('html')->nullable();
+            $table->decimal('price', 10, 2)->nullable();
+            $table->boolean('disabled')->default(false);
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('property_id')->constrained('properties');
+            $table->foreignId('property_id')->nullable()->constrained('properties');
 
             $table->timestamps();
         });
@@ -31,10 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement('PRAGMA foreign_keys = OFF');
-        Schema::dropIfExists('properties');
-        Schema::dropIfExists('stocks');
         Schema::dropIfExists('products');
-        DB::statement('PRAGMA foreign_keys = ON');
     }
 };

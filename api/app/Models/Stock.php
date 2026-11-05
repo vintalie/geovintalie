@@ -6,11 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Stock extends Model
 {
-    protected $with = ['products'];
-    public function property(){
-        $this->belongsTo(Property::class);
+    protected $fillable = ['product_id','property_id','value','color','size','quantity'];
+    protected $with = ['product','property'];
+    public function product(){
+        return $this->belongsTo(Product::class);
     }
-    public function products(){
-        $this->belongsToMany(Product::class);
+    public function property(){
+        return $this->belongsTo(Property::class);
     }
 }
