@@ -27,8 +27,8 @@ const Register = () => {
     try {
       await registerApi(name, email, password);
       const response = await login(email, password);
-      const { token } = response.data;
-      setAuth(token);
+      const { token, user } = response.data;
+      setAuth(token, user);
       navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro no registro');

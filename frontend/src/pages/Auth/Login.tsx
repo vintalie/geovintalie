@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Loader2, LogIn, UserPlus, Mail, Lock } from 'lucide-react';
 import { login } from '../../api/auth';
 import { register as registerApi } from '../../api/auth';
@@ -35,13 +35,13 @@ const Login = () => {
     try {
       if (mode === 'login') {
         const response = await login(email, password);
-        const { token } = response.data;
-        setAuth(token);
+        const { token, user } = response.data;
+        setAuth(token, user);
       } else {
         await registerApi(name, email, password);
         const response = await login(email, password);
-        const { token } = response.data;
-        setAuth(token);
+        const { token, user } = response.data;
+        setAuth(token, user);
       }
       navigate('/');
     } catch (err: any) {

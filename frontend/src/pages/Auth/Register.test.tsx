@@ -88,7 +88,6 @@ describe('Register', () => {
           resolveRegister = resolve;
         }),
     );
-    const user = userEvent.setup();
     render(<Register />);
     const botao = screen.getByRole('button', { name: /registrar/i });
     await preencherCadastro('Novo Usuario', 'novo@test.com', 'senha456');
