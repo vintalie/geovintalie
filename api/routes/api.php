@@ -28,6 +28,8 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ConversationsController;
 use App\Http\Controllers\MessagesController;
+use App\Http\Controllers\PublicPropertyController;
+use App\Http\Controllers\UserConsentController;
 
 use Illuminate\Support\Facades\Route;
 
