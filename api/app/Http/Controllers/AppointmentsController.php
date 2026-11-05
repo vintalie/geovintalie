@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Models\FeatureFlag;
 use App\Models\ServiceProvider;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AppointmentsController extends Controller
 {
@@ -103,6 +104,8 @@ class AppointmentsController extends Controller
         if (!FeatureFlag::isEnabled('ff_agendamentos_chat')) {
             abort(403, 'Funcionalidade nao habilitada.');
         }
+
+        Log::debug('APPT_UPDATE probe', ['id' => $appointment->id, 'provider_id' => $appointment->provider_id, 'provider' => optional($appointment->provider)->id, 'user' => $request->user()->id]);
 
         $this->authorizeParticipant($request, $appointment);
 
