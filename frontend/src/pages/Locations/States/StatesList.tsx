@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { Button } from "@/components/ui/button";
 import { Link, useParams } from 'react-router-dom';
 import { deleteState, getState, getStates } from '../../../api/location';
 import PaginationControls from '../../../components/common/PaginationControls';
@@ -105,7 +106,7 @@ const StatesList = () => {
               <td className="p-2">
                 <Link to={`/states/${singleState.id}/edit`} className="text-blue-500 mr-2">
                   Editar
-                </Button>
+                </Link>
                 <button onClick={() => handleDelete(singleState.id)} className="text-red-500">
                   Excluir
                 </button>
@@ -150,7 +151,7 @@ const StatesList = () => {
               <td className="p-2">
                 <Link to={`/states/${state.id}/edit`} className="text-blue-500 mr-2">
                   Editar
-                </Button>
+                </Link>
                 <button onClick={() => handleDelete(state.id)} className="text-red-500">
                   Excluir
                 </button>

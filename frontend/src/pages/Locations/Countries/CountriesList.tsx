@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
 import { deleteCountry, getCountries } from '../../../api/location';
 import PaginationControls from '../../../components/common/PaginationControls';
 import { usePaginatedResource } from '../../../hooks/usePaginatedResource';
@@ -69,7 +70,7 @@ const CountriesList = () => {
                   className="text-blue-500 mr-2"
                 >
                   Editar
-                </Button>
+                </Link>
                 <button
                   onClick={() => handleDelete(country.id)}
                   className="text-red-500"

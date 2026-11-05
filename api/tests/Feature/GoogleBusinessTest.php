@@ -27,6 +27,11 @@ class GoogleBusinessTest extends TestCase
         Config::set('google_business.redirect_uri', 'http://localhost:8000/api/v2/google-business/callback');
         Config::set('google_business.frontend_redirect_uri', null);
 
+        \App\Models\FeatureFlag::firstOrCreate(
+            ['name' => 'ff_o2o_locator'],
+            ['enabled' => true, 'rollout_percentage' => 100, 'description' => 'Test flag']
+        );
+
         $this->app->instance(
             GoogleBusinessService::class,
             GoogleBusinessService::makeFromConfig()
@@ -86,7 +91,10 @@ class GoogleBusinessTest extends TestCase
             GoogleBusinessService::makeFromConfig()
         );
 
-        $this->get("{$this->base}/auth/redirect")
+        $dados = $this->autenticar();
+
+        $this->withHeader('Authorization', "Bearer {$dados['token']}")
+            ->get("{$this->base}/redirect")
             ->assertStatus(500);
     }
 
@@ -95,7 +103,9 @@ class GoogleBusinessTest extends TestCase
         $this->autenticar();
         $this->serviceDeTeste();
 
-        $resposta = $this->get("{$this->base}/auth/redirect");
+        $dados = $this->autenticar();
+        $resposta = $this->withHeader('Authorization', "Bearer {$dados['token']}")
+            ->get("{$this->base}/redirect");
 
         $resposta->assertStatus(302);
         $this->assertStringStartsWith(
