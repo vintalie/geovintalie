@@ -6,7 +6,7 @@
 1. [DESENVOLVIMENTO] API Laravel funcional em modo desenvolvimento local (servidor rodando ou pronto para rodar em http://127.0.0.1:8000), com testes básicos validados conforme plano.
 2. [DESENVOLVIMENTO] Frontend React/Vite configurado para usar API local (VITE_API_URL apontando para localhost:8000), rodando em desenvolvimento local.
 3. [DESENVOLVIMENTO] Build do frontend configurado/preparado para GitHub Pages (base path adequado, configuração para deploy) mantendo configuração para API local.
-4. [DESENVOLVIMENTO] Integração do design property-linker: remover Bootstrap, aplicar Tailwind CSS v4 + shadcn/ui + tokens oklch, redesenhar páginas (Login, Register, Institutional, Dashboard, Admin, User, Map, Property, Product).
+- [DESENVOLVIMENTO] Integração do design property-linker: remover Bootstrap, aplicar Tailwind CSS v4 + shadcn/ui + tokens oklch, redesenhar páginas (Login, Register, Institutional, Dashboard, Admin, User, Map, Property, Product). **Páginas corrigidas: Login, Institutional, AdminDashboard, MapPage, ImportExport.**
 5. [DESENVOLVIMENTO] Execução do fluxo GitHub retrôativo: issues criadas/mapeadas, branches, PRs, revisões e merges registrados conforme GITHUB_WORKFLOW.md.
 6. [MARKETING] Documentação/validação final com checklist de critérios atendidos (página institucional, WhatsApp, mapa, admin, import/export, design property-linker) conforme critérios de aceitação.
 
