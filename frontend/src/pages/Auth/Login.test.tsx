@@ -114,7 +114,7 @@ describe('Login', () => {
 
     await waitFor(() => expect(mockLogin).toHaveBeenCalled());
     await waitFor(() =>
-      expect(screen.getByText('Credenciais inválidas')).toBeInTheDocument(),
+      expect(screen.getByText(/Credenciais inválidas/)).toBeInTheDocument(),
     );
     expect(navigateFn).not.toHaveBeenCalled();
   });

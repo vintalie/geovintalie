@@ -34,7 +34,7 @@ describe('Institutional', () => {
     render(<Institutional />);
     expect(screen.getByText(/Vamos conversar\?/i)).toBeInTheDocument();
     const link = screen.getByRole('link', { name: /Chamar no WhatsApp/i });
-    expect(link).toHaveAttribute('href', /wa\.me\/5513981412290/);
+    expect(link.getAttribute('href')).toMatch(/wa\.me\/5513981412290/);
   });
 
   it('renderiza o cabeçalho do site com link Geovintalie e link Entrar', () => {

@@ -115,7 +115,7 @@ describe('Register', () => {
   it('clicar em "Faça login" navega para a página de login', async () => {
     const user = userEvent.setup();
     render(<Register />);
-    await user.click(screen.getByRole('link', { name: /fa.ça login/i }));
+    await user.click(screen.getByText('Faça login'));
     await waitFor(() => expect(navigateFn).toHaveBeenCalledWith('/login'));
   });
 });
