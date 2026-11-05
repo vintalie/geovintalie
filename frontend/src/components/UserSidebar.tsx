@@ -2,21 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarSeparator,
-  SidebarTrigger,
-  useSidebar,
-} from '@/components/ui/sidebar';
-import {
   LayoutDashboard,
   MapPinned,
   Store,
@@ -61,7 +46,7 @@ const adminMenuItems = [
 export function UserSidebar({ className }: { className?: string }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [open] = useState(true);
+  const [open, setOpen] = useState(true);
 
   const menuItems = isAdmin(user) ? adminMenuItems : userMenuItems;
 
@@ -70,76 +55,56 @@ export function UserSidebar({ className }: { className?: string }) {
     navigate('/login');
   };
 
+  const toggleSidebar = () => setOpen((prev) => !prev);
+
   return (
-    <SidebarProvider defaultOpen={open}>
-      <Sidebar className={cn("border-r", className)} side="left">
-        <SidebarTrigger asChild>
-          <Button variant="outline" size="icon" className="mr-2">
-            <span className="sr-only">Abrir menu</span>
-          </Button>
-        </SidebarTrigger>
-        <SidebarContent>
-          <SidebarHeader className="space-y-1">
-            <div className="flex items-center gap-2">
-              <MapPinned className="h-5 w-5 text-accent" />
-              <span className="font-display font-semibold text-sm">Geovintalie</span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {isAdmin(user) ? 'Administrador' : 'Usuário'}
-            </p>
-          </SidebarHeader>
-          <SidebarSeparator />
-          <SidebarGroup>
-            <SidebarGroupLabel>Navegação</SidebarGroupLabel>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.href} className="text-sm">
-                      {item.icon ? (
-                        <item.icon className="mr-2 h-4 w-4 shrink-0" />
-                      ) : null}
-                      {item.label}
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroup>
-          <SidebarSeparator />
-          <SidebarGroup>
-            <SidebarGroupLabel>Conta</SidebarGroupLabel>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <button
-                    onClick={handleLogout}
-                    className="text-sm flex items-center gap-2 text-destructive hover:text-destructive/90"
-                  >
-                    <LogOut className="h-4 w-4 shrink-0" /> Sair
-                  </button>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
-        </SidebarContent>
-        <SidebarFooter className="p-2">
+    <aside className={cn("border-r bg-background flex flex-col", className)} style={{ width: open ? '16rem' : '3rem' }}>
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-2">
+          <MapPinned className="h-5 w-5 text-accent" />
+          {open && <span className="font-display font-semibold text-sm">Geovintalie</span>}
+        </div>
+        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-2">
+          <span className="sr-only">Alternar painel lateral</span>
+        </Button>
+      </div>
+      {open && (
+        <nav className="flex-1 overflow-y-auto p-2">
+          <div className="space-y-1">
+            <p className="px-2 py-1 text-xs text-muted-foreground">Navegação</p>
+            {menuItems.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-accent/50 transition-colors"
+              >
+                {item.icon ? <item.icon className="mr-2 h-4 w-4 shrink-0" /> : null}
+                {item.label}
+              </a>
+            ))}
+          </div>
+          <div className="mt-4 px-2 py-1 space-y-1">
+            <p className="px-2 py-1 text-xs text-muted-foreground">Conta</p>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-destructive hover:text-destructive/90 transition-colors"
+            >
+              <LogOut className="h-4 w-4 shrink-0" /> Sair
+            </button>
+          </div>
+        </nav>
+      )}
+      {open && (
+        <footer className="p-2">
           <Badge variant="outline" className="w-full text-xs">
             {isAdmin(user) ? 'Admin' : 'Usuário'}
           </Badge>
-        </SidebarFooter>
-      </Sidebar>
-    </SidebarProvider>
+        </footer>
+      )}
+    </aside>
   );
 }
 
 export function SidebarTriggerButton() {
-  const { toggleSidebar } = useSidebar();
-  return (
-    <SidebarTrigger asChild>
-      <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-8 w-8">
-        <span className="sr-only">Alternar painel lateral</span>
-      </Button>
-    </SidebarTrigger>
-  );
+  return null;
 }
