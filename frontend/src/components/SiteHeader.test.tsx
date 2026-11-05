@@ -23,6 +23,7 @@ let navigateFn: ReturnType<typeof vi.fn>;
 function autenticar(usuario: any) {
   localStorage.setItem('token', 'token-teste');
   mockMe.mockResolvedValue({ data: { user: usuario } } as any);
+  mockUseAuth.mockReturnValue({ user: usuario, loading: false, logout: vi.fn() } as any);
 }
 
 beforeEach(() => {
@@ -58,7 +59,7 @@ describe('SiteHeader', () => {
     autenticar({ id: 2, name: 'Admin', email: 'admin@test.com', role: 'admin' });
     render(<SiteHeader />);
     await waitFor(() => expect(screen.getByText(/Administração/)).toBeInTheDocument());
-    expect(screen.getByRole('link', { name: /entrar/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /entrar/i })).not.toBeInTheDocument();
   });
 
   it('clicar em Sair faz logout e navega para /login', async () => {

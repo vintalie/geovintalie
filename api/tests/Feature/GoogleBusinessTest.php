@@ -100,7 +100,6 @@ class GoogleBusinessTest extends TestCase
 
     public function test_autorizacao_redireciona_para_tela_de_consentimento_google(): void
     {
-        $this->autenticar();
         $this->serviceDeTeste();
 
         $dados = $this->autenticar();
