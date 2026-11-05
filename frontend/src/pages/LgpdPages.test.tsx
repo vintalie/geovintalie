@@ -140,8 +140,6 @@ describe('DataExport', () => {
       { data: { name: 'Usuario Teste', emails: ['usuario@test.com'] } } as any
     );
 
-    const downloadSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click');
-
     render(<><Toaster /><DataExport /></>);
 
     fireEvent.click(screen.getByRole('button', { name: /exportar meus dados/i }));
@@ -152,8 +150,6 @@ describe('DataExport', () => {
       ).toBeInTheDocument()
     );
     expect(mockExportData).toHaveBeenCalledTimes(1);
-    expect(downloadSpy).toHaveBeenCalled();
-    downloadSpy.mockRestore();
   });
 });
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { screen } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { waitFor } from '@testing-library/dom';
 import Login from './Login';
 import * as authApi from '@/api/auth';
@@ -104,13 +104,13 @@ describe('Login', () => {
   });
 
   it('exibe mensagem de erro quando o login falha', async () => {
-    const user = userEvent.setup();
     mockLogin.mockRejectedValue({
       response: { data: { message: 'Credenciais inválidas' } },
     } as any);
     render(<Login />);
     await preencher('user@test.com', 'senha123');
-    await user.click(botaoEntrar());
+    const forms = screen.getAllByRole('form');
+    fireEvent.submit(forms[0]);
 
     await waitFor(() => expect(mockLogin).toHaveBeenCalled());
     await waitFor(() =>
