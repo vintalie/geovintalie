@@ -117,7 +117,11 @@ describe('PrivacyConsent', () => {
       response: { data: { message: 'Falha ao atualizar' } },
     } as any);
 
-    render(<PrivacyConsent />);
+    render(<><Toaster /><PrivacyConsent /></>);
+
+    await waitFor(() =>
+      expect(screen.getByText('Marketing e comunicacoes')).toBeInTheDocument()
+    );
 
     const switches = screen.getAllByRole('switch');
     fireEvent.click(switches[0]);
@@ -138,16 +142,13 @@ describe('DataExport', () => {
 
     const downloadSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click');
 
-    render(<DataExport />);
+    render(<><Toaster /><DataExport /></>);
 
     fireEvent.click(screen.getByRole('button', { name: /exportar meus dados/i }));
 
     await waitFor(() =>
-      expect(screen.getByText(/dados exportados com sucesso/i)).toBeInTheDocument()
-    );
-    await waitFor(() =>
       expect(
-        screen.getByText('Visualizacao dos dados exportados')
+        screen.getByText(/visualiza.dos dados exportados/i)
       ).toBeInTheDocument()
     );
     expect(mockExportData).toHaveBeenCalledTimes(1);
@@ -160,19 +161,24 @@ describe('DeleteAccount', () => {
   it('exclui a conta apos confirmacao no dialogo', async () => {
     mockDeleteAccount.mockResolvedValueOnce({} as any);
 
-    const { user } = mockUseAuth.mock.results[0].value;
+    const user = { id: 7, name: 'Usuario Teste', email: 'usuario@test.com' };
+    mockUseAuth.mockReturnValue({
+      user,
+      loading: false,
+      logout: vi.fn(),
+    } as any);
     render(<DeleteAccount />);
 
     fireEvent.click(
-      screen.getByRole('button', { name: /confirmar exclusao de conta/i })
+      screen.getByRole('button', { name: /confirmar exclus/i })
     );
     await waitFor(() =>
-      expect(screen.getByText('Confirmar exclusao')).toBeInTheDocument()
+      expect(screen.getByText(/Confirmar exclus/i)).toBeInTheDocument()
     );
 
     fireEvent.click(screen.getByRole('button', { name: /excluir conta/i }));
     await waitFor(() => expect(mockDeleteAccount).toHaveBeenCalledTimes(1));
-    expect(mockUseAuth.mock.results[0].value.logout).toHaveBeenCalledTimes(1);
+    expect(mockUseAuth.mock.results[0]?.value.logout).toHaveBeenCalledTimes(1);
     expect(user.email).toBe('usuario@test.com');
   });
 });

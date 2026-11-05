@@ -49,6 +49,7 @@ final class MetricsRegistry
 
     public function recordRequest(string $endpoint, int $status, float $ms): void
     {
+        error_log('[METRICS-PROBE] recordRequest ' . $endpoint . ' ' . $status . ' instance=' . spl_object_id($this) . "\n", 3, '/tmp/metrics_probe.log');
         $this->totalRequests++;
         $this->requestsByEndpoint[$endpoint] = ($this->requestsByEndpoint[$endpoint] ?? 0) + 1;
         $this->requestsByStatus["status:{$status}"] = ($this->requestsByStatus["status:{$status}"] ?? 0) + 1;
