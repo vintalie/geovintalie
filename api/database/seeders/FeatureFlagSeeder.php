@@ -1,0 +1,53 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+use App\Models\FeatureFlag;
+
+class FeatureFlagSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $flags = [
+            [
+                'name' => 'ff_o2o_locator',
+                'description' => 'Habilitar localizador de produtos próximos (Escopo A1)',
+                'enabled' => false,
+                'rollout_percentage' => 0,
+            ],
+            [
+                'name' => 'ff_service_providers',
+                'description' => 'Habilitar cadastro de prestadores de serviço (Escopo B1)',
+                'enabled' => false,
+                'rollout_percentage' => 0,
+            ],
+            [
+                'name' => 'ff_service_search',
+                'description' => 'Habilitar busca com filtros de serviço (Escopo B2)',
+                'enabled' => false,
+                'rollout_percentage' => 0,
+            ],
+            [
+                'name' => 'ff_new_user_roles',
+                'description' => 'Habilitar novos papéis de usuário (consumer, retailer, provider, industry) (Escopo C1)',
+                'enabled' => false,
+                'rollout_percentage' => 0,
+            ],
+            [
+                'name' => 'ff_lgpd_consent',
+                'description' => 'Habilitar fluxo de consentimento LGPD (Escopo C3)',
+                'enabled' => false,
+                'rollout_percentage' => 0,
+            ],
+        ];
+
+        foreach ($flags as $flag) {
+            FeatureFlag::firstOrCreate(['name' => $flag['name']], $flag);
+        }
+    }
+}
