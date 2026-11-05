@@ -8,6 +8,7 @@ import {
   MapPin,
   FileSpreadsheet,
   ShieldCheck,
+  FileText,
   Users,
   LogOut,
 } from 'lucide-react';
@@ -25,6 +26,9 @@ const userMenuItems = [
   { href: '/map', icon: MapPin, label: 'Mapa' },
   { href: '/import-export', icon: FileSpreadsheet, label: 'Importar/Exportar' },
   { href: '/profile', icon: Users, label: 'Perfil' },
+  { href: '/privacy-consent', icon: ShieldCheck, label: 'Consentimentos LGPD' },
+  { href: '/data-export', icon: FileText, label: 'Exportar meus dados' },
+  { href: '/delete-account', icon: LogOut, label: 'Excluir conta' },
 ];
 
 const adminMenuItems = [
@@ -41,6 +45,9 @@ const adminMenuItems = [
   { href: '/admin', icon: ShieldCheck, label: 'Administração' },
   { href: '/users', icon: Users, label: 'Usuários' },
   { href: '/profile', icon: Users, label: 'Perfil' },
+  { href: '/privacy-consent', icon: ShieldCheck, label: 'Consentimentos LGPD' },
+  { href: '/data-export', icon: FileText, label: 'Exportar meus dados' },
+  { href: '/delete-account', icon: LogOut, label: 'Excluir conta' },
 ];
 
 export function UserSidebar({ className }: { className?: string }) {

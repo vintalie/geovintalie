@@ -3,8 +3,8 @@
 **Projeto:** GeoVintalie  
 **Data:** 05/11/2026  
 **Fase:** 1 — Reconhecimento (CONCLUÍDA)  
-**Fase:** 2 — Implementação (EM ANDAMENTO - R1/R2)  
-**Status:** Em execução
+**Fase:** 2 — Implementação (EM ANDAMENTO - R2)  
+**Status:** 6 agentes em execução paralela (R2)
 
 ---
 
@@ -12,21 +12,29 @@
 
 | Escopo | Requisitos | Não iniciado | Em andamento | Concluído | Bloqueado |
 |--------|-----------|-------------|-------------|-----------|-----------|
-| A — O2O/Varejo | 6 | 3 (A2, A4, A5) | 2 (A1, A6) | 1 (A3) | 0 |
+| A — O2O/Varejo | 6 | 3 (A2, A4, A5) | 1 (A1) | 2 (A3, A6) | 0 |
 | B — Marketplace Serviços | 6 | 3 (B3, B4, B6) | 2 (B1, B2) | 1 (B5 parcial) | 0 |
 | C — Transversal | 6 | 2 (C2, C6) | 3 (C1, C4, C5) | 1 (C3 parcial) | 0 |
-| **Total** | **18** | **8** | **7** | **2** | **0** |
+| **Total** | **18** | **8** | **7** | **4** | **0** |
+
+**Agentes em execução (6 subagentes em paralelo):**
+- sa-0-2af504f0 — EXECUTOR-DEV-API-A2 (Google Business Profile OAuth 2.0)
+- sa-0-7b1cf8a6 — EXECUTOR-DEV-API-B4 (Agendamento e chat interno)
+- sa-0-0c2c2a01 — EXECUTOR-DEV-API-B5 (Avaliações mútuas)
+- sa-0-e1b4240f — EXECUTOR-DEV-API-C2 (Observabilidade)
+- sa-0-09528284 — EXECUTOR-DEV-FRONT-C3 (Fluxo LGPD frontend)
+- sa-0-5794dcbb — EXECUTOR-DEV-FRONT-C6 (Testes frontend e E2E)
 
 ---
 
-## 2. STATUS POR REQUISITO (R1/R2)
+## 2. STATUS POR REQUISITO (R1/R2/R3)
 
 ### Escopo A — Módulo O2O / Varejo
 
 | ID | Requisito | Status | Release | Comentário |
 |----|-----------|--------|---------|------------|
 | A1 | Localizador de produtos com estoque em lojas físicas próximas | **Concluído** | R1 | Endpoint `/api/v2/product-locator` implementado com busca por haversine. |
-| A2 | Gestão e sincronização de perfis no Google Business Profile | Não iniciado | R2 | Pendente - depende de credenciais OAuth do Google. |
+| A2 | Gestão e sincronização de perfis no Google Business Profile | **Em andamento** | R2 | Agente sa-0-2af504f0 em execução. OAuth 2.0, listagem de contas/locais. |
 | A3 | Vitrine digital com estoque, preço e disponibilidade em tempo real | **Concluído** | R2 | Endpoints públicos `/api/v2/public/properties` e `/api/v2/public/properties/{id}` implementados. |
 | A4 | Geração automática de sites/landing pages SEO local | Não iniciado | R3 | Pendente |
 | A5 | Relatórios de inteligência (mapas de calor oferta × demanda) | Não iniciado | R3 | Pendente |
@@ -39,8 +47,8 @@
 | B1 | Cadastro e gestão de prestadores de serviço | **Concluído** | R1 | Endpoints `/api/v2/service-providers` implementados (CRUD completo). |
 | B2 | Busca com filtros (categoria, localização, avaliação, preço) | **Concluído** | R1 | Endpoint `/api/v2/service-search` implementado com filtros. |
 | B3 | Recomendação por IA a partir da descrição do problema | Não iniciado | R3 | Pendente |
-| B4 | Agendamento, negociação e chat interno | Não iniciado | R2 | Pendente |
-| B5 | Sistema de avaliações mútuas (cliente ↔ prestador) | Não iniciado | R2 | Pendente |
+| B4 | Agendamento e chat interno | **Em andamento** | R2 | Agente sa-0-7b1cf8a6 em execução. |
+| B5 | Sistema de avaliações mútuas (cliente ↔ prestador) | **Em andamento** | R2 | Agente sa-0-0c2c2a01 em execução. |
 | B6 | Mensageria com histórico e compartilhamento de arquivos | Não iniciado | R3 | Pendente |
 
 ### Escopo C — Transversal
@@ -48,11 +56,11 @@
 | ID | Requisito | Status | Release | Comentário |
 |----|-----------|--------|---------|------------|
 | C1 | Autenticação e autorização com papéis | **Concluído** | R1 | 7 papéis definidos e seedados (admin, user, public, consumer, retailer, provider, industry). |
-| C2 | Observabilidade (logs estruturados, métricas, tracing) | Não iniciado | R2 | Pendente |
-| C3 | LGPD: consentimento, anonimização e direito ao esquecimento | **Em andamento** | R2 | Tabela `user_consents` criada. Controlador `UserConsentController` com index, store, destroy, export, deleteAccount. Endpoints `/api/v2/user-consents/*` implementados. |
+| C2 | Observabilidade (logs estruturados, métricas, tracing) | **Em andamento** | R2 | Agente sa-0-e1b4240f em execução. |
+| C3 | LGPD: consentimento, anonimização e direito ao esquecimento | **Em andamento** | R2 | Agente sa-0-09528284 em execução (frontend). |
 | C4 | Feature flags para liberação gradual | **Concluído** | R1 | Tabela `feature_flags` criada e seedada. Endpoints `/api/v2/feature-flags` implementados. |
 | C5 | Contratos de API versionados (OpenAPI) e testes de contrato | **Concluído** | R1 | OpenAPI v2 criado. Endpoints v2 implementados. Testes de contrato pendentes. |
-| C6 | Estratégia de testes (≥ 80% cobertura módulos novos) | Não iniciado | R2 | Backend: 14 testes passando. Frontend: sem testes. E2E: não iniciado. |
+| C6 | Estratégia de testes (≥ 80% cobertura módulos novos) | **Em andamento** | R2 | Agente sa-0-5794dcbb em execução. Backend: 14 testes passando. |
 
 ---
 
@@ -107,22 +115,19 @@
 
 ---
 
-## 5. PRÓXIMAS AÇÕES (R2)
+## 5. PRÓXIMAS AÇÕES (R2 → R3)
 
-### Imediato (R2)
-1. Criar seeders para novos papéis de usuário (consumer, retailer, provider, industry) ✅ FEITO
-2. Criar seeders para categorias de serviço iniciais ✅ FEITO
-3. Popular feature_flags com flags iniciais (ff_o2o_locator, ff_service_providers, etc.) ✅ FEITO
-4. Implementar A2 - Google Business Profile (integração externa com mock/sandbox)
-5. Implementar B4 - Agendamento e chat interno
-6. Implementar B5 - Avaliações mútuas
-7. Implementar C2 - Observabilidade (logs, métricas, tracing)
-8. Implementar C3 - Fluxo completo de consentimento LGPD (frontend)
-9. Implementar C6 - Testes frontend e E2E
+### Imediato (R2 - aguardando conclusão dos 6 agentes):
+1. Receber resultados dos subagentes via `delegate_task(action='list')`
+2. Validar resultados de cada agente
+3. Se aprovado pelo VALIDADOR, encaminhar para PUBLICADOR
+4. Fazer commit e push da branch `feature/scopes-r2-2026`
+5. Criar PR para mesclar em `main`
+6. Fazer merge do PR em `main`
 
-### R3 (futuro)
+### R3 (futuro):
 - A4: Geração automática de sites/landing pages SEO local
-- A5: Relatórios de inteligência (mapas de calor oferta × demanda)
+- A5: Relatórios de inteligência (mapas de calor)
 - A6: Módulo "Quero Revender" (leads B2B indústria → lojista)
 - B3: Recomendação por IA a partir da descrição do problema
 - B6: Mensageria com histórico e compartilhamento de arquivos
@@ -143,48 +148,42 @@
 
 ---
 
-## ATUALIZAÇÃO R2 — $(date '+%Y-%m-%d %H:%M:%S')
+## 8. CRON JOB
 
-### Concluído no R2:
-- A2: Google Business Profile OAuth 2.0 (redirect/callback, listagem de contas)
-- B4: Agendamento e chat interno (modelos, controladores, rotas)
-- B5: Avaliações mútuas (cliente ↔ prestador)
-- C2: Observabilidade (logs estruturados, métricas, health check)
-- C3: Fluxo completo de consentimento LGPD (frontend + backend)
-- C6: Testes frontend e E2E (Vitest + Cypress/Playwright)
-
-### PRs e Issues:
-- Issues #6-#23 criadas no GitHub
-- PR feature/scopes-r2-2026 → main criado
-
-### Próximo ciclo (R3):
-- A4: Geração automática de sites/landing pages SEO local
-- A5: Relatórios de inteligência (mapas de calor)
-- A6: Módulo "Quero Revender"
-- B3: Recomendação por IA
-- B6: Mensageria com histórico e arquivos
-
+Arquivo: `.hermes/cron/orquestrador_cron.sh`  
+Contém prompt explicativo para próxima execução do Orquestrador.  
+Inclui verificação de servidores, verificação de subagentes, e instruções para o próximo ciclo.
 
 ---
 
-## ATUALIZAÇÃO R2 — $(date '+%Y-%m-%d %H:%M:%S')
+## 9. TESTES
 
-### Concluído no R2:
-- A2: Google Business Profile OAuth 2.0 (redirect/callback, listagem de contas)
-- B4: Agendamento e chat interno (modelos, controladores, rotas)
-- B5: Avaliações mútuas (cliente ↔ prestador)
-- C2: Observabilidade (logs estruturados, métricas, health check)
-- C3: Fluxo completo de consentimento LGPD (frontend + backend)
-- C6: Testes frontend e E2E (Vitest + Cypress/Playwright)
+| Tipo | Resultado |
+|------|-----------|
+| Backend (PHPUnit) | **14/14 passando** |
+| Build Vite (produção) | **✓ 1.31s**, 2234 modules |
+| Seeders | **UserTypeSeeder, ServiceCategorySeeder, FeatureFlagSeeder** executados com sucesso |
 
-### PRs e Issues:
-- Issues #6-#23 criadas no GitHub
-- PR feature/scopes-r2-2026 → main criado
+---
 
-### Próximo ciclo (R3):
-- A4: Geração automática de sites/landing pages SEO local
-- A5: Relatórios de inteligência (mapas de calor)
-- A6: Módulo "Quero Revender"
-- B3: Recomendação por IA
-- B6: Mensageria com histórico e arquivos
+## 10. AGENTES ATIVOS (6 em paralelo)
 
+| subagent_id | Agente | Escopo | Status |
+|-------------|--------|--------|--------|
+| sa-0-2af504f0 | EXECUTOR-DEV-API-A2 | Google Business Profile | Executando |
+| sa-0-7b1cf8a6 | EXECUTOR-DEV-API-B4 | Agendamento e chat | Executando |
+| sa-0-0c2c2a01 | EXECUTOR-DEV-API-B5 | Avaliações mútuas | Executando |
+| sa-0-e1b4240f | EXECUTOR-DEV-API-C2 | Observabilidade | Executando |
+| sa-0-09528284 | EXECUTOR-DEV-FRONT-C3 | LGPD frontend | Executando |
+| sa-0-5794dcbb | EXECUTOR-DEV-FRONT-C6 | Testes frontend/E2E | Executando |
+
+**Perfis OpenRouter:** `kilo nvidia/nemotron-3.5-super-vl:free` (configurado para todos os agentes)
+
+---
+
+## 11. SERVIDORES RODANDO (máquina local)
+
+| Serviço | URL | Status |
+|---------|-----|--------|
+| API Laravel | `http://127.0.0.1:8000` | 200 OK |
+| Frontend Vite dev | `http://localhost:5173` | 200 OK |

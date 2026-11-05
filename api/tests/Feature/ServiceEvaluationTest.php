@@ -189,6 +189,16 @@ class ServiceEvaluationTest extends TestCase
 
         $token = $this->obterTokenDoUsuario($avaliador);
 
+        // O cliente precisa ter um agendamento concluido para poder avaliar.
+        Appointment::create([
+            'client_id' => $avaliador->id,
+            'provider_id' => $prestador->id,
+            'date' => '2026-11-10',
+            'time' => '14:00',
+            'status' => Appointment::STATUS_CONCLUIDO,
+            'valor' => 150.00,
+        ]);
+
         ServiceEvaluation::create([
             'service_listing_id' => $servico->id,
             'service_provider_id' => $prestador->id,
