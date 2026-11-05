@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { Download, Upload, FileText } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 type Row = Record<string, any>;
 
@@ -66,7 +70,7 @@ export default function ImportExport() {
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = `geovintalie-propriedades-produtos-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(url);
+      a.href = url; a.download = `geovintalie-propriedades-produtos-${new Date().toISOString().slice(0, 10)}.json`; a.click(); URL.revokeObjectURL(url);
       notify('Exportação concluída: propriedades e produtos em um único JSON (sem IDs de chave estrangeira).', 'success');
     } catch (e: any) {
       notify(`Erro ao exportar: ${e.response?.data?.message || e.message}`, 'error');
@@ -84,7 +88,6 @@ export default function ImportExport() {
       let createdP = 0, updatedP = 0;
       let createdPr = 0, updatedPr = 0;
 
-      // propriedades primeiro (produtos dependem delas)
       for (const p of props) {
         const body: any = {
           name: p.name,
@@ -112,7 +115,6 @@ export default function ImportExport() {
         }
       }
 
-      // produtos depois
       for (const pr of products) {
         const body: any = {
           name: pr.name,
@@ -145,53 +147,70 @@ export default function ImportExport() {
   };
 
   return (
-    <main className="max-w-3xl mx-auto p-4 md:p-8 min-h-screen bg-[#0f172a] text-slate-200 space-y-6">
-      <header className="border-b border-slate-700 pb-4 mb-6">
-        <div className="flex items-center gap-2">
-          <FileText size={26} className="text-blue-400" aria-hidden="true" />
-          <h1 className="text-2xl font-bold text-white">Importar / Exportar Dados</h1>
-        </div>
-        <p className="text-sm text-slate-400">
-          Atualize propriedades e produtos de uma vez em um único arquivo JSON. Endereços são informados por extenso
-          (país → estado → cidade → bairro → rua) e produtos pelo nome da propriedade — <b className="text-blue-300">nenhum ID de chave estrangeira é exigido</b>, apenas o ID da própria propriedade/produto quando for atualizar.
-        </p>
-      </header>
-
-      <section className="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
-        <div className="flex flex-wrap gap-3 mb-4">
-          <button onClick={exportData} disabled={loading} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded disabled:opacity-60">
-            <Download size={16} /> Exportar JSON
-          </button>
-          <label className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded cursor-pointer">
-            <Upload size={16} /> Importar JSON
-            <input type="file" accept=".json" className="hidden" onChange={handleImportFile} />
-          </label>
-          <button onClick={() => setRaw('')} className="text-xs text-slate-400 hover:text-white underline">Limpar pré-visualização</button>
-        </div>
-        {loading && <p className="text-xs text-emerald-400">Processando importação…</p>}
-        {message.text && (
-          <div className={`mt-3 p-3 rounded border ${message.kind === 'success' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-200' : message.kind === 'error' ? 'border-rose-500 bg-rose-500/10 text-rose-200' : 'border-slate-600 bg-slate-800 text-slate-300'}`}>{message.text}</div>
-        )}
-        {raw && (
-          <div className="mt-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-medium text-slate-300">Pré-visualização / editar JSON</span>
-              <button onClick={copyJson} className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded">Copiar</button>
-              <button onClick={() => setRaw('')} className="text-xs text-slate-500 hover:text-white underline">Limpar</button>
-            </div>
-            <textarea
-              value={raw}
-              onChange={(e) => setRaw(e.target.value)}
-              rows={10}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs font-mono text-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
+    <main className="min-h-screen bg-background p-4 md:p-8 space-y-6">
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-primary" aria-hidden="true" />
+            Importar / Exportar Dados
+          </CardTitle>
+          <CardDescription>
+            Atualize propriedades e produtos de uma vez em um único arquivo JSON. Endereços são informados por extenso
+            (país → estado → cidade → bairro → rua) e produtos pelo nome da propriedade — nenhum ID de chave estrangeira é exigido,
+            apenas o ID da própria propriedade/produto quando for atualizar.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pb-4">
+          <div className="flex flex-wrap gap-3 mb-4">
+            <Button onClick={exportData} disabled={loading}>
+              <Download className="h-4 w-4 mr-2" /> Exportar JSON
+            </Button>
+            <Button asChild variant="outline">
+              <label className="cursor-pointer flex items-center gap-2">
+                <Upload className="h-4 w-4 mr-2" /> Importar JSON
+                <input type="file" accept=".json" className="hidden" onChange={handleImportFile} />
+              </label>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setRaw('')}>
+              Limpar pré-visualização
+            </Button>
           </div>
-        )}
-      </section>
+          {loading && <Alert variant="info"><AlertTitle>Processando</AlertTitle><AlertDescription>Importação em andamento…</AlertDescription></Alert>}
+          {message.text && (
+            <Alert variant={message.kind === 'error' ? 'destructive' : undefined}>
+              <AlertTitle>{message.kind === 'success' ? 'Sucesso' : message.kind === 'error' ? 'Erro' : 'Info'}</AlertTitle>
+              <AlertDescription>{message.text}</AlertDescription>
+            </Alert>
+          )}
+          {raw && (
+            <div className="mt-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-medium text-muted-foreground">Pré-visualização / editar JSON</span>
+                <Button variant="outline" size="sm" onClick={copyJson}>
+                  Copiar
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setRaw('')}>
+                  Limpar
+                </Button>
+              </div>
+              <Textarea
+                value={raw}
+                onChange={(e) => setRaw(e.target.value)}
+                rows={10}
+                className="text-xs font-mono"
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-      <section className="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
-        <h3 className="text-base font-bold text-white mb-3">Exemplo de JSON</h3>
-        <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs font-mono text-slate-300 overflow-x-auto">{`{
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle>Exemplo de JSON</CardTitle>
+        </CardHeader>
+        <CardContent className="p-4">
+          <div className="bg-muted rounded-lg p-3 text-xs font-mono overflow-x-auto mb-4">
+            {`{
   "properties": [
     {
       "name": "Farmácia Central",
@@ -213,11 +232,13 @@ export default function ImportExport() {
       "propriedade": "101"
     }
   ]
-}`}</div>
-        <p className="mt-2 text-xs text-slate-500">
-          Linhas com <code className="text-blue-300">id</code> existentes são atualizadas; sem <code className="text-blue-300">id</code> são criadas. Propriedades são processadas antes dos produtos.
-        </p>
-      </section>
+}`}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Linhas com <code className="text-primary">id</code> existentes são atualizadas; sem <code className="text-primary">id</code> são criadas. Propriedades são processadas antes dos produtos.
+          </p>
+        </CardContent>
+      </Card>
     </main>
   );
 }

@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Save, Upload, Download, RefreshCw, ShieldAlert } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 type Row = Record<string, any>;
 
@@ -49,7 +53,6 @@ export default function AdminDashboard() {
       const body = response.data;
       const paginator = body.propertys ?? body.properties ?? body.data ?? body;
       const data = paginator.data ?? paginator;
-      // admin vê tudo; o backend já restringe o user (mas esta página é só admin)
       setRows(Array.isArray(data) ? data : []);
       setMeta({
         current_page: paginator.current_page ?? p,
@@ -86,7 +89,6 @@ export default function AdminDashboard() {
 
   const addRow = () => {
     const next = { ...newRow };
-    // nunca envie id vazio para criação
     if (next.id === '' || next.id == null) delete next.id;
     setRows([...rows, next]);
     setNewRow({});
@@ -144,129 +146,137 @@ export default function AdminDashboard() {
   };
 
   return (
-    <main className="p-4 md:p-8 min-h-screen bg-[#0f172a] text-slate-200">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-700 pb-4 mb-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <ShieldAlert size={24} className="text-amber-400" aria-hidden="true" />
-            <h1 className="text-2xl font-bold text-white">Administração — Tabela Geral Editável</h1>
-          </div>
-          <p className="text-slate-400 text-sm">
+    <main className="min-h-screen bg-background">
+      <Card className="shadow-card mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 text-accent" aria-hidden="true" />
+            Administração — Tabela Geral Editável
+          </CardTitle>
+          <CardDescription>
             Edite qualquer campo do banco de dados célula a célula. O ID da propriedade/produto é usado como referência;
             outros vínculos (rua, bairro, usuário) usam nomes/endereços — nunca IDs de chave estrangeira expostos ao usuário final.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <select
-            value={resourceKey}
-            onChange={(e) => { setResourceKey(e.target.value); setPage(1); setRows([]); setNewRow({}); }}
-            className="bg-slate-800 border border-slate-600 text-white rounded px-3 py-2 focus:ring-2 focus:ring-amber-500"
-          >
-            {Object.entries(RESOURCES).map(([k, v]) => (
-              <option key={k} value={k}>{v.label}</option>
-            ))}
-          </select>
-          <button onClick={() => load(page)} disabled={loading} className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded disabled:opacity-50">
-            <RefreshCw size={16} /> Recarregar
-          </button>
-          <button onClick={save} disabled={saving} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded disabled:opacity-50">
-            <Save size={16} /> Salvar alterações na API
-          </button>
-        </div>
-      </header>
-
-      {message.text && (
-        <div className={`mb-4 p-3 rounded border ${message.kind === 'success' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-200' : message.kind === 'error' ? 'border-rose-500 bg-rose-500/10 text-rose-200' : 'border-slate-600 bg-slate-800 text-slate-300'}`}>
-          {message.text}
-        </div>
-      )}
-
-      <div className="flex gap-3 mb-4">
-        <input
-          placeholder={`Buscar em ${res.label}…`}
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="bg-slate-800 border border-slate-600 text-white rounded px-3 py-2 w-full focus:ring-2 focus:ring-amber-500"
-        />
-        <label className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded cursor-pointer">
-          <Download size={16} /> Exportar JSON
-          <input type="file" accept=".json" className="hidden" onChange={importJSON} />
-        </label>
-        <label className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded cursor-pointer">
-          <Upload size={16} /> Importar JSON
-          <input type="file" accept=".json" className="hidden" onChange={importJSON} />
-        </label>
-      </div>
-
-      <div className="overflow-x-auto border border-slate-700 rounded-xl shadow-2xl">
-        <table className="w-full text-sm text-left border-collapse">
-          <thead className="bg-slate-800 border-b border-slate-600">
-            <tr>
-              <th className="px-3 py-2 font-medium border-b border-slate-600 sticky top-0 bg-slate-800">#</th>
-              {fields().map((f) => (
-                <th key={f} className="px-3 py-2 font-medium border-b border-slate-600">{f}</th>
-              ))}
-              <th className="px-3 py-2 font-medium border-b border-slate-600">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visibleRows.map((row, i) => (
-              <tr key={row.id ?? i} className="border-t border-slate-700 hover:bg-slate-800/50">
-                <td className="px-3 py-2 border-b border-slate-700 text-slate-400">{row.id ?? 'novo'}</td>
-                {fields().map((f) => (
-                  <td key={f} className="px-3 py-2 border-b border-slate-700">
-                    <input
-                      value={row[f] == null ? '' : row[f]}
-                      onChange={(e) => handleChange(i, f, e.target.value)}
-                      className="bg-transparent border-b border-slate-600 text-white w-full px-1 focus:border-amber-500 focus:outline-none"
-                      disabled={f === 'id' && row.id}
-                    />
-                  </td>
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pb-4">
+          <div className="flex flex-wrap gap-3 mb-4">
+            <Select
+              value={resourceKey}
+              onValueChange={(v: string) => { setResourceKey(v); setPage(1); setRows([]); setNewRow({}); }}
+            >
+              <SelectTrigger className="w-[220px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(RESOURCES).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v.label}</SelectItem>
                 ))}
-                <td className="px-3 py-2 border-b border-slate-700">
-                  <button onClick={() => removeRow(i)} className="text-rose-400 hover:text-rose-300 text-sm" title="Remover linha">×</button>
-                </td>
-              </tr>
-            ))}
-            <tr className="bg-slate-900/50 border-t border-slate-700">
-              <td className="px-3 py-2 text-slate-400 text-xs">nova</td>
-              {fields().map((f) => (
-                <td key={f} className="px-3 py-2 border-b border-slate-700">
-                  <input
-                    value={newRow[f] == null ? '' : newRow[f]}
-                    onChange={(e) => handleNewChange(f, e.target.value)}
-                    placeholder={f}
-                    className="bg-transparent border-b border-slate-600 text-white w-full px-1 focus:border-blue-500 focus:outline-none"
-                  />
-                </td>
-              ))}
-              <td className="px-3 py-2 border-b border-slate-700">
-                <button onClick={addRow} className="text-emerald-400 hover:text-emerald-300 text-sm" title="Adicionar linha">+</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+              </SelectContent>
+            </Select>
+            <Button onClick={() => load(page)} disabled={loading}>
+              <RefreshCw className="h-4 w-4 mr-2" /> Recarregar
+            </Button>
+            <Button onClick={save} disabled={saving} className="ml-auto">
+              <Save className="h-4 w-4 mr-2" /> Salvar alterações na API
+            </Button>
+          </div>
+          {message.text && (
+            <div className="mb-4 p-3 rounded border shadow-card">
+              {message.text}
+            </div>
+          )}
+          <div className="flex gap-3 mb-4">
+            <Input
+              placeholder={`Buscar em ${res.label}…`}
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="w-[300px]"
+            />
+            <Button asChild variant="outline">
+              <label className="cursor-pointer flex items-center gap-2">
+                <Download className="h-4 w-4" /> Exportar JSON
+                <input type="file" accept=".json" className="hidden" onChange={importJSON} />
+              </label>
+            </Button>
+            <Button asChild variant="outline">
+              <label className="cursor-pointer flex items-center gap-2">
+                <Upload className="h-4 w-4" /> Importar JSON
+                <input type="file" accept=".json" className="hidden" onChange={importJSON} />
+              </label>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-card">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="px-3 py-2 font-medium text-muted-foreground border-b sticky top-0">#</th>
+                  {fields().map((f) => (
+                    <th key={f} className="px-3 py-2 font-medium text-muted-foreground border-b">{f}</th>
+                  ))}
+                  <th className="px-3 py-2 font-medium text-muted-foreground border-b">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibleRows.map((row, i) => (
+                  <tr key={row.id ?? i} className="border-b hover:bg-muted/50">
+                    <td className="px-3 py-2 text-muted-foreground">{row.id ?? 'novo'}</td>
+                    {fields().map((f) => (
+                      <td key={f} className="px-3 py-2 border-b">
+                        <input
+                          value={row[f] == null ? '' : row[f]}
+                          onChange={(e) => handleChange(i, f, e.target.value)}
+                          className="bg-transparent border-b border-transparent focus:border-ring focus:outline-none w-full px-1"
+                          disabled={f === 'id' && row.id}
+                        />
+                      </td>
+                    ))}
+                    <td className="px-3 py-2 border-b">
+                      <button onClick={() => removeRow(i)} className="text-destructive hover:text-destructive/90 text-sm" title="Remover linha">×</button>
+                    </td>
+                  </tr>
+                ))}
+                <tr className="bg-muted/50 border-t">
+                  <td className="px-3 py-2 text-muted-foreground text-xs">nova</td>
+                  {fields().map((f) => (
+                    <td key={f} className="px-3 py-2 border-b">
+                      <input
+                        value={newRow[f] == null ? '' : newRow[f]}
+                        onChange={(e) => handleNewChange(f, e.target.value)}
+                        placeholder={f}
+                        className="bg-transparent border-b border-transparent focus:border-ring focus:outline-none w-full px-1"
+                      />
+                    </td>
+                  ))}
+                  <td className="px-3 py-2 border-b">
+                    <button onClick={addRow} className="text-primary hover:text-primary/90 text-sm" title="Adicionar linha">+</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
 
       {meta && (
-        <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-          <span>Página {meta.current_page} de {meta.last_page} &middot; {meta.total} {res.label.toLowerCase()}</span>
+        <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+          <span>Página {meta.current_page} de {meta.last_page} · {meta.total} {res.label.toLowerCase()}</span>
           <div className="flex gap-1">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page <= 1 || loading}
-              className="px-2 py-1 rounded border border-slate-600 text-slate-400 hover:text-white disabled:opacity-40"
-            >Anterior</button>
-            <button
-              onClick={() => setPage((p) => Math.min(meta.last_page, p + 1))}
-              disabled={page >= meta.last_page || loading}
-              className="px-2 py-1 rounded border border-slate-600 text-slate-400 hover:text-white disabled:opacity-40"
-            >Próxima</button>
+            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1 || loading}>
+              Anterior
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(meta.last_page, p + 1))} disabled={page >= meta.last_page || loading}>
+              Próxima
+            </Button>
           </div>
         </div>
       )}
 
-      <footer className="mt-8 border-t border-slate-700 pt-4 text-xs text-slate-500">
+      <footer className="mt-8 pt-4 text-xs text-muted-foreground">
         Apenas o administrador ({user?.name}) acessa este painel. Os links de chave estrangeira são resolvidos por nome/endereço na API;
         apenas o ID da própria propriedade/produto é exposto como referência.
       </footer>
