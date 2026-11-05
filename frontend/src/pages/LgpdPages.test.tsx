@@ -6,6 +6,7 @@ import DataExport from './DataExport';
 import DeleteAccount from './DeleteAccount';
 import * as consentApi from '@/api/user-consent';
 import { useAuth } from '@/hooks/useAuth';
+import { Toaster } from '@/components/ui/sonner';
 
 vi.mock('@/api/user-consent');
 vi.mock('@/hooks/useAuth', () => ({
@@ -50,7 +51,7 @@ describe('PrivacyConsent', () => {
   it('renderiza os tres propósitos de consentimento (marketing, analytics, third_party)', async () => {
     mockGetConsents.mockResolvedValue({ data: { data: consentsPage } } as any);
 
-    render(<PrivacyConsent />);
+    render(<><Toaster /><PrivacyConsent /></>);
 
     await waitFor(() =>
       expect(screen.getByText('Marketing e comunicacoes')).toBeInTheDocument()

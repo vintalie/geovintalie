@@ -126,20 +126,26 @@ Closes #${issue}
 JSONEOF
 )
 
+  # Payload JSON via python (body lido de arquivo temporário, evita problemas de aspas)
+  python3 - > /tmp/r2_pr_payload_${t}.json <<PY
+import json
+with open('/tmp/r2_pr_body_${t}.txt', encoding='utf-8') as f:
+    body = f.read()
+payload = {
+    'title': '''${title}''',
+    'head': '${branch}',
+    'base': 'main',
+    'body': body
+}
+print(json.dumps(payload, ensure_ascii=False))
+PY
+
   local pr_response
   pr_response=$(curl -s -X POST "${API}/pulls" \
     -H "Authorization: Bearer ${TOKEN}" \
     -H "Accept: application/vnd.github+json" \
     -H "X-GitHub-Api-Version: 2022-11-28" \
-    -d "$(python3 -c "
-import json
-print(json.dumps({
-  'title': ${python3 -c "import json;print(json.dumps('${title}'))"},
-  'head': '${branch}',
-  'base': 'main',
-  'body': ${python3 -c "import json;print(json.dumps('''${body}'''))"}
-})
-")")")
+    -d "@/tmp/r2_pr_payload_${t}.json")
 
   local pr_num pr_url
   pr_num=$(echo "$pr_response" | python3 -c "import json,sys

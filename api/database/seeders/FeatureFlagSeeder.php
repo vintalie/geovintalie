@@ -51,6 +51,24 @@ class FeatureFlagSeeder extends Seeder
                 'rollout_percentage' => 100,
             ],
             [
+                'name' => 'ff_appointment',
+                'description' => 'Habilitar agendamentos de servico (Escopo B4)',
+                'enabled' => true,
+                'rollout_percentage' => 100,
+            ],
+            [
+                'name' => 'ff_chat',
+                'description' => 'Habilitar chat interno cliente-prestador (Escopo B4)',
+                'enabled' => true,
+                'rollout_percentage' => 100,
+            ],
+            [
+                'name' => 'ff_reviews',
+                'description' => 'Habilitar avaliacoes mutuas cliente-prestador (Escopo B5)',
+                'enabled' => true,
+                'rollout_percentage' => 100,
+            ],
+            [
                 'name' => 'ff_agendamentos_chat',
                 'description' => 'Habilitar agendamentos e chat interno (Escopo B4)',
                 'enabled' => true,

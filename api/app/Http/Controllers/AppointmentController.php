@@ -98,6 +98,8 @@ class AppointmentController extends Controller
     /** Atualizar status (e observacoes/valor) — somente o prestador do agendamento. */
     public function update(Request $request, Appointment $appointment)
     {
+        $this->requireFeatureFlag($request);
+
         $user = $request->user();
 
         $provider = ServiceProvider::where('user_id', $user->id)->first();
@@ -120,6 +122,8 @@ class AppointmentController extends Controller
     /** Cancelar agendamento — somente o cliente, apenas se pendente. */
     public function destroy(Request $request, Appointment $appointment)
     {
+        $this->requireFeatureFlag($request);
+
         $user = $request->user();
 
         if ((int) $appointment->client_id !== (int) $user->id) {

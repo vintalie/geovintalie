@@ -44,6 +44,11 @@ class ServiceProvider extends Model
         return $this->hasMany(ServiceEvaluation::class, 'service_provider_id');
     }
 
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class, 'provider_id');
+    }
+
     public function recalculateRating(): void
     {
         $average = $this->evaluations()->avg('rating');

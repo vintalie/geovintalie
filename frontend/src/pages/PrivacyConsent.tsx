@@ -87,7 +87,6 @@ const PrivacyConsent = () => {
     PURPOSES.find((p) => p.tipo === tipo)?.titulo || tipo;
 
   const handleToggle = async (tipo: string) => {
-    const purpose = PURPOSES.find((p) => p.tipo === tipo);
     const current = byTipo.get(tipo)?.aceito ?? false;
     const next = !current;
     const previous = [...consents];
@@ -222,7 +221,7 @@ const PrivacyConsent = () => {
       {consents.length === 0 && !loading && (
         <Card className="shadow-card">
           <CardContent className="p-8 text-center">
-            <Alert variant="outline">
+            <Alert>
               <AlertTitle>Nenhum consentimento encontrado</AlertTitle>
               <AlertDescription>
                 Nao ha registros de consentimento para a sua conta no momento.
