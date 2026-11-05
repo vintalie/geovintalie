@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\UserType;
+use App\Models\ServiceCategory;
+use App\Models\FeatureFlag;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -18,6 +20,9 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             create_types::class,   // primeiro
+            UserTypeSeeder::class,
+            ServiceCategorySeeder::class,
+            FeatureFlagSeeder::class,
         ]);
         // User::factory(10)->create();
         
