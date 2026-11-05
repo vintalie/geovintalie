@@ -45,7 +45,7 @@ const Login = () => {
       }
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || mode === 'login' ? 'Erro ao fazer login' : 'Erro no registro');
+      setError(err.response?.data?.message || (mode === 'login' ? 'Erro ao fazer login' : 'Erro no registro'));
     } finally {
       setBusy(false);
     }
