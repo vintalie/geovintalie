@@ -19,6 +19,8 @@ use App\Http\Controllers\ServiceListingController;
 use App\Http\Controllers\ProductLocatorController;
 use App\Http\Controllers\FeatureFlagController;
 use App\Http\Controllers\ServiceSearchController;
+use App\Http\Controllers\UserConsentController;
+use App\Http\Controllers\PublicPropertyController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -103,5 +105,20 @@ Route::prefix('v2')->group(function () {
 
     // Service Search - publico (Escopo B2)
     Route::get('service-search', [ServiceSearchController::class, 'index']);
+
+    // User Consent - LGPD (Escopo C3) - autenticado
+    Route::middleware(['jwt.auth'])->group(function () {
+        Route::get('user-consents', [UserConsentController::class, 'index']);
+        Route::post('user-consents', [UserConsentController::class, 'store']);
+        Route::delete('user-consents/{purpose}', [UserConsentController::class, 'destroy']);
+        Route::get('user-consents/export', [UserConsentController::class, 'export']);
+        Route::delete('user-consents/account', [UserConsentController::class, 'deleteAccount']);
+    });
+
+    // Public Properties - Vitrine digital pública (Escopo A3) - sem autenticação
+    Route::prefix('public')->group(function () {
+        Route::get('properties', [PublicPropertyController::class, 'index']);
+        Route::get('properties/{id}', [PublicPropertyController::class, 'show']);
+    });
 });
 
