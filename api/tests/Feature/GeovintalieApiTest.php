@@ -18,7 +18,6 @@ class GeovintalieApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->artisan('migrate:fresh', ['--force' => true]);
         $this->artisan('db:seed', ['--class' => 'DatabaseSeeder']);
     }
 

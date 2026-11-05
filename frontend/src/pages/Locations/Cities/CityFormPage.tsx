@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCity, createCity, updateCity } from '../../../api/location';
 import type { City } from '../../../types';
+import { Button } from '../../../components/ui/button';
 
 const CityFormPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -75,9 +76,9 @@ const CityFormPage = () => {
             required
           />
         </div>
-        <button type="submit" className="bg-blue-500 text-white p-2 rounded" disabled={loading}>
+        <Button type="submit" disabled={loading} className="w-full">
           {loading ? 'Salvando...' : 'Salvar'}
-        </button>
+        </Button>
       </form>
     </div>
   );

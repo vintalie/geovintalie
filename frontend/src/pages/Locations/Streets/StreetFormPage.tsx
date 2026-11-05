@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getStreet, createStreet, updateStreet } from '../../../api/location';
 import type { Street } from '../../../types';
+import { Button } from '../../../components/ui/button';
 
 const StreetFormPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -75,9 +76,9 @@ const StreetFormPage = () => {
             className="w-full p-2 border"
           />
         </div>
-        <button type="submit" className="bg-blue-500 text-white p-2 rounded" disabled={loading}>
+        <Button type="submit" disabled={loading} className="w-full">
           {loading ? 'Salvando...' : 'Salvar'}
-        </button>
+        </Button>
       </form>
     </div>
   );

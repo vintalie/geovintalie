@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProperty, createProperty, updateProperty } from '../../api/location';
 import type { Property } from '../../types';
+import { Button } from '../../components/ui/button';
 
 const PropertyFormPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -196,13 +197,9 @@ const PropertyFormPage = () => {
             required
           />
         </div>
-        <button
-          type="submit"
-          className="bg-blue-500 text-white p-2 rounded"
-          disabled={loading}
-        >
+        <Button type="submit" disabled={loading} className="w-full">
           {loading ? 'Salvando...' : 'Salvar'}
-        </button>
+        </Button>
       </form>
     </div>
   );
