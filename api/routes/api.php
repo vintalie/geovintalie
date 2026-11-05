@@ -23,8 +23,9 @@ use App\Http\Controllers\GoogleBusinessController;
 use App\Http\Controllers\ServiceSearchController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AppointmentsController;
-use App\Http\Controllers\ChatConversationController;
-use App\Http\Controllers\ChatMessageController;
+use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ConversationsController;
 use App\Http\Controllers\MessagesController;
 
@@ -120,12 +121,13 @@ Route::prefix('v2')->group(function () {
         Route::put('appointments/{appointment}', [AppointmentController::class, 'update']);
         Route::delete('appointments/{appointment}', [AppointmentController::class, 'destroy']);
 
-        // Conversas e mensagens de chat interno (cliente <-> prestador)
-        Route::get('conversations', [ChatConversationController::class, 'index']);
-        Route::post('conversations', [ChatConversationController::class, 'store']);
-        Route::get('conversations/{conversation}', [ChatConversationController::class, 'show']);
-        Route::post('conversations/{conversation}/messages', [ChatMessageController::class, 'store']);
-        Route::post('messages/{message}/read', [ChatMessageController::class, 'markRead']);
+        // Conversas e mensagens de chat interno (cliente <-> prestador) - Escopo B4 (ff_chat)
+        Route::get('conversations', [ConversationController::class, 'index']);
+        Route::post('conversations', [ConversationController::class, 'store']);
+        Route::get('conversations/{conversation}', [ConversationController::class, 'show']);
+        Route::post('conversations/{conversation}/messages', [MessageController::class, 'store']);
+        Route::get('messages', [MessageController::class, 'index']);
+        Route::post('messages/{message}/read', [MessageController::class, 'markRead']);
 
         // Agendamentos e Chat Interno (Escopo B4) - autenticado
         Route::get('agendamentos', [AppointmentsController::class, 'index']);

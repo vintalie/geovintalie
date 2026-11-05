@@ -68,7 +68,7 @@ describe('PrivacyConsent', () => {
   it('aceita um consentimento de finalidade via POST /api/v2/user-consents', async () => {
     mockGetConsents.mockResolvedValue({ data: { data: consentsPage } } as any);
 
-    render(<PrivacyConsent />);
+    render(<><Toaster /><PrivacyConsent /></>);
 
     await waitFor(() =>
       expect(screen.getByText('Marketing e comunicacoes')).toBeInTheDocument()
@@ -91,7 +91,7 @@ describe('PrivacyConsent', () => {
   it('revoga um consentimento ja aceito via DELETE /api/v2/user-consents/:id', async () => {
     mockGetConsents.mockResolvedValue({ data: { data: consentsPage } } as any);
 
-    render(<PrivacyConsent />);
+    render(<><Toaster /><PrivacyConsent /></>);
 
     await waitFor(() =>
       expect(screen.getByText('Analytics e desempenho')).toBeInTheDocument()
