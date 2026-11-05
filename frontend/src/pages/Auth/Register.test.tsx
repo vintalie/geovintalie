@@ -28,7 +28,7 @@ const mockRegister = vi.mocked(authApi.register);
 const mockLogin = vi.mocked(authApi.login);
 const mockMe = vi.mocked(authApi.me);
 const mockNavigate = vi.mocked(useNavigate);
-let navigateFn: any;
+let navigateFn: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -38,9 +38,7 @@ beforeEach(() => {
   mockRegister.mockResolvedValue({ data: {} } as any);
   mockLogin.mockResolvedValue({ data: { token: 'token-registro' } } as any);
   mockMe.mockResolvedValue(
-    {
-      data: { user: { id: 1, name: 'Novo', email: 'novo@test.com' } },
-    } as any,
+    { data: { user: { id: 1, name: 'Novo', email: 'novo@test.com' } } } as any,
   );
 });
 
@@ -65,7 +63,7 @@ describe('Register', () => {
     expect(screen.getByLabelText('E-mail')).toBeInTheDocument();
     expect(screen.getByLabelText('Senha')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /registrar/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /login/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /fa.ça login/i })).toBeInTheDocument();
   });
 
   it('faz cadastro com sucesso, chama as APIs, define o token e redireciona', async () => {
@@ -104,7 +102,7 @@ describe('Register', () => {
     const user = userEvent.setup();
     mockRegister.mockRejectedValue({
       response: { data: { message: 'E-mail já cadastrado' } },
-    });
+    } as any);
     render(<Register />);
     await preencherCadastro('Novo Usuario', 'novo@test.com', 'senha456');
     await user.click(screen.getByRole('button', { name: /registrar/i }));
@@ -115,12 +113,10 @@ describe('Register', () => {
     expect(navigateFn).not.toHaveBeenCalled();
   });
 
-  it('link de login navega para a página de login', async () => {
+  it('clicar em "Faça login" navega para a página de login', async () => {
     const user = userEvent.setup();
     render(<Register />);
-    await user.click(screen.getByRole('link', { name: /login/i }));
-    await waitFor(() =>
-      expect(screen.getByText('Acesse sua conta')).toBeInTheDocument(),
-    );
+    await user.click(screen.getByRole('link', { name: /fa.ça login/i }));
+    await waitFor(() => expect(navigateFn).toHaveBeenCalledWith('/login'));
   });
 });

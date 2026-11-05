@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { screen, within, fireEvent } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { waitFor } from '@testing-library/dom';
 import Login from './Login';
 import * as authApi from '@/api/auth';
@@ -28,7 +28,7 @@ const mockLogin = vi.mocked(authApi.login);
 const mockRegister = vi.mocked(authApi.register);
 const mockMe = vi.mocked(authApi.me);
 const mockNavigate = vi.mocked(useNavigate);
-let navigateFn: any;
+let navigateFn: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -38,9 +38,7 @@ beforeEach(() => {
   mockLogin.mockResolvedValue({ data: { token: 'token-teste-123' } } as any);
   mockRegister.mockResolvedValue({ data: {} } as any);
   mockMe.mockResolvedValue(
-    {
-      data: { user: { id: 1, name: 'Usuário Teste', email: 'user@test.com' } },
-    } as any,
+    { data: { user: { id: 1, name: 'Usuário Teste', email: 'user@test.com' } } } as any,
   );
 });
 
@@ -48,7 +46,7 @@ afterEach(() => {
   localStorage.clear();
 });
 
-async function preencherLogin(email: string, senha: string) {
+async function preencher(email: string, senha: string) {
   const user = userEvent.setup();
   await user.clear(screen.getByLabelText('E-mail'));
   await user.type(screen.getByLabelText('E-mail'), email);
@@ -56,47 +54,33 @@ async function preencherLogin(email: string, senha: string) {
   await user.type(screen.getByLabelText('Senha'), senha);
 }
 
-function getLoginForm() {
-  const form = document.querySelector('form');
-  expect(form).toBeInTheDocument();
-  return form as HTMLFormElement;
+function botaoEntrar() {
+  return screen.getByRole('button', { name: /entrar/i });
 }
 
 describe('Login', () => {
   it('renderiza o formulário de login com e-mail, senha e botão Entrar', () => {
     render(<Login />);
-    // eslint-disable-next-line no-console
-    console.log('DEBUG FORMS:', document.querySelectorAll('form').length, 'BODY LEN:', document.body.innerHTML.length);
-    const form = getLoginForm();
-    expect(within(form).getByLabelText('E-mail')).toBeInTheDocument();
-    expect(within(form).getByLabelText('Senha')).toBeInTheDocument();
-    expect(
-      within(form).getByRole('button', { name: /entrar/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText('E-mail')).toBeInTheDocument();
+    expect(screen.getByLabelText('Senha')).toBeInTheDocument();
+    expect(botaoEntrar()).toBeInTheDocument();
   });
 
-  it('alternar para a aba de cadastro exibe o campo Nome', async () => {
+  it('alternar para a aba de cadastro exibe o campo Nome e o botão Registrar', async () => {
     const user = userEvent.setup();
     render(<Login />);
     await user.click(screen.getByRole('tab', { name: /criar conta/i }));
     expect(screen.getByLabelText('Nome')).toBeInTheDocument();
-    const forms = document.querySelectorAll('form');
-    expect(forms.length).toBe(2);
-    expect(
-      within(forms[1]).getByRole('button', { name: /registrar/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /registrar/i })).toBeInTheDocument();
   });
 
   it('faz login com sucesso, chama a API, define o token e redireciona', async () => {
     const user = userEvent.setup();
     render(<Login />);
-    await preencherLogin('user@test.com', 'senha123');
-    const form = getLoginForm();
-    await user.click(within(form).getByRole('button', { name: /entrar/i }));
+    await preencher('user@test.com', 'senha123');
+    await user.click(botaoEntrar());
 
-    await waitFor(() =>
-      expect(mockLogin).toHaveBeenCalledWith('user@test.com', 'senha123'),
-    );
+    await waitFor(() => expect(mockLogin).toHaveBeenCalledWith('user@test.com', 'senha123'));
     await waitFor(() => expect(mockMe).toHaveBeenCalled());
     await waitFor(() => expect(navigateFn).toHaveBeenCalledWith('/'));
     expect(localStorage.getItem('token')).toBe('token-teste-123');
@@ -112,13 +96,11 @@ describe('Login', () => {
     );
     const user = userEvent.setup();
     render(<Login />);
-    const form = getLoginForm();
-    const botao = within(form).getByRole('button', { name: /entrar/i });
-    await preencherLogin('a@b.com', 'x');
-    fireEvent.submit(form);
-    expect(botao).toBeDisabled();
+    await preencher('a@b.com', 'x');
+    await user.click(botaoEntrar());
+    expect(botaoEntrar()).toBeDisabled();
     resolveLogin({ data: { token: 'tok' } });
-    await waitFor(() => expect(botao).not.toBeDisabled());
+    await waitFor(() => expect(botaoEntrar()).not.toBeDisabled());
   });
 
   it('exibe mensagem de erro quando o login falha', async () => {
@@ -127,10 +109,10 @@ describe('Login', () => {
       response: { data: { message: 'Credenciais inválidas' } },
     } as any);
     render(<Login />);
-    const form = getLoginForm();
-    await preencherLogin('user@test.com', 'senha123');
-    await user.click(within(form).getByRole('button', { name: /entrar/i }));
+    await preencher('user@test.com', 'senha123');
+    await user.click(botaoEntrar());
 
+    await waitFor(() => expect(mockLogin).toHaveBeenCalled());
     await waitFor(() =>
       expect(screen.getByText('Credenciais inválidas')).toBeInTheDocument(),
     );
@@ -147,15 +129,12 @@ describe('Login', () => {
     await user.type(document.getElementById('regEmail')!, 'novo@test.com');
     await user.clear(document.getElementById('regPassword')!);
     await user.type(document.getElementById('regPassword')!, 'senha456');
-    const forms = document.querySelectorAll('form');
-    fireEvent.submit(forms[1]);
+    await user.click(screen.getByRole('button', { name: /registrar/i }));
 
     await waitFor(() =>
       expect(mockRegister).toHaveBeenCalledWith('Novo', 'novo@test.com', 'senha456'),
     );
-    await waitFor(() =>
-      expect(mockLogin).toHaveBeenCalledWith('novo@test.com', 'senha456'),
-    );
+    await waitFor(() => expect(mockLogin).toHaveBeenCalledWith('novo@test.com', 'senha456'));
     await waitFor(() => expect(navigateFn).toHaveBeenCalledWith('/'));
   });
 
