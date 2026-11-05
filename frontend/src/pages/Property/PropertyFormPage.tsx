@@ -2,16 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProperty, createProperty, updateProperty } from '../../api/location';
 import type { Property } from '../../types';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const PropertyFormPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  // Apenas os campos obrigatórios no estado inicial (os opcionais ficam undefined)
   const [form, setForm] = useState<Partial<Property>>({
     name: '',
     n_property: '',
+    complement: '',
+    main_image: '',
+    cover_image: '',
+    content_html: '',
+    additional_info: '',
     contact1_email: '',
+    contact2_email: '',
     number1: '',
+    number2: '',
+    number3: '',
+    street_id: 0,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,7 +40,8 @@ const PropertyFormPage = () => {
   const loadProperty = async () => {
     try {
       const response = await getProperty(Number(id));
-      setForm(response.data);
+      const data = response.data.property ?? response.data.propertys ?? response.data.properties ?? response.data;
+      setForm(data);
     } catch (err: any) {
       setError(err.message);
     }
@@ -48,163 +62,196 @@ const PropertyFormPage = () => {
       }
       navigate('/properties');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao salvar');
+      setError(err.response?.data?.message || 'Erro ao salvar propriedade.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">
-        {isEdit ? 'Editar Propriedade' : 'Nova Propriedade'}
-      </h1>
-      {error && <div className="text-red-500 mb-2">{error}</div>}
-      <form onSubmit={handleSubmit} className="max-w-md">
-        <div className="mb-2">
-          <label className="block">Nome</label>
-          <input
-            type="text"
-            name="name"
-            value={form.name || ''}
-            onChange={handleChange}
-            className="w-full p-2 border"
-            required
-          />
-        </div>
-        <div className="mb-2">
-          <label className="block">Nº Propriedade</label>
-          <input
-            type="text"
-            name="n_property"
-            value={form.n_property || ''}
-            onChange={handleChange}
-            className="w-full p-2 border"
-            required
-          />
-        </div>
-        <div className="mb-2">
-          <label className="block">Complemento</label>
-          <input
-            type="text"
-            name="complement"
-            value={form.complement || ''}
-            onChange={handleChange}
-            className="w-full p-2 border"
-          />
-        </div>
-        <div className="mb-2">
-          <label className="block">Imagem Principal (URL)</label>
-          <input
-            type="text"
-            name="main_image"
-            value={form.main_image || ''}
-            onChange={handleChange}
-            className="w-full p-2 border"
-          />
-        </div>
-        <div className="mb-2">
-          <label className="block">Imagem de Capa (URL)</label>
-          <input
-            type="text"
-            name="cover_image"
-            value={form.cover_image || ''}
-            onChange={handleChange}
-            className="w-full p-2 border"
-          />
-        </div>
-        <div className="mb-2">
-          <label className="block">Conteúdo HTML</label>
-          <input
-            type="text"
-            name="content_html"
-            value={form.content_html || ''}
-            onChange={handleChange}
-            className="w-full p-2 border"
-          />
-        </div>
-        <div className="mb-2">
-          <label className="block">Informações Adicionais</label>
-          <input
-            type="text"
-            name="additional_info"
-            value={form.additional_info || ''}
-            onChange={handleChange}
-            className="w-full p-2 border"
-          />
-        </div>
-        <div className="mb-2">
-          <label className="block">Email 1</label>
-          <input
-            type="email"
-            name="contact1_email"
-            value={form.contact1_email || ''}
-            onChange={handleChange}
-            className="w-full p-2 border"
-            required
-          />
-        </div>
-        <div className="mb-2">
-          <label className="block">Email 2</label>
-          <input
-            type="email"
-            name="contact2_email"
-            value={form.contact2_email || ''}
-            onChange={handleChange}
-            className="w-full p-2 border"
-          />
-        </div>
-        <div className="mb-2">
-          <label className="block">Número 1</label>
-          <input
-            type="text"
-            name="number1"
-            value={form.number1 || ''}
-            onChange={handleChange}
-            className="w-full p-2 border"
-            required
-          />
-        </div>
-        <div className="mb-2">
-          <label className="block">Número 2</label>
-          <input
-            type="text"
-            name="number2"
-            value={form.number2 || ''}
-            onChange={handleChange}
-            className="w-full p-2 border"
-          />
-        </div>
-        <div className="mb-2">
-          <label className="block">Número 3</label>
-          <input
-            type="text"
-            name="number3"
-            value={form.number3 || ''}
-            onChange={handleChange}
-            className="w-full p-2 border"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block">ID da Rua</label>
-          <input
-            type="number"
-            name="street_id"
-            value={form.street_id || ''}
-            onChange={handleChange}
-            className="w-full p-2 border"
-            required
-          />
-        </div>
-        <button
-          type="submit"
-          className="bg-blue-500 text-white p-2 rounded"
-          disabled={loading}
-        >
-          {loading ? 'Salvando...' : 'Salvar'}
-        </button>
-      </form>
-    </div>
+    <main className="min-h-screen bg-background p-4 md:p-8 space-y-6">
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold">
+            {isEdit ? 'Editar Propriedade' : 'Nova Propriedade'}
+          </CardTitle>
+          <CardDescription>
+            {isEdit ? 'Atualize os dados da propriedade.' : 'Cadastre uma nova propriedade no sistema.'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <Alert variant="destructive">
+              <AlertTitle>Erro</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="name">Nome da propriedade</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  placeholder="Ex: Farmácia Central"
+                  value={form.name || ''}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="n_property">Número da propriedade</Label>
+                <Input
+                  id="n_property"
+                  name="n_property"
+                  type="text"
+                  placeholder="Ex: 101"
+                  value={form.n_property || ''}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="complement">Complemento</Label>
+              <Input
+                id="complement"
+                name="complement"
+                type="text"
+                placeholder="Ex: Apto 101"
+                value={form.complement || ''}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="main_image">Imagem principal (URL)</Label>
+                <Input
+                  id="main_image"
+                  name="main_image"
+                  type="url"
+                  placeholder="https://exemplo.com/imagem.jpg"
+                  value={form.main_image || ''}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="cover_image">Imagem de capa (URL)</Label>
+                <Input
+                  id="cover_image"
+                  name="cover_image"
+                  type="url"
+                  placeholder="https://exemplo.com/capa.jpg"
+                  value={form.cover_image || ''}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="content_html">Conteúdo HTML</Label>
+              <Input
+                id="content_html"
+                name="content_html"
+                type="text"
+                placeholder="Descrição em HTML"
+                value={form.content_html || ''}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="additional_info">Informações adicionais</Label>
+              <Input
+                id="additional_info"
+                name="additional_info"
+                type="text"
+                placeholder="Informações complementares"
+                value={form.additional_info || ''}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="contact1_email">E-mail principal</Label>
+                <Input
+                  id="contact1_email"
+                  name="contact1_email"
+                  type="email"
+                  placeholder="loja@exemplo.com"
+                  value={form.contact1_email || ''}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="contact2_email">E-mail secundário</Label>
+                <Input
+                  id="contact2_email"
+                  name="contact2_email"
+                  type="email"
+                  placeholder="contato@exemplo.com"
+                  value={form.contact2_email || ''}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="number1">Telefone 1</Label>
+                <Input
+                  id="number1"
+                  name="number1"
+                  type="tel"
+                  placeholder="(11) 99999-9999"
+                  value={form.number1 || ''}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="number2">Telefone 2</Label>
+                <Input
+                  id="number2"
+                  name="number2"
+                  type="tel"
+                  placeholder="(11) 99999-9999"
+                  value={form.number2 || ''}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="number3">Telefone 3</Label>
+                <Input
+                  id="number3"
+                  name="number3"
+                  type="tel"
+                  placeholder="(11) 99999-9999"
+                  value={form.number3 || ''}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="street_id">ID da Rua</Label>
+              <Input
+                id="street_id"
+                name="street_id"
+                type="number"
+                placeholder="ID da rua cadastrada"
+                value={form.street_id || ''}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <CardFooter>
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? 'Salvando...' : 'Salvar Propriedade'}
+              </Button>
+            </CardFooter>
+          </form>
+        </CardContent>
+      </Card>
+    </main>
   );
 };
 
