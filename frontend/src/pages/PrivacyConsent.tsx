@@ -60,7 +60,7 @@ const PrivacyConsent = () => {
 
   const byTipo = useMemo(() => {
     const map = new Map<string, UserConsent>();
-    consents.forEach((c) => map.set(c.tipo, c));
+    consents.forEach((c) => map.set(c.purpose, c));
     return map;
   }, [consents]);
 
@@ -87,25 +87,22 @@ const PrivacyConsent = () => {
     PURPOSES.find((p) => p.tipo === tipo)?.titulo || tipo;
 
   const handleToggle = async (tipo: string) => {
-    const current = byTipo.get(tipo)?.aceito ?? false;
+    const current = byTipo.get(tipo)?.granted ?? false;
     const next = !current;
     const previous = [...consents];
 
     setToggling((prev) => new Set([...prev, tipo]));
     setConsents((list) =>
       list.map((c) =>
-        c.tipo === tipo ? { ...c, aceito: next } : c,
+        c.purpose === tipo ? { ...c, granted: next } : c,
       ),
     );
 
     try {
       if (next) {
-        await acceptConsent(tipo);
+        await acceptConsent(tipo, true);
       } else {
-        const id = byTipo.get(tipo)?.id;
-        if (id != null) {
-          await revokeConsent(id);
-        }
+        await revokeConsent(tipo);
       }
       await loadConsents();
       toast.success(

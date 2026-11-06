@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { LayoutDashboard, LogIn, LogOut, MapPinned, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, LogIn, LogOut, MapPinned, ShieldCheck, Calendar, MessageCircle, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -27,6 +27,21 @@ export function SiteHeader() {
               <Button asChild variant="ghost" size="sm" className="h-9">
                 <Link to="/">
                   <LayoutDashboard className="h-4 w-4" /> Painel
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm" className="h-9">
+                <Link to="/scheduling">
+                  <Calendar className="h-4 w-4" /> Agendamentos
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm" className="h-9">
+                <Link to="/chat">
+                  <MessageCircle className="h-4 w-4" /> Chat
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm" className="h-9">
+                <Link to="/reviews">
+                  <Star className="h-4 w-4" /> Avaliacoes
                 </Link>
               </Button>
               {isAdmin && (

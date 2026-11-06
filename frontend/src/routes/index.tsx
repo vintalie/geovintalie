@@ -22,6 +22,9 @@ import UserDashboard from '../pages/UserDashboard';
 import MapPage from '../pages/MapPage';
 import ImportExport from '../pages/ImportExport';
 import PrivacyConsent from '../pages/PrivacyConsent';
+import Scheduling from '../pages/Scheduling';
+import InternalChat from '../pages/InternalChat';
+import Reviews from '../pages/Reviews';
 import DataExport from '../pages/DataExport';
 import DeleteAccount from '../pages/DeleteAccount';
 import Layout from '../components/Layout/Layout';
@@ -100,6 +103,9 @@ export const AppRoutes = () => {
 
           <Route path="institutional" element={<Institutional />} />
           <Route path="privacy-consent" element={<PrivacyConsent />} />
+          <Route path="scheduling" element={<Scheduling />} />
+          <Route path="chat" element={<InternalChat />} />
+          <Route path="reviews" element={<Reviews />} />
           <Route path="data-export" element={<DataExport />} />
           <Route path="delete-account" element={<DeleteAccount />} />
           <Route path="admin" element={<AdminDashboard />} />

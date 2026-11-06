@@ -11,6 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Models\ConfigsInterface;
 use App\Models\Appointment;
 use App\Models\Review;
+use App\Models\UserConsent;
 use App\Models\ServiceEvaluation;
 use App\Models\ServiceProvider;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,7 +22,7 @@ use Illuminate\Notifications\Notifiable;
 
 
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'phone'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements JWTSubject
 {
@@ -87,5 +88,10 @@ class User extends Authenticatable implements JWTSubject
     public function messages()
     {
         return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function userConsents()
+    {
+        return $this->hasMany(UserConsent::class, 'user_id');
     }
 }

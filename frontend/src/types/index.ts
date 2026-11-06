@@ -2,6 +2,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  phone?: string;
   tipo_nome?: string;
   role?: string;
   tipo?: string;
@@ -136,12 +137,59 @@ export interface Products {
 export interface UserConsent {
   id: number;
   user_id: number;
-  tipo: string; // ex.: 'termo_uso', 'politica_privacidade', 'marketing', 'cookies'
-  aceito: boolean;
-  aceito_em?: string | null;
-  revogado_em?: string | null;
-  criado_em?: string;
-  atualizado_em?: string;
+  purpose: string; // ex.: 'marketing', 'analytics', 'third_party', 'termo_uso', 'politica_privacidade'
+  granted: boolean;
+  granted_at?: string | null;
+  withdrawn_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  ip_address?: string | null;
+  user_agent?: string | null;
   titulo?: string;
   descricao?: string | null;
+}
+
+export interface Appointment {
+  id: number;
+  client_id: number;
+  provider_id: number;
+  provider_name: string;
+  client_name: string;
+  service: string;
+  scheduled_at: string;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  created_at: string;
+}
+
+export interface ChatConversation {
+  id: number;
+  participant_id: number;
+  participant_name: string;
+  participant_role: 'client' | 'provider';
+  last_message: string;
+  last_message_at: string;
+  unread_count: number;
+}
+
+export interface ChatMessage {
+  id: number;
+  conversation_id: number;
+  sender_id: number;
+  sender_name: string;
+  body: string;
+  created_at: string;
+  mine: boolean;
+}
+
+export interface Review {
+  id: number;
+  appointment_id: number;
+  reviewer_id: number;
+  reviewer_name: string;
+  reviewer_role: 'client' | 'provider';
+  reviewee_id: number;
+  reviewee_name: string;
+  rating: number; // 1 a 5
+  comment: string | null;
+  created_at: string;
 }
