@@ -69,7 +69,9 @@ git pull origin main --ff-only >/dev/null 2>&1 || { echo "⚠️  pull main não
 > "$REPO_DIR/.hermes/.failed_prs_r2" 2>/dev/null || true
 
 open_pr() {
-  local t="$1" issue="${TASK_ISSUE[$t]}" branch="fix/${issue}-${TASK_SLUG[$t]}"
+  local t="$1"
+  local issue="${TASK_ISSUE[$t]}"
+  local branch="fix/${issue}-${TASK_SLUG[$t]}"
   local title="${TASK_TITLE[$t]}"
 
   echo ""
