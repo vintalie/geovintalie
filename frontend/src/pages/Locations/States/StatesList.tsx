@@ -84,7 +84,9 @@ const StatesList = () => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Estado: {singleState.name}</h1>
           <Button asChild variant="default" size="sm">
-            <span>Voltar para lista</span>
+            <Link to="/states">
+              <span>Voltar para lista</span>
+            </Link>
           </Button>
         </div>
         <table className="w-full border">

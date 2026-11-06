@@ -1,4 +1,4 @@
-import { /*BrowserRouter,*/ Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Login from '../pages/Auth/Login';
 import Register from '../pages/Auth/Register';
@@ -33,8 +33,13 @@ import ProductsWithStocks from '../pages/Products/ProductsWithStocks';
 import type { JSX } from 'react';
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
   if (loading) return <div>Carregando...</div>;
-  return user ? children : <Navigate to="/login" />;
+  if (!user) {
+    navigate('/login', { replace: true });
+    return null;
+  }
+  return children;
 };
 
 export const AppRoutes = () => {
