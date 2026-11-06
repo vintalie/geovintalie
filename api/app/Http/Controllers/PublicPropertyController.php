@@ -91,10 +91,8 @@ class PublicPropertyController extends Controller
         ]);
     }
 
-    public function show(Request $request, string $id)
+    public function show(Property $property)
     {
-        $property = Property::where('id', $id)->firstOrFail();
-
         $property->load('user', 'street.neighborhood.city.state.country');
 
         return response()->json([

@@ -19,14 +19,12 @@ vi.mock('@/api/auth', () => ({
 }));
 
 const mockLogin = vi.mocked(authApi.login);
-const mockNavigate = vi.mocked(useNavigate);
 let navigateFn: any;
 
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
   navigateFn = vi.fn();
-  mockNavigate.mockImplementation(() => navigateFn);
   mockLogin.mockResolvedValue({ data: { token: 'token-teste-123' } } as any);
 });
 

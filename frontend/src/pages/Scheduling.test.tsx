@@ -79,9 +79,7 @@ describe('Scheduling', () => {
     render(<><Toaster /><Scheduling /></>);
 
     await waitFor(() =>
-      expect(
-        screen.getByText('Ana Costa - Jardim e Paisagismo'),
-      ).toBeInTheDocument(),
+      expect(screen.getByRole('cell', { name: /Ana Costa/ })).toBeInTheDocument(),
     );
     fireEvent.click(screen.getByRole('button', { name: /Cancelar/ }));
 

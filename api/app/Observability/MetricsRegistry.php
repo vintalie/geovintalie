@@ -36,6 +36,9 @@ final class MetricsRegistry
     public static function instance(): self
     {
         if (! isset(self::$instance)) {
+            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+            $caller = ($trace[0]['class'] ?? '?') . '::' . ($trace[0]['function'] ?? '?');
+            error_log('[METRICS-PROBE] NEW MetricsRegistry instance pid=' . getmypid() . ' created by ' . $caller . "\n", 3, '/tmp/metrics_probe.log');
             self::$instance = new self();
         }
 

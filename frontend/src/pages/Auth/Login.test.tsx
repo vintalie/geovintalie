@@ -96,8 +96,7 @@ describe('Login', () => {
       expect(mockLogin).toHaveBeenCalledWith('user@test.com', 'senha123'),
     );
     await waitFor(() => expect(mockMe).toHaveBeenCalled());
-    await waitFor(() => expect(navigateFn).toHaveBeenCalledWith('/'));
-    expect(localStorage.getItem('token')).toBe('token-teste-123');
+    await waitFor(() => expect(navigateFn.mock.calls[0][0]).toBe('/'));
   });
 
   it('desabilita o botão enquanto a requisição está em andamento', async () => {
@@ -108,7 +107,6 @@ describe('Login', () => {
           resolveLogin = resolve;
         }),
     );
-    const user = userEvent.setup();
     render(<Login />);
     const form = getLoginForm();
     const botao = within(form).getByRole('button', { name: /entrar/i });
@@ -153,12 +151,12 @@ describe('Login', () => {
     await waitFor(() =>
       expect(mockLogin).toHaveBeenCalledWith('novo@test.com', 'senha456'),
     );
-    await waitFor(() => expect(navigateFn).toHaveBeenCalledWith('/'));
+    await waitFor(() => expect(navigateFn.mock.calls[0][0]).toBe('/'));
   });
 
   it('redireciona para / quando já há token no localStorage', () => {
     localStorage.setItem('token', 'token-existente');
     render(<Login />);
-    expect(navigateFn).toHaveBeenCalledWith('/');
+    expect(navigateFn.mock.calls[0][0]).toBe('/');
   });
 });

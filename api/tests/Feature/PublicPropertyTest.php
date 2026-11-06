@@ -26,16 +26,13 @@ class PublicPropertyTest extends TestCase
         $this->artisan('db:seed', ['--class' => 'DatabaseSeeder']);
     }
 
-    private function criarCadeiaEndereco(string $uf = 'SP', string $estadoNome = 'São Paulo', string $cidadeNome = 'Sao Paulo'): array
+    private function criarCadeiaEndereco(): array
     {
-        $pais = Country::firstOrCreate(['name' => 'Brasil']);
-        $estado = State::firstOrCreate(
-            ['abbreviation' => $uf],
-            ['name' => $estadoNome, 'country_id' => $pais->id]
-        );
-        $cidade = City::create(['name' => $cidadeNome, 'state_id' => $estado->id]);
-        $bairro = Neighborhood::create(['name' => 'Bairro ' . $uf, 'city_id' => $cidade->id]);
-        $rua = Street::create(['name' => 'Rua dos Publicos ' . $uf, 'neighborhood_id' => $bairro->id]);
+        $pais = Country::create(['name' => 'Brasil']);
+        $estado = State::create(['name' => 'São Paulo', 'abbreviation' => 'SP', 'country_id' => $pais->id]);
+        $cidade = City::create(['name' => 'São Paulo', 'state_id' => $estado->id]);
+        $bairro = Neighborhood::create(['name' => 'Jardins', 'city_id' => $cidade->id]);
+        $rua = Street::create(['name' => 'Rua dos Publicos', 'neighborhood_id' => $bairro->id]);
 
         return compact('pais', 'estado', 'cidade', 'bairro', 'rua');
     }
@@ -89,15 +86,14 @@ class PublicPropertyTest extends TestCase
 
         Property::create([
             'name' => 'Loja SP',
-            'n_property' => '301',
             'street_id' => $endereco['rua']->id,
             'user_id' => $usuario->id,
         ]);
 
-        $outro = $this->criarCadeiaEndereco('MG', 'Minas Gerais', 'Outra Cidade');
+        $outro = $this->criarCadeiaEndereco();
+        $outro['estado']->update(['name' => 'Minas Gerais']);
         Property::create([
             'name' => 'Loja MG',
-            'n_property' => '302',
             'street_id' => Street::create(['name' => 'Rua Outra', 'neighborhood_id' => $outro['bairro']->id])->id,
             'user_id' => $usuario->id,
         ]);
@@ -143,7 +139,7 @@ class PublicPropertyTest extends TestCase
         $this->get("{$this->base}/{$propriedade->id}")
             ->assertStatus(200)
             ->assertJsonFragment(['id' => $propriedade->id, 'name' => 'Loja Detalhe'])
-            ->assertJsonFragment(['address' => 'Rua dos Publicos SP', 'city' => 'Sao Paulo', 'state' => 'São Paulo', 'country' => 'Brasil'])
+            ->assertJsonFragment(['address' => 'Rua dos Publicos', 'city' => 'São Paulo', 'state' => 'São Paulo', 'country' => 'Brasil'])
             ->assertJsonFragment(['owner_name' => 'Proprietario Publico', 'owner_tipo' => 'user'])
             ->assertJsonStructure(['data' => ['id', 'name', 'products']]);
     }

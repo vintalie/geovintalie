@@ -90,7 +90,6 @@ describe('Register', () => {
           resolveRegister = resolve;
         }),
     );
-    const user = userEvent.setup();
     render(<Register />);
     const botao = screen.getByRole('button', { name: /registrar/i });
     await preencherCadastro('Novo Usuario', 'novo@test.com', 'senha456');
@@ -119,6 +118,6 @@ describe('Register', () => {
     const user = userEvent.setup();
     render(<Register />);
     await user.click(screen.getByRole('link', { name: /login/i }));
-    await waitFor(() => expect(navigateFn).toHaveBeenCalledWith('/login'));
+    await waitFor(() => expect(navigateFn.mock.calls[0][0]).toBe('/login'));
   });
 });
