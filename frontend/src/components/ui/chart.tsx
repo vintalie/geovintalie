@@ -264,7 +264,7 @@ const ChartLegendContent = React.forwardRef<
     >
       {payload
         .filter((item: any) => item.type !== "none")
-        .map((item) => {
+        .map((item: any) => {
           const key = `${nameKey || item.dataKey || "value"}`;
           const itemConfig = getPayloadConfigFromPayload(config, item, key);
 
