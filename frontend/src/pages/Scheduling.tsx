@@ -5,6 +5,8 @@ import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 
 import { Button } from '@/components/ui/button';
+import {
+  Card,
   CardContent,
   CardDescription,
   CardHeader,
@@ -36,7 +38,10 @@ import {
   type Appointment,
 } from '@/api/scheduling';
 
-const STATUS_LABEL: Record<string, { label: string; variant: string }> = {
+const STATUS_LABEL: Record<
+  Appointment['status'],
+  { label: string; variant: 'default' | 'destructive' | 'outline' | 'secondary' }
+> = {
   pending: { label: 'Pendente', variant: 'secondary' },
   confirmed: { label: 'Confirmado', variant: 'default' },
   completed: { label: 'Concluido', variant: 'outline' },
@@ -160,8 +165,7 @@ const Scheduling = () => {
     }
   };
 
-  const statusOf = (status: string) =>
-    STATUS_LABEL[status] ?? { label: status, variant: 'secondary' };
+  const statusOf = (status: Appointment['status']) => STATUS_LABEL[status];
 
   const formatDateTime = (iso: string) =>
     new Date(iso).toLocaleString('pt-BR', {

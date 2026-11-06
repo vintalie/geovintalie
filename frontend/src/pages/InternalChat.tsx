@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { MessageCircle, Send, Clock } from 'lucide-react';
+import { MessageCircle, Send } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -14,7 +14,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 import {
   getConversations,
   getMessages,
@@ -140,17 +140,21 @@ const InternalChat = () => {
                 <button
                   key={c.id}
                   onClick={() => selectConversation(c)}
-                  className={`w-full flex items-center gap-3 p-4 text-left transition-colors ${
+                  className={cn(
+                    'w-full flex items-center gap-3 p-4 text-left transition-colors',
                     active?.id === c.id
                       ? 'bg-primary text-primary-foreground'
-                      : 'hover:bg-muted'
-                  }`}
+                      : 'hover:bg-muted',
+                  )}
                 >
                   <Avatar className="h-10 w-10 shrink-0">
-                    <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=" + c.participant_name }
-                    <AvatarFallback>
-                      {c.participant_name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
+                    <AvatarImage
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${c.participant_name}`}
+                    >
+                      <AvatarFallback>
+                        {c.participant_name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </AvatarImage>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">
@@ -167,7 +171,7 @@ const InternalChat = () => {
                   )}
                 </button>
               )
-            )}
+            ))}
           </div>
         </div>
         <div className="flex-1 flex flex-col">
@@ -176,10 +180,13 @@ const InternalChat = () => {
               <CardHeader className="border-b px-6">
                 <div className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=" + active.participant_name }
-                    <AvatarFallback>
-                      {active.participant_name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
+                    <AvatarImage
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${active.participant_name}`}
+                    >
+                      <AvatarFallback>
+                        {active.participant_name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </AvatarImage>
                   </Avatar>
                   <div>
                     <CardTitle className="text-base">
@@ -241,6 +248,7 @@ const InternalChat = () => {
                     type="submit"
                     disabled={sending || !body.trim()}
                     className="h-9"
+                    aria-label="Enviar mensagem"
                   >
                     <Send className="h-4 w-4" />
                   </Button>

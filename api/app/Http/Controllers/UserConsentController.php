@@ -143,8 +143,7 @@ class UserConsentController extends Controller
         // Consentimentos do titular
         UserConsent::where('user_id', $userId)->delete();
 
-        // Sessoes e tokens de acesso (invalida sessoes remanescentes)
-        $request->user()->tokens()->delete();
+        // Sessoes (guardadas por hasTable; JWT e stateless e nao possui servidor de tokens para revogar)
         if (Schema::hasTable('sessions')) {
             DB::table('sessions')->where('user_id', $userId)->delete();
         }

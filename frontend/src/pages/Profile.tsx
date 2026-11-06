@@ -12,6 +12,7 @@ const Profile = () => {
   const { user, setUser } = useAuth();
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
+  const [phone, setPhone] = useState(user?.phone || '');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', kind: 'success' as 'success' | 'error' });
 
@@ -26,7 +27,7 @@ const Profile = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await updateUser(user!.id, { name, email });
+      await updateUser(user!.id, { name, email, phone });
       const response = await me();
       const userData = response.data.user ?? response.data;
       setUser(userData);
@@ -76,6 +77,15 @@ const Profile = () => {
                   required
                 />
               </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="phone">Telefone</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
             </div>
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? 'Atualizando...' : 'Atualizar Perfil'}
@@ -94,10 +104,16 @@ const Profile = () => {
             <span className="text-sm font-mono text-muted-foreground">#{user?.id}</span>
           </div>
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-            <span className="text-sm text-muted-foreground">Tipo de usuário</span>
+            <span className="text-sm text-muted-foreground">Tipo de usuario</span>
             <Badge variant={user?.tipo_nome === 'admin' ? 'destructive' : 'secondary'}>
-              {user?.tipo_nome ?? 'Usuário'}
+              {user?.tipo_nome ?? 'Usuario'}
             </Badge>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+            <span className="text-sm text-muted-foreground">Telefone</span>
+            <span className="text-sm font-mono text-muted-foreground">
+              {user?.phone ?? '—'}
+            </span>
           </div>
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <span className="text-sm text-muted-foreground">E-mail verificado</span>

@@ -166,7 +166,7 @@ const PrivacyConsent = () => {
         <CardContent className="p-0">
           {PURPOSES.map((purpose) => {
             const consent = byTipo.get(purpose.tipo);
-            const aceito = consent?.aceito ?? false;
+            const granted = consent?.granted ?? false;
             const Icon = purpose.icon;
             return (
               <Card key={purpose.tipo} className="shadow-card">
@@ -186,25 +186,25 @@ const PrivacyConsent = () => {
                   </div>
                   <Separator className="my-4" />
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <Badge variant={aceito ? 'default' : 'secondary'}>
-                      {aceito ? 'Aceito' : 'Pendente'}
+                    <Badge variant={granted ? 'default' : 'secondary'}>
+                      {granted ? 'Aceito' : 'Pendente'}
                     </Badge>
-                    {aceito && consent?.aceito_em && (
+                    {granted && consent?.granted_at && (
                       <span className="text-xs text-muted-foreground">
                         desde{' '}
-                        {new Date(consent.aceito_em).toLocaleDateString(
+                        {new Date(consent.granted_at).toLocaleDateString(
                           'pt-BR',
                         )}
                       </span>
                     )}
                     <div className="flex items-center gap-2">
                       <Switch
-                        checked={aceito}
+                        checked={granted}
                         onCheckedChange={() => handleToggle(purpose.tipo)}
                         disabled={toggling.has(purpose.tipo)}
                       />
                       <Label className="text-xs text-muted-foreground">
-                        {aceito ? 'Desativar' : 'Ativar'}
+                        {granted ? 'Desativar' : 'Ativar'}
                       </Label>
                     </div>
                   </div>

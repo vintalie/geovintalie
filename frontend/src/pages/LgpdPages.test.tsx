@@ -23,11 +23,9 @@ const mockUseAuth = vi.mocked(useAuth);
 const consentMock = (overrides: Record<string, unknown> = {}) => ({
   id: 1,
   user_id: 7,
-  tipo: 'marketing',
-  aceito: false,
-  aceito_em: null,
-  titulo: 'Marketing e comunicacoes',
-  descricao: 'Receba novidades e promocoes.',
+  purpose: 'marketing',
+  granted: false,
+  granted_at: null,
   ...overrides,
 });
 
@@ -43,9 +41,9 @@ beforeEach(() => {
 
 describe('PrivacyConsent', () => {
   const consentsPage = [
-    consentMock({ tipo: 'marketing', aceito: false }),
-    { ...consentMock({ id: 2, tipo: 'analytics', aceito: true }) },
-    { ...consentMock({ id: 3, tipo: 'third_party', aceito: false }) },
+    consentMock({ purpose: 'marketing', granted: false }),
+    { ...consentMock({ id: 2, purpose: 'analytics', granted: true }) },
+    { ...consentMock({ id: 3, purpose: 'third_party', granted: false }) },
   ];
 
   it('renderiza os tres propósitos de consentimento (marketing, analytics, third_party)', async () => {
@@ -79,7 +77,7 @@ describe('PrivacyConsent', () => {
     expect(switches[0]).not.toBeChecked();
     fireEvent.click(switches[0]);
 
-    expect(mockAcceptConsent).toHaveBeenCalledWith('marketing');
+    expect(mockAcceptConsent).toHaveBeenCalledWith('marketing', true);
 
     await waitFor(() =>
       expect(
@@ -102,7 +100,7 @@ describe('PrivacyConsent', () => {
     expect(switches[1]).toBeChecked();
     fireEvent.click(switches[1]);
 
-    expect(mockRevokeConsent).toHaveBeenCalledWith(2);
+    expect(mockRevokeConsent).toHaveBeenCalledWith('analytics');
 
     await waitFor(() =>
       expect(
@@ -168,12 +166,20 @@ describe('DeleteAccount', () => {
     fireEvent.click(
       screen.getAllByRole('button', { name: /confirmar exclus/i })[0]
     );
-    await waitFor(() =>
-      expect(screen.getByRole('heading', { name: /Confirmar exclusão/i })).toBeInTheDocument()
-    );
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /Confirmar exclusão/i })).toBeInTheDocument();
+    });
 
+    fireEvent.input(screen.getByLabelText('Senha atual'), {
+      target: { value: 'senha123' },
+    });
+    fireEvent.click(screen.getByLabelText(/Confirmo que desejo excluir/));
     fireEvent.click(screen.getByRole('button', { name: /excluir conta/i }));
     await waitFor(() => expect(mockDeleteAccount).toHaveBeenCalledTimes(1));
+    expect(mockDeleteAccount).toHaveBeenCalledWith({
+      password: 'senha123',
+      confirm_delete: true,
+    });
     expect(mockUseAuth.mock.results[0]?.value.logout).toHaveBeenCalledTimes(1);
     expect(user.email).toBe('usuario@test.com');
   });

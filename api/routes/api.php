@@ -174,9 +174,11 @@ Route::prefix('v2')->group(function () {
     Route::middleware(['jwt.auth'])->group(function () {
         Route::get('user-consents', [UserConsentController::class, 'index']);
         Route::post('user-consents', [UserConsentController::class, 'store']);
+        // Rota estatica deve vir ANTES da parametrizada {purpose}, senao
+        // 'account' e consumido como valor de purpose e o deleteAccount nunca e alcançado.
+        Route::delete('user-consents/account', [UserConsentController::class, 'deleteAccount']);
         Route::delete('user-consents/{purpose}', [UserConsentController::class, 'destroy']);
         Route::get('user-consents/export', [UserConsentController::class, 'export']);
-        Route::delete('user-consents/account', [UserConsentController::class, 'deleteAccount']);
     });
 
     // Google Business Profile (Escopo A2) - fluxo OAuth 2.0
