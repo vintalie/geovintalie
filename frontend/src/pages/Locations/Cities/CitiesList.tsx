@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { deleteCity, getCities } from '../../../api/location';
@@ -6,7 +7,15 @@ import { usePaginatedResource } from '../../../hooks/usePaginatedResource';
 import type { City } from '../../../types';
 
 const CitiesList = () => {
-  // Hook de paginação – definimos o extrator para pegar response.data.cities
+  const fetchCities = useCallback(
+    (page: number, perPage: number) => getCities({ page, per_page: perPage }),
+    []
+  );
+  const extractCities = useCallback(
+    (response: any) => response.data,
+    []
+  );
+
   const {
     data: cities,
     meta,
@@ -18,11 +27,8 @@ const CitiesList = () => {
     prevPage,
     reload,
   } = usePaginatedResource<City>(
-    (page, perPage) => getCities({ page, per_page: perPage }),
-    (response) => {
-    return response.data;
-
-    }, // extrator da parte paginada
+    fetchCities,
+    extractCities,
     { perPage: 10 }
   );
   console.log(cities)

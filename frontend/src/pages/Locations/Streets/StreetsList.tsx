@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { deleteStreet, getStreets } from '../../../api/location';
@@ -6,7 +7,15 @@ import { usePaginatedResource } from '../../../hooks/usePaginatedResource';
 import type { Street } from '../../../types';
 
 const StreetsList = () => {
-  // Hook de paginação – definimos o extrator para pegar response.data.streets
+  const fetchStreets = useCallback(
+    (page: number, perPage: number) => getStreets({ page, per_page: perPage }),
+    []
+  );
+  const extractStreets = useCallback(
+    (response: any) => response.data,
+    []
+  );
+
   const {
     data: streets,
     meta,
@@ -18,11 +27,8 @@ const StreetsList = () => {
     prevPage,
     reload,
   } = usePaginatedResource<Street>(
-    (page, perPage) => getStreets({ page, per_page: perPage }),
-    (response) => {
-    return response.data;
-
-    }, // extrator da parte paginada
+    fetchStreets,
+    extractStreets,
     { perPage: 10 }
   );
   console.log(streets)

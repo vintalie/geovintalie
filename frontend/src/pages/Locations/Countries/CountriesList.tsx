@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { deleteCountry, getCountries } from '../../../api/location';
@@ -6,7 +7,15 @@ import { usePaginatedResource } from '../../../hooks/usePaginatedResource';
 import type { Country } from '../../../types';
 
 const CountriesList = () => {
-  // Hook de paginação – definimos o extrator para pegar response.data.countries
+  const fetchCountries = useCallback(
+    (page: number, perPage: number) => getCountries({ page, per_page: perPage }),
+    []
+  );
+  const extractCountries = useCallback(
+    (response: any) => response.data.countries,
+    []
+  );
+
   const {
     data: countries,
     meta,
@@ -18,11 +27,8 @@ const CountriesList = () => {
     prevPage,
     reload,
   } = usePaginatedResource<Country>(
-    (page, perPage) => getCountries({ page, per_page: perPage }),
-    (response) => {
-    return response.data.countries;
-
-    }, // extrator da parte paginada
+    fetchCountries,
+    extractCountries,
     { perPage: 10 }
   );
   console.log(countries)

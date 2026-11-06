@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { deleteNeighborhood, getNeighborhoods } from '../../../api/location';
@@ -6,7 +7,15 @@ import { usePaginatedResource } from '../../../hooks/usePaginatedResource';
 import type { Neighborhood } from '../../../types';
 
 const NeighborhoodsList = () => {
-  // Hook de paginação – definimos o extrator para pegar response.data.neighborhoods
+  const fetchNeighborhoods = useCallback(
+    (page: number, perPage: number) => getNeighborhoods({ page, per_page: perPage }),
+    []
+  );
+  const extractNeighborhoods = useCallback(
+    (response: any) => response.data,
+    []
+  );
+
   const {
     data: neighborhoods,
     meta,
@@ -18,11 +27,8 @@ const NeighborhoodsList = () => {
     prevPage,
     reload,
   } = usePaginatedResource<Neighborhood>(
-    (page, perPage) => getNeighborhoods({ page, per_page: perPage }),
-    (response) => {
-    return response.data;
-
-    }, // extrator da parte paginada
+    fetchNeighborhoods,
+    extractNeighborhoods,
     { perPage: 10 }
   );
   console.log(neighborhoods)
