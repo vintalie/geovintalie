@@ -1,6 +1,5 @@
 "use client";
 
-import React from 'react';
 import { Loader2 } from 'lucide-react';
 
 export function Spinner({ className = '', size = 'sm' }: { className?: string; size?: 'sm' | 'md' | 'lg' }) {

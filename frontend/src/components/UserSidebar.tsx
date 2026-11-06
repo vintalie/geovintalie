@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -50,28 +49,45 @@ const adminMenuItems = [
   { href: '/delete-account', icon: LogOut, label: 'Excluir conta' },
 ];
 
-export function UserSidebar({ className }: { className?: string }) {
+export function UserSidebar({
+  className,
+  open = true,
+  onClose,
+}: {
+  className?: string;
+  open?: boolean;
+  onClose?: () => void;
+}) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [open, setOpen] = useState(true);
 
   const menuItems = isAdmin(user) ? adminMenuItems : userMenuItems;
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+    onClose?.();
   };
 
-  const toggleSidebar = () => setOpen((prev) => !prev);
-
   return (
-    <aside className={cn("border-r bg-background flex flex-col", className)} style={{ width: open ? '16rem' : '3rem' }}>
+    <aside
+      className={cn(
+        'border-r bg-background flex flex-col transition-width duration-300 ease-in-out',
+        className,
+      )}
+      style={{ width: open ? '16rem' : '3rem' }}
+    >
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2">
           <MapPinned className="h-5 w-5 text-accent" />
           {open && <span className="font-display font-semibold text-sm">Geovintalie</span>}
         </div>
-        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose || (() => {})}
+          className="mr-2"
+        >
           <span className="sr-only">Alternar painel lateral</span>
         </Button>
       </div>
