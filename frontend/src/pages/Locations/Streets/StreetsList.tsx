@@ -45,7 +45,7 @@ const StreetsList = () => {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Ruas</h1>
         <Button asChild variant="default" size="sm">
-          Novo País
+          <span>Novo País</span>
         </Button>
       </div>
 

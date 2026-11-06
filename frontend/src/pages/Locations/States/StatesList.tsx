@@ -84,7 +84,7 @@ const StatesList = () => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Estado: {singleState.name}</h1>
           <Button asChild variant="default" size="sm">
-            Voltar para lista
+            <span>Voltar para lista</span>
           </Button>
         </div>
         <table className="w-full border">
@@ -127,7 +127,7 @@ const StatesList = () => {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Estados</h1>
         <Button asChild variant="default" size="sm">
-          Novo Estado
+          <span>Novo Estado</span>
         </Button>
       </div>
 
