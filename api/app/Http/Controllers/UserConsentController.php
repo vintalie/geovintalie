@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\UserConsent;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class UserConsentController extends Controller
 {
@@ -57,23 +59,57 @@ class UserConsentController extends Controller
         $consent->delete();
 
         return response()->json([
-            'message' => 'Consentimento removido com sucesso.',
+            'message' => 'Consentimento revogado com sucesso.',
         ]);
     }
 
     public function export(Request $request)
     {
         $user = $request->user();
-        $consents = UserConsent::where('user_id', $user->id)->get();
+        $userId = $user->id;
 
-        return response()->json([
+        $personal = [
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'tipo_nome' => $user->tipo_nome,
+                'phone' => $user->phone,
+                'tipo_nome' => optional($user->UserType)->nome,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
             ],
-            'consents' => $consents,
+            'consents' => UserConsent::where('user_id', $userId)->get(),
+        ];
+
+        // Dados pessoais do titular em tabelas relacionadas (LGPD - acesso e portabilidade)
+        if (Schema::hasTable('properties')) {
+            $personal['properties'] = DB::table('properties')->where('user_id', $userId)->get();
+        }
+        if (Schema::hasTable('products')) {
+            $personal['products'] = DB::table('products')->where('user_id', $userId)->get();
+        }
+        if (Schema::hasTable('service_providers')) {
+            $personal['service_providers'] = DB::table('service_providers')->where('user_id', $userId)->get();
+        }
+        if (Schema::hasTable('service_listings')) {
+            $providerId = DB::table('service_providers')->where('user_id', $userId)->value('id');
+            $personal['service_listings'] = $providerId
+                ? DB::table('service_listings')->where('provider_id', $providerId)->get()
+                : [];
+        }
+        if (Schema::hasTable('appointments')) {
+            $personal['appointments'] = DB::table('appointments')
+                ->where('client_id', $userId)
+                ->orWhere('provider_id', $userId)
+                ->get();
+        }
+        if (Schema::hasTable('service_evaluations')) {
+            $personal['service_evaluations'] = DB::table('service_evaluations')->where('evaluator_id', $userId)->get();
+        }
+
+        return response()->json([
+            'message' => 'Exportacao dos dados pessoais do titular.',
+            'data' => $personal,
             'exported_at' => now(),
         ]);
     }
@@ -86,29 +122,72 @@ class UserConsentController extends Controller
         ]);
 
         if (!$request->confirm_delete) {
-            abort(400, 'Confirmação de exclusão é obrigatória.');
+            abort(400, 'Confirmacao de exclusao e obrigatoria.');
         }
 
         $user = $request->user();
+        $userId = $user->id;
 
         if (!password_verify($request->password, $user->password)) {
             abort(401, 'Senha incorreta.');
         }
 
-        // Anonimizar dados antes de excluir (LGPD - direito ao esquecimento)
-        $user->name = 'Usuário Excluído';
-        $user->email = 'deleted_' . $user->id . '@deleted.local';
+        // Anonimizacao do titular (LGPD - direito ao esquecimento).
+        // O registro eh mantido anonimo (em vez de deletado) para preservar
+        // a integridade referencial de FKs (agendamentos, propriedades, produtos, etc.).
+        $user->name = 'Usuario Excluido';
+        $user->email = 'deleted_' . $userId . '@deleted.local';
         $user->phone = null;
         $user->save();
 
-        // Excluir consentimentos
-        UserConsent::where('user_id', $user->id)->delete();
+        // Consentimentos do titular
+        UserConsent::where('user_id', $userId)->delete();
 
-        // Fazer logout
-        $request->user()->tokens()->delete();
+        // Sessoes (guardadas por hasTable; JWT e stateless e nao possui servidor de tokens para revogar)
+        if (Schema::hasTable('sessions')) {
+            DB::table('sessions')->where('user_id', $userId)->delete();
+        }
+
+        // Dados pessoais do titular em tabelas relacionadas
+        $this->anonymizeTable('properties', ['contact1_email', 'contact2_email', 'number1', 'number2', 'number3'], 'user_id', $userId);
+        $this->anonymizeTable('products', ['name', 'html'], 'user_id', $userId);
+
+        if (Schema::hasTable('service_providers')) {
+            $providerId = DB::table('service_providers')->where('user_id', $userId)->value('id');
+            $this->anonymizeTable('service_providers', ['business_name', 'cnpj_cpf', 'description', 'avatar_url', 'cover_url'], 'user_id', $userId);
+            if ($providerId && Schema::hasTable('service_listings')) {
+                $this->anonymizeTable('service_listings', ['title', 'description', 'address', 'city', 'state', 'zip_code'], 'provider_id', $providerId);
+            }
+        }
+
+        if (Schema::hasTable('appointments')) {
+            $this->anonymizeTable('appointments', ['observacoes'], 'client_id', $userId);
+            $this->anonymizeTable('appointments', ['observacoes'], 'provider_id', $userId);
+        }
+
+        if (Schema::hasTable('service_evaluations')) {
+            $this->anonymizeTable('service_evaluations', ['comment'], 'evaluator_id', $userId);
+        }
 
         return response()->json([
-            'message' => 'Conta excluída com sucesso. Seus dados foram anonimizados.',
+            'message' => 'Conta excluída com sucesso. Seus dados pessoais foram anonimizados de forma definitiva (direito ao esquecimento - LGPD).',
         ]);
+    }
+
+    private function anonymizeTable(string $table, array $columns, string $idColumn, int $idValue): void
+    {
+        if (!Schema::hasTable($table) || empty($columns)) {
+            return;
+        }
+
+        $existing = collect(Schema::getColumnListing($table))->intersect($columns)->all();
+        if (empty($existing)) {
+            return;
+        }
+
+        $updates = array_fill_keys($existing, null);
+        $updates['updated_at'] = now();
+
+        DB::table($table)->where($idColumn, $idValue)->update($updates);
     }
 }

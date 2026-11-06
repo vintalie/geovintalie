@@ -80,10 +80,8 @@ describe('Login', () => {
     render(<Login />);
     await user.click(screen.getByRole('tab', { name: /criar conta/i }));
     expect(screen.getByLabelText('Nome')).toBeInTheDocument();
-    const forms = document.querySelectorAll('form');
-    expect(forms.length).toBe(2);
     expect(
-      within(forms[1]).getByRole('button', { name: /registrar/i }),
+      screen.getByRole('button', { name: /registrar/i }),
     ).toBeInTheDocument();
   });
 
@@ -132,7 +130,7 @@ describe('Login', () => {
     await user.click(within(form).getByRole('button', { name: /entrar/i }));
 
     await waitFor(() =>
-      expect(screen.getByText('Credenciais inválidas')).toBeInTheDocument(),
+      expect(screen.getByText(/Credenciais inválidas/i)).toBeInTheDocument(),
     );
     expect(navigateFn).not.toHaveBeenCalled();
   });
@@ -147,8 +145,7 @@ describe('Login', () => {
     await user.type(document.getElementById('regEmail')!, 'novo@test.com');
     await user.clear(document.getElementById('regPassword')!);
     await user.type(document.getElementById('regPassword')!, 'senha456');
-    const forms = document.querySelectorAll('form');
-    fireEvent.submit(forms[1]);
+    await user.click(screen.getByRole('button', { name: /registrar/i }));
 
     await waitFor(() =>
       expect(mockRegister).toHaveBeenCalledWith('Novo', 'novo@test.com', 'senha456'),

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Loader2, LogIn, UserPlus, Mail, Lock } from 'lucide-react';
 import { login } from '../../api/auth';
 import { register as registerApi } from '../../api/auth';
@@ -24,7 +24,7 @@ const Login = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      navigate('/');
+      navigate('/', { replace: true });
     }
   }, [navigate]);
 
@@ -43,7 +43,7 @@ const Login = () => {
         const { token } = response.data;
         setAuth(token);
       }
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.message || mode === 'login' ? 'Erro ao fazer login' : 'Erro no registro');
     } finally {

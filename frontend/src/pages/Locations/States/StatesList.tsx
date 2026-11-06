@@ -82,7 +82,7 @@ const StatesList = () => {
       <div>
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Estado: {singleState.name}</h1>
-          <Link to="/states" className="bg-gray-500 text-white p-2 rounded">
+          <Link to="/states" className="bg-secondary text-secondary-foreground p-2 rounded hover:bg-secondary/80">
             Voltar para lista
           </Link>
         </div>
@@ -125,7 +125,7 @@ const StatesList = () => {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Estados</h1>
-        <Link to="/states/new" className="bg-blue-500 text-white p-2 rounded">
+        <Link to="/states/new" className="bg-primary text-primary-foreground p-2 rounded hover:bg-primary/80">
           Novo Estado
         </Link>
       </div>

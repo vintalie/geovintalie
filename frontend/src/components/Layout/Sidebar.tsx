@@ -16,7 +16,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-64 bg-gray-800 text-white flex flex-col">
+    <div className="w-64 bg-background text-foreground flex flex-col">
       <div className="p-4 text-2xl font-bold">Admin</div>
       <nav className="flex-1">
         <NavLink to="/" className={({ isActive }) => `block p-3 ${isActive ? 'bg-gray-700' : ''}`}>Dashboard</NavLink>

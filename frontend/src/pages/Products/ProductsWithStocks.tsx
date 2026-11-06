@@ -208,7 +208,7 @@ const ProductsWithStocks: React.FC = () => {
           <h2 className="text-xl font-bold">Produtos</h2>
           <button
             onClick={openNewProduct}
-            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-3 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/80"
           >
             + Novo Produto
           </button>
@@ -268,7 +268,7 @@ const ProductsWithStocks: React.FC = () => {
           {selectedProductId && (
             <button
               onClick={openNewStock}
-              className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+              className="px-3 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/80"
             >
               + Novo Estoque
             </button>

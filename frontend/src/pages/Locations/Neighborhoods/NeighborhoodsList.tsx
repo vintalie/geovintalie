@@ -43,7 +43,7 @@ const NeighborhoodsList = () => {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Bairros</h1>
-        <Link to="/neighborhoods/new" className="bg-blue-500 text-white p-2 rounded">
+        <Link to="/neighborhoods/new" className="bg-primary text-primary-foreground p-2 rounded hover:bg-primary/80">
           Novo País
         </Link>
       </div>

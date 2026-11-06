@@ -6,11 +6,13 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Models\ConfigsInterface;
 use App\Models\Appointment;
 use App\Models\Review;
+use App\Models\UserConsent;
 use App\Models\ServiceEvaluation;
 use App\Models\ServiceProvider;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,7 +23,7 @@ use Illuminate\Notifications\Notifiable;
 
 
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'phone'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements JWTSubject
 {
@@ -39,6 +41,13 @@ class User extends Authenticatable implements JWTSubject
 
     public function UserType() {
         return $this->belongsTo(UserType::class, 'tipo_id');
+    }
+
+    /** Nome do papel do usuario (ex.: admin, user, provider) - exposto em tipo_nome. */
+    protected function tipoNome(): Attribute {
+        return Attribute::make(
+            get: fn () => optional($this->UserType)->nome,
+        );
     }
 
     public function products(){
@@ -87,5 +96,10 @@ class User extends Authenticatable implements JWTSubject
     public function messages()
     {
         return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function userConsents()
+    {
+        return $this->hasMany(UserConsent::class, 'user_id');
     }
 }

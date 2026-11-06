@@ -10,7 +10,7 @@ import type { ReactNode } from 'react';
  */
 export function render(
   ui: ReactNode,
-  options?: RenderOptions,
+  options?: RenderOptions & { initialEntries?: string[] },
 ): RenderResult {
   const wrapper = ({ children }: { children: ReactNode }) => (
     <MemoryRouter initialEntries={options?.initialEntries ?? ['/']}>

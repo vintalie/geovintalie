@@ -29,7 +29,7 @@ const Register = () => {
       const response = await login(email, password);
       const { token } = response.data;
       setAuth(token);
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro no registro');
     } finally {

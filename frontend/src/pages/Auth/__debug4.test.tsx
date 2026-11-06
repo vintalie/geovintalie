@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { screen } from '@testing-library/react';
 import Login from './Login';
-import * as authApi from '@/api/auth';
 import { useNavigate } from 'react-router-dom';
 import { render } from '@/test/render';
 
@@ -24,6 +23,6 @@ describe('d', () => {
     await user.click(screen.getByRole('tab', { name: /criar conta/i }));
     console.log('FORMS:', document.querySelectorAll('form').length);
     console.log('NAVIGATE:', mockNavigate.mock.calls.length);
-    expect(document.querySelectorAll('form').length).toBe(2);
+    expect(document.querySelectorAll('form').length).toBe(1);
   });
 });

@@ -119,8 +119,6 @@ describe('Register', () => {
     const user = userEvent.setup();
     render(<Register />);
     await user.click(screen.getByRole('link', { name: /login/i }));
-    await waitFor(() =>
-      expect(screen.getByText('Acesse sua conta')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(navigateFn).toHaveBeenCalledWith('/login'));
   });
 });

@@ -1,10 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { screen, within, fireEvent } from '@testing-library/react';
-import { waitFor } from '@testing-library/dom';
+import { within } from '@testing-library/react';
 import Login from './Login';
 import * as authApi from '@/api/auth';
-import { useNavigate } from 'react-router-dom';
 import { render } from '@/test/render';
 
 vi.mock('react-router-dom', async (importOriginal: () => Promise<any>) => {
