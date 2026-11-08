@@ -75,7 +75,11 @@ class ReviewController extends Controller
         ))->response($request)->setStatusCode(201);
     }
 
-    /** Listar avaliacoes feitas pelo usuario autenticado. */
+    /**
+     * Listar avaliacoes do usuario autenticado.
+     * ?role=sent  -> avaliacoes que o usuario escreveu como cliente (default)
+     * ?role=received -> avaliacoes recebidas pelo usuario como prestador
+     */
     public function index(Request $request)
     {
         if (!FeatureFlag::isEnabled('ff_reviews')) {
@@ -83,11 +87,21 @@ class ReviewController extends Controller
         }
 
         $user = $request->user();
+        $role = $request->query('role', 'sent');
 
-        $reviews = Review::with('provider')
-            ->where('evaluator_id', $user->id)
-            ->orderByDesc('created_at')
-            ->paginate(20);
+        $query = Review::with(['evaluator', 'provider']);
+
+        if ($role === 'received') {
+            // Avaliacoes recebidas: o usuario autenticado e o prestador avaliado.
+            $query->whereHas('provider', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+        } else {
+            // Avaliacoes enviadas: o usuario autenticado e o avaliador (cliente).
+            $query->where('evaluator_id', $user->id);
+        }
+
+        $reviews = $query->orderByDesc('created_at')->paginate(20);
 
         return ReviewResource::collection($reviews);
     }

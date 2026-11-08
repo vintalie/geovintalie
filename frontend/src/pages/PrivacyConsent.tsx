@@ -38,10 +38,9 @@ const STATUS_VARIANT: Record<string, 'default' | 'outline'> = {
 };
 
 const TIPO_LABEL: Record<string, string> = {
-  termo_uso: 'Termos de Uso',
-  politica_privacidade: 'Política de Privacidade',
-  marketing: 'Marketing e comunicações',
-  cookies: 'Cookies',
+  marketing: 'Marketing e comunicacoes',
+  analytics: 'Analytics e desempenho',
+  third_party: 'Compartilhamento com terceiros',
 };
 
 const PrivacyConsent = () => {
@@ -69,31 +68,31 @@ const PrivacyConsent = () => {
   }, []);
 
   const labelFor = (consent: UserConsent) =>
-    consent.titulo || TIPO_LABEL[consent.tipo] || consent.tipo.replace(/_/g, ' ');
+    TIPO_LABEL[consent.purpose] || consent.purpose.replace(/_/g, ' ');
 
   const handleToggle = async (consent: UserConsent) => {
-    const next = !consent.aceito;
+    const next = !consent.granted;
     setToggling((prev) => new Set([...prev, consent.id]));
 
     // Otimista: reflete imediatamente, reverte em caso de erro.
     setConsents((list) =>
       list.map((c) =>
-        c.id === consent.id ? { ...c, aceito: next } : c
+        c.id === consent.id ? { ...c, granted: next } : c
       )
     );
 
     try {
       if (next) {
-        await acceptConsent(consent.tipo);
+        await acceptConsent(consent.purpose, true);
         toast.success(`Consentimento aceito: ${labelFor(consent)}.`);
       } else {
-        await revokeConsent(consent.id);
+        await revokeConsent(consent.purpose);
         toast.success(`Consentimento revogado: ${labelFor(consent)}.`);
       }
     } catch (error: any) {
       setConsents((list) =>
         list.map((c) =>
-          c.id === consent.id ? { ...c, aceito: !next } : c
+          c.id === consent.id ? { ...c, granted: !next } : c
         )
       );
       toast.error(
@@ -174,26 +173,26 @@ const PrivacyConsent = () => {
                   <TableRow key={consent.id}>
                     <TableCell className="font-medium">{labelFor(consent)}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {consent.descricao || 'Sem descrição disponível.'}
+                      Sem descrição disponível.
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant={STATUS_VARIANT[String(consent.aceito)]}>
-                        {STATUS_LABEL[String(consent.aceito)]}
-                        {consent.aceito && consent.aceito_em ? (
+                      <Badge variant={STATUS_VARIANT[String(consent.granted)]}>
+                        {STATUS_LABEL[String(consent.granted)]}
+                        {consent.granted && consent.granted_at ? (
                           <span className="ml-2 text-xs text-muted-foreground/80">
-                            {new Date(consent.aceito_em).toLocaleString('pt-BR')}
+                            {new Date(consent.granted_at).toLocaleString('pt-BR')}
                           </span>
                         ) : null}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-center">
                       <Switch
-                        checked={consent.aceito}
+                        checked={consent.granted}
                         onCheckedChange={() => handleToggle(consent)}
                         disabled={toggling.has(consent.id)}
                       />
                       <Label className="ml-2 text-xs text-muted-foreground">
-                        {consent.aceito ? 'Revogar consentimento' : 'Aceitar consentimento'}
+                        {consent.granted ? 'Revogar consentimento' : 'Aceitar consentimento'}
                       </Label>
                     </TableCell>
                   </TableRow>

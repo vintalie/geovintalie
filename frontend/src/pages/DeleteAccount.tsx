@@ -28,11 +28,13 @@ const DeleteAccount = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmed, setConfirmed] = useState(false);
 
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await deleteAccount();
+      await deleteAccount({ password, confirm_delete: true });
       logout();
       navigate('/login');
       toast.success('Sua conta foi excluída com sucesso.');
@@ -83,6 +85,38 @@ const DeleteAccount = () => {
                     desfeita e todos os seus dados pessoais serão apagados.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (password && confirmed) handleDelete();
+                  }}
+                  className="space-y-4"
+                >
+                  <div className="space-y-2">
+                    <label htmlFor="delete-account-password" className="text-sm font-medium text-foreground block">Senha atual</label>
+                    <input
+                      id="delete-account-password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Digite sua senha para confirmar"
+                      className="w-full px-3 py-2 text-sm border rounded-md"
+                      autoComplete="current-password"
+                    />
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <input
+                      id="delete-account-confirm"
+                      type="checkbox"
+                      checked={confirmed}
+                      onChange={(e) => setConfirmed(e.target.checked)}
+                      className="w-4 h-4 mt-0.5"
+                    />
+                    <label htmlFor="delete-account-confirm" className="text-sm text-foreground">
+                      Confirmo que desejo excluir minha conta permanentemente.
+                    </label>
+                  </div>
+                </form>
                 <AlertDialogFooter>
                   <AlertDialogCancel asChild>
                     <Button variant="outline">Cancelar</Button>
@@ -91,7 +125,7 @@ const DeleteAccount = () => {
                     <Button
                       variant="destructive"
                       onClick={handleDelete}
-                      disabled={deleting}
+                      disabled={deleting || !password || !confirmed}
                     >
                       {deleting ? 'Excluindo...' : 'Excluir conta'}
                     </Button>

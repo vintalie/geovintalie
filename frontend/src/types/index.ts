@@ -2,6 +2,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  phone?: string;
   tipo_nome?: string;
   email_verified_at?: string;
   created_at: string;
@@ -133,12 +134,10 @@ export interface Products {
 export interface UserConsent {
   id: number;
   user_id: number;
-  tipo: string; // ex.: 'termo_uso', 'politica_privacidade', 'marketing', 'cookies'
-  aceito: boolean;
-  aceito_em?: string | null;
-  revogado_em?: string | null;
-  criado_em?: string;
-  atualizado_em?: string;
-  titulo?: string;
-  descricao?: string | null;
+  purpose: string; // ex.: 'marketing', 'analytics', 'third_party'
+  granted: boolean;
+  granted_at?: string | null;
+  withdrawn_at?: string | null;
+  ip_address?: string | null;
+  user_agent?: string | null;
 }
