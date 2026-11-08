@@ -163,7 +163,7 @@ describe('DeleteAccount', () => {
     render(<DeleteAccount />);
 
     fireEvent.click(
-      screen.getAllByRole('button', { name: /confirmar exclus/i })[0]
+      screen.getAllByRole('button', { name: /Confirmar/i })[0]
     );
     await waitFor(() =>
       expect(screen.getByText(/Confirmar exclusão/i)).toBeInTheDocument()
@@ -172,7 +172,7 @@ describe('DeleteAccount', () => {
     fireEvent.input(screen.getByLabelText('Senha atual'), {
       target: { value: 'senha123' },
     });
-    fireEvent.click(screen.getByRole('button', { name: /excluir/i }));
+    fireEvent.click(screen.getByLabelText(/Confirmo que desejo excluir/));
     fireEvent.click(screen.getByRole('button', { name: /excluir conta/i }));
     await waitFor(() => expect(mockDeleteAccount).toHaveBeenCalledTimes(1));
     expect(mockDeleteAccount).toHaveBeenCalledWith({
