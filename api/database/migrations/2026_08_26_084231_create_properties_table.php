@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('properties', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable(false);
-            $table->string('n_property')->nullable(false);
+            $table->string('n_property')->nullable(); // numero do imóvel; obrigatorio no fluxo de criacao via PropertyController
             $table->string('complement')->nullable();
             $table->string('main_image')->nullable();
             $table->string('cover_image')->nullable();

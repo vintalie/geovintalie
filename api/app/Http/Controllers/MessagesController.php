@@ -7,33 +7,56 @@ use App\Http\Resources\MessageResource;
 use App\Models\ChatConversation;
 use App\Models\ChatMessage;
 use App\Models\FeatureFlag;
+use App\Models\Message;
 use Illuminate\Http\Request;
 
 class MessagesController extends Controller
 {
     /**
      * Lista as mensagens de uma conversa (apenas participantes).
+     * Quando nao informada a conversa, lista mensagens das conversas em que
+     * o usuario participa (usado pela rota /messages).
      * Mensagens nao lidas enviadas por outros sao marcadas como lidas.
      */
-    public function index(Request $request, ChatConversation $conversation)
+    public function index(Request $request, ChatConversation $conversation = null)
     {
         if (!FeatureFlag::isEnabled('ff_agendamentos_chat')) {
             abort(403, 'Funcionalidade nao habilitada.');
         }
 
-        $this->authorizeParticipant($request, $conversation);
+        $user = $request->user();
 
-        // Marca como lidas mensagens recebidas
-        $conversation->messages()->where('sender_id', '!=', $request->user()->id)
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
+        if ($conversation) {
+            $this->authorizeParticipant($request, $conversation);
 
-        $messages = $conversation->messages()
-            ->with('sender')
-            ->oldest('created_at')
-            ->paginate(50);
+            // Marca como lidas mensagens recebidas
+            $conversation->messages()->where('sender_id', '!=', $user->id)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
 
-        return MessageResource::collection($messages);
+            $messages = $conversation->messages()
+                ->with('sender')
+                ->oldest('created_at')
+                ->paginate(50);
+
+            return MessageResource::collection($messages);
+        }
+
+        // Listagem geral de mensagens das conversas em que o usuario participa.
+        $query = Message::whereHas('conversation', function ($q) use ($user) {
+            $q->where(function ($qq) use ($user) {
+                $qq->where('client_id', $user->id)
+                   ->orWhereHas('provider.user', function ($q2) use ($user) {
+                       $q2->where('id', $user->id);
+                   });
+            });
+        })->with(['conversation', 'sender'])->latest();
+
+        if ($request->has('conversation_id') && $request->conversation_id !== '') {
+            $query->where('conversation_id', $request->conversation_id);
+        }
+
+        return MessageResource::collection($query->paginate(20));
     }
 
     /**

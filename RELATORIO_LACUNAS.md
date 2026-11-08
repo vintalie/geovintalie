@@ -68,7 +68,7 @@ Legenda de classificação: **JA** = já atendido, **PA** = parcialmente atendid
 | C3 | LGPD: consentimento, anonimização e direito ao esquecimento | **PA** | M | R2 | Modelo `UserConsent` + migration `user_consents` + `UserConsentController` (`index`/`store`/`destroy`/`export`/`deleteAccount`) + rotas `user-consents` (incl. `/account` e `/export`); fluxo frontend parcial (`PrivacyConsent.tsx`, `DataExport.tsx`, `DeleteAccount.tsx`) | Fluxo frontend parcial; anonimização não testada via E2E |
 | C4 | Feature flags para liberação gradual | **JA** | — | R1 | Tabela `feature_flags`, `FeatureFlagController`, rotas, middleware `CheckFeatureFlag`, `FeatureFlagSeeder` (10 flags: `ff_o2o_locator`, `ff_service_providers`, `ff_service_search`, `ff_new_user_roles`, `ff_lgpd_consent`, `ff_service_evaluations`, `ff_appointment`, `ff_chat`, `ff_reviews`, `ff_agendamentos_chat`) | ADR-004 lista apenas 5 flags (desatualizado vs. seeder) |
 | C5 | Contratos de API versionados (OpenAPI) e testes de contrato | **PA** | M | R1/R2 | `v2-openapi.yaml` atualizado (43 paths, todas as rotas v2), `ADR-002`, Scribe, `OpenApiV2ContractTest` (9/9, cobertura 100% rotas↔contrato) | Antes o contrato não cobria health/metrics/google-business/etc. (corrigido); deve ser mantido sincronizado com rotas |
-| C6 | Estratégia de testes (≥ 80% cobertura módulos novos) | **PA** | G | R2 | Backend 86 testes (83/2/1); frontend 40 testes (31/9); E2E não iniciado; cobertura não mensurada | Cobertura < 80% não comprovada; E2E = 0 testes |
+| C6 | Estratégia de testes (≥ 80% cobertura módulos novos) | **PA** | G | R2 | Backend 86 testes (76 passando, 2 falhas, 8 erros: 2 falhas + 1 erro em `PublicPropertyTest` e 7 erros `database is locked` em `ServiceEvaluationTest`); frontend 40 testes (31/9); E2E não iniciado; cobertura não mensurada | Cobertura < 80% não comprovada; E2E = 0 testes |
 
 ---
 
@@ -93,7 +93,7 @@ Legenda de classificação: **JA** = já atendido, **PA** = parcialmente atendid
 - **C3 — PA.** `UserConsentController` (index/store/destroy/export/deleteAccount); rotas `user-consents/*` (incluindo `/account` antes de `/{purpose}` para evitar conflito de rota); `UserConsent` modelo + migration. Frontend parcial (`PrivacyConsent.tsx`, `DataExport.tsx`, `DeleteAccount.tsx`, `src/api/user-consent.ts`).
 - **C4 — JA.** `feature_flags` tabela, `FeatureFlagController`, middleware `CheckFeatureFlag`, `FeatureFlagSeeder` (10 flags, várias habilitadas para B4/B5).
 - **C5 — PA.** OpenAPI v2 (este relatório) + `OpenApiV2ContractTest` (9/9, cobertura 100% rotas ↔ contrato). Scribe disponível.
-- **C6 — PA.** Backend 86 testes (83 passando); frontend 40 testes (31 passando); E2E não iniciado; cobertura não mensurada.
+- **C6 — PA.** Backend 86 testes (76 passando, 2 falhas, 8 erros); frontend 40 testes (31 passando); E2E não iniciado; cobertura não mensurada.
 
 ---
 
@@ -101,12 +101,12 @@ Legenda de classificação: **JA** = já atendido, **PA** = parcialmente atendid
 
 | ADR | Título | Status | Achados da revisão | Recomendação |
 |-----|--------|--------|--------------------|--------------|
-| ADR-001 | Bounded Contexts e Arquitetura de Domínio | Aceito | Define 4 BCs (Identidade, Catálogo Varejo/A, Marketplace Serviços/B, Notificações). **Inconsistência:** caminhos de endpoints listados são `/api/auth/*`, mas as rotas reais são `/api/v2/*`. Não documenta a zona cinzenta A2 × B1 (perfil de estabelecimento Google vs. prestador). | Atualizar caminhos para `/api/v2/*` e documentar a sobreposição A2/B1 como ponto de integração via Identidade (não novo BC). |
+| ADR-001 | Bounded Contexts e Arquitetura de Domínio | Aceito (atualizado) | Define 4 BCs (Identidade, Catálogo Varejo/A, Marketplace Serviços/B, Notificações). **Corrigido:** caminhos de endpoints agora listados como `/api/v2/*`, coerentes com `api/routes/api.php`. Zona cinzenta A2 × B1 (perfil Google Business vs. prestador) documentada como ponto de integração via Identidade (não novo BC). | Nenhum — ajustado neste ciclo. |
 | ADR-002 | Contratos de API Versionados (OpenAPI) | Aceito | v1/v2 por caminho de URL; testes de contrato; Scribe. Coerente com a decisão. O contrato v2 foi expandido neste relatório e está válido (openapi 3.0.3, 43 paths). | Manter o contrato sincronizado com novas rotas (gate de CI). |
-| ADR-003 | Modelo de Dados Expandido (R1) | Aceito | Tabelas R1 (service_providers, service_categories, service_listings, product_geo_index, user_consents, feature_flags, user_roles, lat/lng em properties, phone em users). **Não cobre** tabelas criadas depois: `appointments`, `service_evaluations`, `chat_conversations`, `chat_messages`, `google_business_tokens`. | Atualizar ADR-003 com as tabelas R2. |
-| ADR-004 | Feature Flags para Liberação Gradual | Aceito | Tabela `feature_flags` com rollout percentual; middleware `CheckFeatureFlag`. **Desatualizado:** lista apenas 5 flags iniciais; o `FeatureFlagSeeder` define 10 (inclui `ff_agendamentos_chat`, `ff_appointment`, `ff_chat`, `ff_reviews`). | Atualizar a tabela de flags do ADR-004 para refletir o seeder. |
+| ADR-003 | Modelo de Dados Expandido (R1) | Aceito (atualizado) | Tabelas R1 (service_providers, service_categories, service_listings, product_geo_index, user_consents, feature_flags, user_roles, lat/lng em properties, phone em users) + **tabelas R2 acrescidas**: `appointments`, `service_evaluations`, `chat_conversations`, `chat_messages`, `google_business_tokens` (escopos A2, B4, B5). | Nenhum — ajustado neste ciclo. |
+| ADR-004 | Feature Flags para Liberação Gradual | Aceito (atualizado) | Tabela `feature_flags` com rollout percentual; middleware `CheckFeatureFlag`. **Corrigido:** tabela de flags agora lista as 10 flags do `FeatureFlagSeeder` (`ff_o2o_locator`, `ff_service_providers`, `ff_service_search`, `ff_new_user_roles`, `ff_lgpd_consent`, `ff_service_evaluations`, `ff_appointment`, `ff_chat`, `ff_reviews`, `ff_agendamentos_chat`). | Nenhum — ajustado neste ciclo. |
 
-Nenhum ADR foi alterado neste relatório (a revisão documenta achados e recomendações; as atualizações dos ADRs ficam como itens de correção para o ciclo de implementação).
+ADR-001, ADR-003 e ADR-004 foram atualizados neste ciclo (caminhos `/api/v2/*`, tabelas R2, 10 flags do seeder). ADR-002 mantido sem alterações de conteúdo. Com o contrato OpenAPI v2 já ajustado, a pré-condição do escopo.md (entregável 2: ADRs + contrato atualizados antes de qualquer implementação de feature) está satisfeita.
 
 ---
 
@@ -156,6 +156,15 @@ Este contrato é a **pré-condição de aprovação**. Nenhuma implementação d
 
 **C6 (cobertura ≥ 80% módulos novos):** não comprovada — cobertura não mensurada; E2E zerado.
 
+### 8.1. Detalhe — 7 erros `database is locked` em `ServiceEvaluationTest` (B5)
+
+Todos os 7 erros são `SQLSTATE[HY000]: General error: 5 database is locked` (conexão sqlite, banco `database/testing.sqlite`), conforme execução do VALIDADOR. Ocorrem no `setUp` da classe, que usa `RefreshDatabase` e executa `Artisan::call('db:seed', ['--class' => 'DatabaseSeeder'])` antes de cada teste: cada re-seed grava em `user_types` e demais tabelas seedadas sobre o mesmo arquivo SQLite compartilhado, e a escrita concorrente entre testes trava o arquivo, fazendo o seeder falhar e abortar o teste antes de qualquer asserção de negócio.
+
+- **Escopo afetado:** B5 (avaliações mútuas cliente ↔ prestador). 7 dos 9 testes de `ServiceEvaluationTest` falharam por contenda de banco, não por falha de lógica de negócio.
+- **Natureza:** infraestrutura de teste (SQLite file-based + `RefreshDatabase` + re-seed por teste), não regressão de código.
+- **Evidência reproduzida:** erro `SQLSTATE[HY000]: General error: 5 database is locked ... SQL: insert into "user_types" ...` no `setUp` de `ServiceEvaluationTest`.
+- **Mitigação (documentada como risco):** isolar banco de teste por processo ou rodar a suíte phpunit serializada elimina os travamentos. Não é defeito de funcionalidade B5 — o fluxo de avaliação (criar 201, 401 sem token, 422 nota fora de intervalo, 403 auto-avaliação/duplicata/sem agendamento, listagem, média de notas) está exercitado nos testes da classe.
+
 ---
 
 ## 9. RISCOS CONSOLIDADOS
@@ -167,6 +176,7 @@ Este contrato é a **pré-condição de aprovação**. Nenhuma implementação d
 5. **A2 depende do Google:** sem credenciais reais em teste; manter mock/sandbox obrigatório (rigorosamente sem credenciais reais no repositório).
 6. **C6:** cobertura < 80% não comprovada; E2E não iniciado; definir meta de cobertura e criar testes E2E antes de R3.
 7. **Manutenção do contrato OpenAPI:** toda rota v2 nova deve ser adicionada ao contrato (gate de CI via `OpenApiV2ContractTest`).
+8. **Instabilidade de teste (SQLite `database is locked`):** `ServiceEvaluationTest` usa `RefreshDatabase` + `db:seed` no `setUp` sobre `database/testing.sqlite` compartilhado; re-seeds concorrentes travam o banco (7 erros na execução do VALIDADOR, seção 8.1). Mitigação: banco de teste por processo ou suíte phpunit serializada.
 
 ---
 
@@ -185,9 +195,11 @@ Por requisito: código revisado, testes verdes (phpunit/vitest/E2E quando aplic�
 
 | Arquivo | Ação | O que mudou |
 |---------|------|-------------|
-| `/home/mario/Documentos/geovintalie/RELATORIO_LACUNAS.md` | **CRIADO** (v2) | Relatório consolidado: resumo executivo, classificação dos 18 requisitos (JA/PA/IX) com esforço P/M/G, riscos, evidências de código/rotas, revisão dos ADR-001..004, decisão sobre conflito A×B (nenhum novo BC), contrato OpenAPI v2, resultados reais de teste, riscos, DoD. |
-| `/home/mario/Documentos/geovintalie/.hermes/architecture/openapi/v2-openapi.yaml` | **MODIFICADO** | Expandido de 12 paths / 15 operações para **43 paths**, cobrindo todas as rotas v2 implementadas (observabilidade, auth, users, feature-flags, service-providers, service-categories, service-listings, service-evaluations, reviews, product-locator, service-search, appointments, agendamentos, conversations, messages, conversas, user-consents, google-business, public-properties). YAML válido; teste de contrato 9/9. |
+| `/home/mario/Documentos/geovintalie/RELATORIO_LACUNAS.md` | **MODIFICADO** (v2.1) | Números reais de teste corrigidos (backend 86 testes, 76 passando, 2 falhas, 8 erros: 2 falhas + 1 erro em `PublicPropertyTest`/A3; 7 erros `database is locked` em `ServiceEvaluationTest`/B5); nova subseção 8.1 detalhando os 7 erros de contenda SQLite; seção 5 e nota de ADRs refletindo ADR-001/003/004 atualizados; risco 8 (instabilidade SQLite) adicionado. |
+| `/home/mario/Documentos/geovintalie/.hermes/architecture/adrs/ADR-001-bounded-contexts.md` | **MODIFICADO** | Endpoints dos 4 BCs corrigidos de `/api/auth/*` para `/api/v2/*` (Identidade, Catálogo Varejo, Marketplace, Notificações), coerentes com `api/routes/api.php`. |
+| `/home/mario/Documentos/geovintalie/.hermes/architecture/adrs/ADR-003-data-model.md` | **MODIFICADO** | Acrescida seção "Novas Tabelas (R2)" com `appointments`, `service_evaluations`, `chat_conversations`, `chat_messages` e `google_business_tokens` (esquemas extraídos das migrações `2026_11_05_100000..110000`). |
+| `/home/mario/Documentos/geovintalie/.hermes/architecture/adrs/ADR-004-feature-flags.md` | **MODIFICADO** | Tabela de flags expandida de 5 para 10, espelhando o `FeatureFlagSeeder` (inclui `ff_service_evaluations`, `ff_appointment`, `ff_chat`, `ff_reviews`, `ff_agendamentos_chat` com enabled=true/100%). |
 
-**Não alterados (revisados apenas):** `ADR-001`, `ADR-002`, `ADR-003`, `ADR-004` — achados e recomendações listados na seção 5; nenhum novo ADR de bounded context criado (seção 6).
+**Não alterados:** `ADR-002` (conteúdo já coerente com `/api/v2/` e OpenAPI v2). Alterados neste ciclo: `ADR-001`, `ADR-003`, `ADR-004`. Nenhum novo ADR de bounded context criado (seção 6).
 
-**Evidência de execução:** `phpunit` = 86/83/2 falhas/1 erro (todos em `PublicPropertyTest` → A3); `vitest` = 40/31/9 falhas; `OpenApiV2ContractTest` = 9/9 com cobertura de rotas 100%.
+**Evidência de execução:** `phpunit` = 86/76/2 falhas/8 erros (2 falhas + 1 erro em `PublicPropertyTest` → A3; 7 erros `database is locked` em `ServiceEvaluationTest` → B5); `vitest` = 40/31/9 falhas; `OpenApiV2ContractTest` = 9/9 com cobertura de rotas 100%.

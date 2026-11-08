@@ -48,7 +48,9 @@ describe('Scheduling', () => {
     await waitFor(() =>
       expect(screen.getByText('Novo agendamento')).toBeInTheDocument(),
     );
-    fireEvent.click(screen.getByRole('button', { name: /Agendar/ }));
+    // O botao fica desabilitado com campos vazios; dispara o submit do form
+    // para exercitar a validacao de handleSubmit.
+    fireEvent.submit(screen.getByRole('form'));
 
     await waitFor(() =>
       expect(

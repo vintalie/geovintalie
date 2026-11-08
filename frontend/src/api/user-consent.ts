@@ -19,8 +19,8 @@ import type { UserConsent } from '@/types';
 export const getConsents = (params?: { page?: number; per_page?: number }) =>
   api.get<{ data: UserConsent[] }>('/api/v2/user-consents', { params });
 
-export const acceptConsent = (tipo: string) =>
-  api.post('/api/v2/user-consents', { tipo });
+export const acceptConsent = (tipo: string, granted = true) =>
+  api.post('/api/v2/user-consents', { tipo, granted });
 
 export const revokeConsent = (id: number | string) =>
   api.delete(`/api/v2/user-consents/${id}`);
@@ -31,7 +31,9 @@ export const revokeConsent = (id: number | string) =>
  */
 export const exportData = () => api.get<unknown>('/api/v2/user-consents/export');
 
-export const deleteAccount = () =>
-  api.delete('/api/v2/user-consents/deleteAccount');
+export const deleteAccount = (data: {
+  password: string;
+  confirm_delete: boolean;
+}) => api.delete('/api/v2/user-consents/deleteAccount', { data });
 
 export type { UserConsent };

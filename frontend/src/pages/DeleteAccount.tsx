@@ -37,7 +37,7 @@ const DeleteAccount = () => {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await deleteAccount();
+      await deleteAccount({ password, confirm_delete });
       logout();
       navigate('/login');
       toast.success('Sua conta foi excluída com sucesso.');

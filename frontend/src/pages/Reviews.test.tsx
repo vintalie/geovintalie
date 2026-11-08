@@ -37,7 +37,8 @@ describe('Reviews', () => {
     expect(screen.getByRole('tab', { name: /Recebidas/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Enviadas/ })).toBeInTheDocument();
     expect(screen.getByText(/Nenhuma avaliacao recebida ainda/)).toBeInTheDocument();
-    expect(mockGetReviews).toHaveBeenCalledTimes(1);
+    // loadReviews busca recebidas e enviadas em Promise.all = 2 chamadas
+    expect(mockGetReviews).toHaveBeenCalledTimes(2);
   });
 
   it('envia uma avaliacao via POST /api/v2/reviews', async () => {
@@ -85,7 +86,9 @@ describe('Reviews', () => {
     await waitFor(() =>
       expect(screen.getByText('Nova avaliacao')).toBeInTheDocument(),
     );
-    fireEvent.click(screen.getByRole('button', { name: /Enviar avaliacao/ }));
+    // O botao fica desabilitado com campos vazios; dispara o submit do form
+    // para exercitar a validacao de handleCreate.
+    fireEvent.submit(screen.getByRole('form'));
 
     await waitFor(() =>
       expect(

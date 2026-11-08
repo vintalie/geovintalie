@@ -78,7 +78,9 @@ describe('Register', () => {
       expect(mockRegister).toHaveBeenCalledWith('Novo Usuario', 'novo@test.com', 'senha456'),
     );
     await waitFor(() => expect(mockLogin).toHaveBeenCalledWith('novo@test.com', 'senha456'));
-    await waitFor(() => expect(navigateFn).toHaveBeenCalledWith('/'));
+    await waitFor(() =>
+      expect(navigateFn).toHaveBeenCalledWith('/', { replace: true }),
+    );
     expect(localStorage.getItem('token')).toBe('token-registro');
   });
 
@@ -115,9 +117,11 @@ describe('Register', () => {
   });
 
   it('link de login navega para a página de login', async () => {
-    const user = userEvent.setup();
     render(<Register />);
-    await user.click(screen.getByRole('link', { name: /login/i }));
-    await waitFor(() => expect(navigateFn.mock.calls[0][0]).toBe('/login'));
+    // O Link usa o react-router real (nao o useNavigate mocado), entao
+    // assertamos o destino do link em vez de espionar a navegacao.
+    expect(
+      screen.getByRole('link', { name: /login/i }),
+    ).toHaveAttribute('href', '/login');
   });
 });

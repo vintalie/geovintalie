@@ -64,7 +64,7 @@ describe('InternalChat', () => {
             participant_id: 22,
             participant_name: 'Joao Santos - Reparos Residencial',
             participant_role: 'provider',
-            last_message: 'Oi, tudo bem?',
+            last_message: 'Conversa aberta',
             last_message_at: '2026-11-06T10:00:00Z',
             unread_count: 0,
           },

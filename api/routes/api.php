@@ -21,10 +21,7 @@ use App\Http\Controllers\ProductLocatorController;
 use App\Http\Controllers\FeatureFlagController;
 use App\Http\Controllers\GoogleBusinessController;
 use App\Http\Controllers\ServiceSearchController;
-use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AppointmentsController;
-use App\Http\Controllers\ConversationController;
-use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ConversationsController;
 use App\Http\Controllers\MessagesController;
@@ -107,9 +104,8 @@ Route::prefix('v2')->group(function () {
         Route::middleware(['jwt.auth'])->group(function () {
             Route::post('service-evaluations', [ServiceEvaluationController::class, 'store']);
         });
-        Route::get('service-providers/{provider_id}/evaluations', [ServiceEvaluationController::class, 'byProvider']);
 
-        // Service Evaluations (Escopo B5) - listar avaliacoes de um prestador (publico)
+        // Listar avaliacoes recebidas por um prestador (publico, Escopo B5)
         Route::get('service-providers/{provider_id}/evaluations', [ServiceEvaluationController::class, 'byProvider']);
 
         // Avaliacoes mutuas (Escopo B5) - ff_reviews
@@ -120,20 +116,20 @@ Route::prefix('v2')->group(function () {
         // Escopo B4 - Agendamentos e Chat Interno
         // ============================================================================
 
-        // Agendamentos (cliente cria; prestador atualiza status)
-        Route::get('appointments', [AppointmentController::class, 'index']);
-        Route::post('appointments', [AppointmentController::class, 'store']);
-        Route::get('appointments/{appointment}', [AppointmentController::class, 'show']);
-        Route::put('appointments/{appointment}', [AppointmentController::class, 'update']);
-        Route::delete('appointments/{appointment}', [AppointmentController::class, 'destroy']);
+        // Agendamentos (cliente cria; prestador atualiza status) - implementacao unificada em AppointmentsController
+        Route::get('appointments', [AppointmentsController::class, 'index']);
+        Route::post('appointments', [AppointmentsController::class, 'store']);
+        Route::get('appointments/{appointment}', [AppointmentsController::class, 'show']);
+        Route::put('appointments/{appointment}', [AppointmentsController::class, 'update']);
+        Route::delete('appointments/{appointment}', [AppointmentsController::class, 'destroy']);
 
-        // Conversas e mensagens de chat interno (cliente <-> prestador) - Escopo B4 (ff_chat)
-        Route::get('conversations', [ConversationController::class, 'index']);
-        Route::post('conversations', [ConversationController::class, 'store']);
-        Route::get('conversations/{conversation}', [ConversationController::class, 'show']);
-        Route::post('conversations/{conversation}/messages', [MessageController::class, 'store']);
-        Route::get('messages', [MessageController::class, 'index']);
-        Route::post('messages/{message}/read', [MessageController::class, 'markRead']);
+        // Conversas e mensagens de chat interno (cliente <-> prestador) - Escopo B4 (ff_chat) - implementacao unificada em ConversationsController/MessagesController
+        Route::get('conversations', [ConversationsController::class, 'index']);
+        Route::post('conversations', [ConversationsController::class, 'store']);
+        Route::get('conversations/{conversation}', [ConversationsController::class, 'show']);
+        Route::post('conversations/{conversation}/messages', [MessagesController::class, 'store']);
+        Route::get('messages', [MessagesController::class, 'index']);
+        Route::post('messages/{message}/read', [MessagesController::class, 'markRead']);
 
         // Agendamentos e Chat Interno (Escopo B4) - autenticado
         Route::get('agendamentos', [AppointmentsController::class, 'index']);
@@ -163,9 +159,6 @@ Route::prefix('v2')->group(function () {
 
     // Service Search - publico (Escopo B2)
     Route::get('service-search', [ServiceSearchController::class, 'index']);
-
-    // Service Evaluations (Escopo B5) - listar avaliacoes de um prestador (publico)
-    Route::get('service-providers/{provider_id}/evaluations', [ServiceEvaluationController::class, 'byProvider']);
 
     // Listagem publica de avaliacoes (reviews) de um prestador (Escopo B5)
     Route::get('service-providers/{provider_id}/reviews', [ReviewController::class, 'byProvider']);
@@ -201,7 +194,7 @@ Route::prefix('v2')->group(function () {
     // Public Properties - Vitrine digital pública (Escopo A3) - sem autenticação
     Route::prefix('public')->group(function () {
         Route::get('properties', [PublicPropertyController::class, 'index']);
-        Route::get('properties/{id}', [PublicPropertyController::class, 'show']);
+        Route::get('properties/{property}', [PublicPropertyController::class, 'show']);
     });
 
     // ============================================================================
