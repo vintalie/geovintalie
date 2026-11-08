@@ -9,7 +9,7 @@ export function Spinner({ className = '', size = 'sm' }: { className?: string; s
     lg: 'w-8 h-8',
   };
   return (
-    <Loader2 className={className} size={sizes[size]} animate-spin />
+    <Loader2 className={`${className} animate-spin`.trim()} size={sizes[size]} />
   );
 }
 

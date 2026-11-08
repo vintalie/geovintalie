@@ -569,7 +569,6 @@ const LocationFormPage = () => {
               setIsOpen(true);
             }}
             onFocus={() => setIsOpen(true)}
-            onBlur={() => setTimeout(() => setIsOpen(false), 150)}
             disabled={disabled || isLoading}
             className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           />
@@ -596,6 +595,11 @@ const LocationFormPage = () => {
               {filteredOptions.map((opt) => (
                 <div
                   key={opt.id}
+                  onMouseDown={(e) => {
+                    // Impede que o clique na opção tire o foco do input e feche
+                    // o dropdown antes da seleção ser confirmada.
+                    e.preventDefault();
+                  }}
                   onClick={() => {
                     onChange(opt.id);
                     setSearchTerm(opt.name);
