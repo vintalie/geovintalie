@@ -88,7 +88,9 @@ describe('Reviews', () => {
     );
     // O botao fica desabilitado com campos vazios; dispara o submit do form
     // para exercitar a validacao de handleCreate.
-    fireEvent.submit(screen.getByRole('form'));
+    const form = document.querySelector('form') as HTMLFormElement;
+    expect(form).toBeInTheDocument();
+    fireEvent.submit(form);
 
     await waitFor(() =>
       expect(

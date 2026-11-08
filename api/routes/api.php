@@ -105,9 +105,6 @@ Route::prefix('v2')->group(function () {
             Route::post('service-evaluations', [ServiceEvaluationController::class, 'store']);
         });
 
-        // Listar avaliacoes recebidas por um prestador (publico, Escopo B5)
-        Route::get('service-providers/{provider_id}/evaluations', [ServiceEvaluationController::class, 'byProvider']);
-
         // Avaliacoes mutuas (Escopo B5) - ff_reviews
         Route::post('reviews', [ReviewController::class, 'store']);
         Route::get('reviews', [ReviewController::class, 'index']);
@@ -159,6 +156,9 @@ Route::prefix('v2')->group(function () {
 
     // Service Search - publico (Escopo B2)
     Route::get('service-search', [ServiceSearchController::class, 'index']);
+
+    // Listar avaliacoes recebidas por um prestador (publico, Escopo B5)
+    Route::get('service-providers/{provider_id}/evaluations', [ServiceEvaluationController::class, 'byProvider']);
 
     // Listagem publica de avaliacoes (reviews) de um prestador (Escopo B5)
     Route::get('service-providers/{provider_id}/reviews', [ReviewController::class, 'byProvider']);
