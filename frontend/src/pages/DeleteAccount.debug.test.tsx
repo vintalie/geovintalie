@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { render } from '@/test/render';
 import DeleteAccount from './DeleteAccount';
 import * as consentApi from '@/api/user-consent';
@@ -21,8 +22,8 @@ beforeEach(() => {
   } as any);
 });
 
-describe('debug2', () => {
-  it('traces delete flow', async () => {
+describe('debug5', () => {
+  it('click approaches on portaled button', async () => {
     mockDeleteAccount.mockResolvedValueOnce({} as any);
     render(<DeleteAccount />);
 
@@ -38,30 +39,15 @@ describe('debug2', () => {
     fireEvent.input(screen.getByLabelText('Senha atual'), {
       target: { value: 'senha123' },
     });
+    fireEvent.click(screen.getByLabelText(/Confirmo que desejo excluir/));
 
-    const checkbox = screen.getByLabelText(/Confirmo que desejo excluir/);
-    fireEvent.click(checkbox);
-    await new Promise((r) => setTimeout(r, 50));
-    console.log('checkbox aria-checked:', checkbox.getAttribute('aria-checked'));
+    const btn = screen.getByRole('button', { name: 'Excluir conta' });
+    console.log('disabled:', btn.disabled);
+    fireEvent.click(btn);
+    console.log('after fireEvent.click calls:', mockDeleteAccount.mock.calls.length);
 
-    const allButtons = screen.getAllByRole('button');
-    console.log('all buttons:', allButtons.map((b) => [b.textContent, b.disabled, b.getAttribute('aria-label')]));
-
-    try {
-      const btn = screen.getByRole('button', { name: /excluir conta/ });
-      console.log('FOUND via role, disabled:', btn.disabled);
-      fireEvent.click(btn);
-    } catch (e: any) {
-      console.log('role query failed:', e.message);
-    }
-    try {
-      const el = screen.getByText('Excluir conta');
-      console.log('FOUND via text:', (el as HTMLElement).tagName, 'disabled:', (el as HTMLElement).getAttribute('disabled'));
-    } catch (e: any) {
-      console.log('text query failed:', e.message);
-    }
-
-    await waitFor(() => expect(mockDeleteAccount).toHaveBeenCalledTimes(1), { timeout: 5000 });
-    console.log('deleteAccount calls:', mockDeleteAccount.mock.calls);
+    const user = userEvent.setup();
+    await user.click(btn);
+    console.log('after userEvent.click calls:', mockDeleteAccount.mock.calls.length);
   });
 });
