@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   getCountries,
@@ -34,6 +34,7 @@ import { Plus, MapPin } from 'lucide-react';
 interface LocationOption {
   id: number;
   name: string;
+  parent_id?: number | null;
 }
 
 const LocationFormPage = () => {
@@ -83,12 +84,57 @@ const LocationFormPage = () => {
 
   const isEdit = !!id;
 
+  // Opções disponíveis em cada nível, filtradas pelo contexto (país → estado → cidade → bairro → rua).
+  const availableStates = useMemo(
+    () =>
+      form.country_id == null
+        ? []
+        : locations.states.filter((s) => s.parent_id === form.country_id),
+    [locations.states, form.country_id],
+  );
+  const availableCities = useMemo(
+    () =>
+      form.state_id == null
+        ? []
+        : locations.cities.filter((c) => c.parent_id === form.state_id),
+    [locations.cities, form.state_id],
+  );
+  const availableNeighborhoods = useMemo(
+    () =>
+      form.city_id == null
+        ? []
+        : locations.neighborhoods.filter((n) => n.parent_id === form.city_id),
+    [locations.neighborhoods, form.city_id],
+  );
+  const availableStreets = useMemo(
+    () =>
+      form.neighborhood_id == null
+        ? []
+        : locations.streets.filter((s) => s.parent_id === form.neighborhood_id),
+    [locations.streets, form.neighborhood_id],
+  );
+
   useEffect(() => {
     if (isEdit) {
       loadProperty();
     }
     loadLocations();
   }, [isEdit]);
+
+  // Pré-seleciona Brasil ao abrir o formulário (cadastro novo).
+  useEffect(() => {
+    if (isEdit || form.country_id || locations.countries.length === 0) return;
+    const brazil = locations.countries.find(
+      (c) =>
+        c.name.toLowerCase() === 'brasil' ||
+        c.name.toLowerCase().includes('brasil') ||
+        c.name.toLowerCase() === 'brazil' ||
+        (c as any).code === 'BR',
+    );
+    if (brazil) {
+      setForm((prev) => ({ ...prev, country_id: brazil.id }));
+    }
+  }, [locations.countries, isEdit, form.country_id]);
 
   const loadLocations = useCallback(async () => {
     setLocationsLoading(true);
@@ -107,12 +153,26 @@ const LocationFormPage = () => {
         return resp.data || [];
       };
 
+      const toOption = (item: any, parentKey?: string) => ({
+        id: item.id,
+        name: item.name,
+        ...(parentKey && item[parentKey] != null
+          ? { parent_id: item[parentKey] }
+          : {}),
+      });
+
       setLocations({
-        countries: extractData(cResp).map((c: any) => ({ id: c.id, name: c.name })),
-        states: extractData(sResp).map((s: any) => ({ id: s.id, name: s.name })),
-        cities: extractData(ciResp).map((c: any) => ({ id: c.id, name: c.name })),
-        neighborhoods: extractData(nResp).map((n: any) => ({ id: n.id, name: n.name })),
-        streets: extractData(stResp).map((s: any) => ({ id: s.id, name: s.name })),
+        countries: extractData(cResp).map((c: any) => toOption(c)),
+        states: extractData(sResp).map((s: any) => toOption(s, 'country_id')),
+        cities: extractData(ciResp).map((c: any) => toOption(c, 'state_id')),
+        neighborhoods: extractData(nResp).map((n: any) =>
+          toOption(n, 'city_id'),
+        ),
+        streets: extractData(stResp).map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          parent_id: s.neighborhood_id != null ? s.neighborhood_id : s.city_id ?? null,
+        })),
       });
     } catch (err) {
       setError('Erro ao carregar localizações.');
@@ -124,7 +184,11 @@ const LocationFormPage = () => {
   const loadProperty = async () => {
     try {
       const response = await getProperty(Number(id));
-      const data = response.data.property ?? response.data.propertys ?? response.data.properties ?? response.data;
+      const data =
+        response.data.property ??
+        response.data.propertys ??
+        response.data.properties ??
+        response.data;
       setForm({
         ...data,
         country_id: data.country_id ?? null,
@@ -145,11 +209,26 @@ const LocationFormPage = () => {
   const handleLocationChange = (field: string, id: number | null) => {
     setForm((prev) => ({ ...prev, [field]: id }));
     if (field === 'country_id') {
-      setForm((prev) => ({ ...prev, state_id: null, city_id: null, neighborhood_id: null, street_id: 0 }));
+      setForm((prev) => ({
+        ...prev,
+        state_id: null,
+        city_id: null,
+        neighborhood_id: null,
+        street_id: 0,
+      }));
     } else if (field === 'state_id') {
-      setForm((prev) => ({ ...prev, city_id: null, neighborhood_id: null, street_id: 0 }));
+      setForm((prev) => ({
+        ...prev,
+        city_id: null,
+        neighborhood_id: null,
+        street_id: 0,
+      }));
     } else if (field === 'city_id') {
-      setForm((prev) => ({ ...prev, neighborhood_id: null, street_id: 0 }));
+      setForm((prev) => ({
+        ...prev,
+        neighborhood_id: null,
+        street_id: 0,
+      }));
     } else if (field === 'neighborhood_id') {
       setForm((prev) => ({ ...prev, street_id: 0 }));
     }
@@ -160,6 +239,9 @@ const LocationFormPage = () => {
     setLoading(true);
     try {
       const payload: any = { ...form };
+      // Os ids de país/estado/cidade/bairro ficam no formulário apenas como
+      // contexto de cascata; o vínculo salvo na propriedade é o da rua selecionada,
+      // que carrega a cadeia completa (bairro → cidade → estado → país).
       delete payload.country_id;
       delete payload.state_id;
       delete payload.city_id;
@@ -192,7 +274,9 @@ const LocationFormPage = () => {
                 {isEdit ? 'Editar Propriedade' : 'Nova Propriedade'}
               </CardTitle>
               <CardDescription>
-                {isEdit ? 'Atualize os dados da propriedade.' : 'Cadastre uma nova propriedade no sistema.'}
+                {isEdit
+                  ? 'Atualize os dados da propriedade.'
+                  : 'Cadastre uma nova propriedade no sistema.'}
               </CardDescription>
             </div>
             <Button asChild variant="outline" size="sm">
@@ -237,7 +321,9 @@ const LocationFormPage = () => {
               </div>
 
               <div className="border rounded-lg p-4 bg-muted/50">
-                <h3 className="text-sm font-semibold text-foreground mb-4">Localização</h3>
+                <h3 className="text-sm font-semibold text-foreground mb-4">
+                  Localização
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <LocationField
                     label="País"
@@ -252,7 +338,7 @@ const LocationFormPage = () => {
                     label="Estado"
                     value={form.state_id ?? null}
                     onChange={(id) => handleLocationChange('state_id', id)}
-                    options={locations.states}
+                    options={availableStates}
                     isLoading={locationsLoading}
                     disabled={!form.country_id}
                     placeholder="Selecione o país primeiro..."
@@ -262,7 +348,7 @@ const LocationFormPage = () => {
                     label="Cidade"
                     value={form.city_id ?? null}
                     onChange={(id) => handleLocationChange('city_id', id)}
-                    options={locations.cities}
+                    options={availableCities}
                     isLoading={locationsLoading}
                     disabled={!form.state_id}
                     placeholder="Selecione o estado primeiro..."
@@ -271,8 +357,10 @@ const LocationFormPage = () => {
                   <LocationField
                     label="Bairro"
                     value={form.neighborhood_id ?? null}
-                    onChange={(id) => handleLocationChange('neighborhood_id', id)}
-                    options={locations.neighborhoods}
+                    onChange={(id) =>
+                      handleLocationChange('neighborhood_id', id)
+                    }
+                    options={availableNeighborhoods}
                     isLoading={locationsLoading}
                     disabled={!form.city_id}
                     placeholder="Selecione a cidade primeiro..."
@@ -282,7 +370,7 @@ const LocationFormPage = () => {
                     label="Rua"
                     value={form.street_id || null}
                     onChange={(id) => handleLocationChange('street_id', id)}
-                    options={locations.streets}
+                    options={availableStreets}
                     isLoading={locationsLoading}
                     disabled={!form.neighborhood_id}
                     placeholder="Selecione o bairro primeiro..."
@@ -330,7 +418,9 @@ const LocationFormPage = () => {
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="additional_info">Informações adicionais</Label>
+                  <Label htmlFor="additional_info">
+                    Informações adicionais
+                  </Label>
                   <Input
                     id="additional_info"
                     name="additional_info"
@@ -453,7 +543,7 @@ const LocationFormPage = () => {
     const filteredOptions = options.filter(
       (opt) =>
         opt.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        searchTerm === ''
+        searchTerm === '',
     );
 
     const selectedOption = options.find((opt) => opt.id === value);
@@ -498,7 +588,8 @@ const LocationFormPage = () => {
                   onClick={() => handleCreate()}
                   className="cursor-pointer text-sm text-primary p-2 hover:bg-accent/50"
                 >
-                  <Plus className="mr-2 h-3 w-3 inline" /> Criar "{searchTerm}" como novo {label.toLowerCase()}
+                  <Plus className="mr-2 h-3 w-3 inline" />
+                  Criar "{searchTerm}" como novo {label.toLowerCase()}
                 </div>
               )}
               <div className="-mx-1 my-1 h-px bg-muted" />
@@ -555,7 +646,7 @@ const LocationFormPage = () => {
       if (newId) {
         setLocations((prev) => ({
           ...prev,
-          states: [...prev.states, { id: newId, name }],
+          states: [...prev.states, { id: newId, name, parent_id: form.country_id }],
         }));
         handleLocationChange('state_id', newId);
       }
@@ -571,7 +662,7 @@ const LocationFormPage = () => {
       if (newId) {
         setLocations((prev) => ({
           ...prev,
-          cities: [...prev.cities, { id: newId, name }],
+          cities: [...prev.cities, { id: newId, name, parent_id: form.state_id }],
         }));
         handleLocationChange('city_id', newId);
       }
@@ -582,12 +673,18 @@ const LocationFormPage = () => {
 
   async function createNeighborhoodAndSelect(name: string) {
     try {
-      const resp = await createNeighborhood({ name, city_id: form.city_id || 0 });
+      const resp = await createNeighborhood({
+        name,
+        city_id: form.city_id || 0,
+      });
       const newId = resp.data?.neighborhood?.id || resp.data?.id;
       if (newId) {
         setLocations((prev) => ({
           ...prev,
-          neighborhoods: [...prev.neighborhoods, { id: newId, name }],
+          neighborhoods: [
+            ...prev.neighborhoods,
+            { id: newId, name, parent_id: form.city_id },
+          ],
         }));
         handleLocationChange('neighborhood_id', newId);
       }
@@ -598,12 +695,18 @@ const LocationFormPage = () => {
 
   async function createStreetAndSelect(name: string) {
     try {
-      const resp = await createStreet({ name, neighborhood_id: form.neighborhood_id || 0 });
+      const resp = await createStreet({
+        name,
+        neighborhood_id: form.neighborhood_id || 0,
+      });
       const newId = resp.data?.street?.id || resp.data?.id;
       if (newId) {
         setLocations((prev) => ({
           ...prev,
-          streets: [...prev.streets, { id: newId, name }],
+          streets: [
+            ...prev.streets,
+            { id: newId, name, parent_id: form.neighborhood_id },
+          ],
         }));
         handleLocationChange('street_id', newId);
       }
