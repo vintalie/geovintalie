@@ -1,6 +1,6 @@
 import { describe, it, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { act } from 'react';
 import { render } from '@/test/render';
 import DeleteAccount from './DeleteAccount';
 import * as consentApi from '@/api/user-consent';
@@ -22,8 +22,8 @@ beforeEach(() => {
   } as any);
 });
 
-describe('debug5', () => {
-  it('click approaches on portaled button', async () => {
+describe('debug7', () => {
+  it('inspect React 19 onClick$ property on portaled button', async () => {
     mockDeleteAccount.mockResolvedValueOnce({} as any);
     render(<DeleteAccount />);
 
@@ -42,12 +42,15 @@ describe('debug5', () => {
     fireEvent.click(screen.getByLabelText(/Confirmo que desejo excluir/));
 
     const btn = screen.getByRole('button', { name: 'Excluir conta' });
-    console.log('disabled:', btn.disabled);
-    fireEvent.click(btn);
-    console.log('after fireEvent.click calls:', mockDeleteAccount.mock.calls.length);
-
-    const user = userEvent.setup();
-    await user.click(btn);
-    console.log('after userEvent.click calls:', mockDeleteAccount.mock.calls.length);
+    const keys = Object.keys(btn as any).filter((k) => k.startsWith('on'));
+    console.log('on* props on button:', keys);
+    console.log('onClick$ type:', typeof (btn as any).onClick$);
+    if (typeof (btn as any).onClick$ === 'function') {
+      await act(() => {
+        (btn as any).onClick$();
+      });
+      console.log('after onClick$() calls:', mockDeleteAccount.mock.calls);
+      console.log('logout calls:', mockUseAuth.mock.results[0]?.value.logout?.mock.calls.length ?? 'n/a');
+    }
   });
 });
