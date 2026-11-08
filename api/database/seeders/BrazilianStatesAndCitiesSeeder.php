@@ -30,12 +30,10 @@ class BrazilianStatesAndCitiesSeeder extends Seeder
         
         foreach ($data['estados'] as $estadoData) {
             // Criar o estado
-            $state = State::firstOrCreate([
-                'abbreviation' => $estadoData['sigla'],
-            ], [
-                'name'         => $estadoData['nome'],
-                'country_id'   => $country->id
-            ]);
+            $state = State::updateOrCreate(
+                ['abbreviation' => $estadoData['sigla']],
+                ['name' => $estadoData['nome'], 'country_id' => $country->id]
+            );
 
             // Percorrer as cidades e criar cada uma
             foreach ($estadoData['cidades'] as $cidadeNome) {
