@@ -16,25 +16,25 @@ Definir quatro bounded contexts distintos:
 - **Responsabilidade:** Autenticação, autorização, gestão de usuários, papéis e perfis.
 - **Entidades:** User, UserType, Role, Permission, Session, Consent (LGPD).
 - **Escopos relacionados:** C1 (todos os papéis), C3 (consentimento LGPD).
-- **Endpoints:** `/api/auth/*`, `/api/auth/user/*`.
+- **Endpoints:** `/api/v2/auth/*`, `/api/v2/auth/user/*`.
 
 ### 2. Catálogo Varejo (Retail Catalog) — Escopo A
 - **Responsabilidade:** Gestão de propriedades (lojas), produtos, estoque, localização geográfica e busca de proximidade.
 - **Entidades:** Property, Product, Stock, Street, Neighborhood, City, State, Country, GeoLocation.
 - **Escopos relacionados:** A1 (localizador de proximidade), A3 (vitrine digital), A4 (SEO local), A5 (mapas de calor).
-- **Endpoints:** `/api/auth/properties/*`, `/api/auth/products/*`, `/api/auth/products.stocks/*`, `/api/auth/location/*`.
+- **Endpoints:** `/api/v2/properties/*`, `/api/v2/products/*`, `/api/v2/products.stocks/*`, `/api/v2/location/*`.
 
 ### 3. Marketplace de Serviços (Service Marketplace) — Escopo B
 - **Responsabilidade:** Cadastro de prestadores, busca/filtro, agendamento, chat, avaliações mútuas.
 - **Entidades:** ServiceProvider, ServiceCategory, ServiceListing, Appointment, Conversation, Message, Review (avaliação mútua).
 - **Escopos relacionados:** B1 (cadastro prestador), B2 (busca com filtros), B3 (recomendação IA), B4 (agendamento/chat), B5 (avaliações), B6 (mensageria).
-- **Endpoints:** Novos endpoints sob `/api/auth/services/*`, `/api/auth/appointments/*`, `/api/auth/conversations/*`, `/api/auth/reviews/*`.
+- **Endpoints:** Novos endpoints sob `/api/v2/services/*`, `/api/v2/appointments/*`, `/api/v2/conversations/*`, `/api/v2/reviews/*`.
 
 ### 4. Notificações e Comunicação (Notifications) — Transversal
 - **Responsabilidade:** Envio de notificações (WhatsApp, email, push), webhooks, logs de auditoria.
 - **Entidades:** Notification, NotificationTemplate, NotificationLog.
 - **Escopos relacionados:** C2 (observabilidade), C4 (feature flags).
-- **Endpoints:** `/api/auth/notifications/*` (futuro).
+- **Endpoints:** `/api/v2/notifications/*` (futuro).
 
 ## Princípios de Integração entre Contextos
 

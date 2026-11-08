@@ -18,7 +18,7 @@
 | **Total** | **18** | **5** | **8** | **5** | **4×G + 7×M** |
 
 - **Contrato OpenAPI v2:** atualizado e coerente com todas as rotas v2 implementadas (12 → 43 paths). Teste de contrato `OpenApiV2ContractTest`: **9/9 passando**, cobertura de rotas 100% (cada rota v2 tem caminho no contrato e vice-versa).
-- **Testes (execução real):** backend phpunit = 86 testes, 83 passando, 2 falhas, 1 erro (todos os 3 remanescentes em `PublicPropertyTest` → escopo A3); frontend vitest = 40 testes, 31 passando, 9 falhando; E2E/Playwright = **não iniciado**.
+- **Testes (execução real, VALIDADOR):** backend phpunit = 86 testes, 76 passando, 2 falhas, 8 erros (2 falhas + 1 erro em `PublicPropertyTest` → escopo A3; 7 erros `database is locked` em `ServiceEvaluationTest` → escopo B5); frontend vitest = 40 testes, 31 passando, 9 falhando; E2E/Playwright = **não iniciado**.
 - **Cobertura ≥ 80% (C6):** não comprovada (não mensurada).
 - **Regras de parada:** (a) conflito A×B no modelo de dados → **não gatilhado** (ver seção 6); (b) esforço > 50% acima do estimado → a monitorar; (c) requisitos não listados → nenhum identificado.
 
@@ -41,7 +41,7 @@ Cada requisito foi classificado com base em **código e rotas ao vivo**, não em
 
 **Correções importantes em relação ao `escopo.md` (v1):**
 1. `PublicPropertyController` e `UserConsentController` NÃO estão ausentes: existem e estão implementados e registrados em `api/routes/api.php`. O escopo.md os declara "ausentes → HTTP 500" (NC-03), mas esse dado está defasado. Os problemas reais do A3 são defeitos de contrato (404 não respeitado, `show` retorna campos nulos, `n_property` NOT NULL).
-2. Números de teste do `escopo.md` estão defasados: cita backend 67/68 e frontend 16/29. Execução real atual: backend 83/86, frontend 31/40.
+2. Números de teste do `escopo.md` estão defasados: cita backend 67/68 e frontend 16/29. Execução real atual: backend 76/86 (2 falhas, 8 erros), frontend 31/40.
 
 ---
 
@@ -150,7 +150,7 @@ Este contrato é a **pré-condição de aprovação**. Nenhuma implementação d
 
 | Suite | Testes | Passando | Falhas | Erros | Observação |
 |-------|--------|----------|--------|-------|------------|
-| Backend (phpunit) | 86 | 83 | 2 | 1 | Todas as 3 falhas/erros em `PublicPropertyTest` (escopo A3 — ver seção 4). Contrato OpenAPI: 9/9. |
+| Backend (phpunit) | 86 | 76 | 2 | 8 | 2 falhas + 1 erro em `PublicPropertyTest` (A3 — ver seção 4); 7 erros `database is locked` em `ServiceEvaluationTest` (B5 — ver seção 8.1). Contrato OpenAPI: 9/9. |
 | Frontend (vitest) | 40 | 31 | 9 | 0 | Falhas distribuídas (Register, Dashboard, Institutional, InternalChat, LgpdPages, Reviews, Scheduling). |
 | E2E (Playwright) | — | — | — | — | Não iniciado (sem testes e2e). |
 

@@ -28,15 +28,20 @@ CREATE TABLE feature_flags (
 );
 ```
 
-### Flags Iniciais (R1)
+### Flags (R1 + R2) — conforme `FeatureFlagSeeder`
 
-| Flag | Descrição | Padrão | Rollout |
-|------|-----------|--------|---------|
-| `ff_o2o_locator` | Habilitar localizador de produtos próximos (A1) | false | 0% |
-| `ff_service_providers` | Habilitar cadastro de prestadores (B1) | false | 0% |
-| `ff_service_search` | Habilitar busca com filtros de serviço (B2) | false | 0% |
-| `ff_new_user_roles` | Habilitar novos papéis (consumer, retailer, provider, industry) (C1) | false | 0% |
-| `ff_lgpd_consent` | Habilitar fluxo de consentimento LGPD (C3) | false | 0% |
+|| Flag | Descrição | Padrão | Rollout |
+||------|-----------|--------|---------|
+|| `ff_o2o_locator` | Habilitar localizador de produtos próximos (Escopo A1) | false | 0% |
+|| `ff_service_providers` | Habilitar cadastro de prestadores de serviço (Escopo B1) | false | 0% |
+|| `ff_service_search` | Habilitar busca com filtros de serviço (Escopo B2) | false | 0% |
+|| `ff_new_user_roles` | Habilitar novos papéis de usuário (consumer, retailer, provider, industry) (Escopo C1) | false | 0% |
+|| `ff_lgpd_consent` | Habilitar fluxo de consentimento LGPD (Escopo C3) | false | 0% |
+|| `ff_service_evaluations` | Habilitar sistema de avaliações mútuas cliente–prestador (Escopo B5) | true | 100% |
+|| `ff_appointment` | Habilitar agendamentos de serviço (Escopo B4) | true | 100% |
+|| `ff_chat` | Habilitar chat interno cliente–prestador (Escopo B4) | true | 100% |
+|| `ff_reviews` | Habilitar avaliações mútuas cliente–prestador (Escopo B5) | true | 100% |
+|| `ff_agendamentos_chat` | Habilitar agendamentos e chat interno (Escopo B4) | true | 100% |
 
 ### Uso no Código
 

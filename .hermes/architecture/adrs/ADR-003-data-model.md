@@ -6,7 +6,7 @@
 
 ## Contexto
 
-O R1 inclui os requisitos C1 (novos papéis), A1 (localizador de proximidade), B1 (prestadores de serviço) e B2 (busca com filtros). O modelo de dados atual precisa ser expandido para suportar esses novos requisitos sem quebrar os existentes.
+O R1 inclui os requisitos C1 (novos papéis), A1 (localizador de proximidade), B1 (prestadores de serviço) e B2 (busca com filtros). O R2 acrescenta tabelas para B4 (agendamentos e chat interno), B5 (avaliações mútuas) e A2 (tokens do Google Business Profile). O modelo de dados atual precisa ser expandido para suportar esses requisitos sem quebrar os existentes.
 
 ## Decisão
 
@@ -128,6 +128,104 @@ CREATE TABLE feature_flags (
     rollout_percentage INT DEFAULT 0, -- 0-100 para rollout gradual
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+### Novas Tabelas (R2)
+
+#### appointments (Escopo B4 - agendamento de serviços)
+```sql
+CREATE TABLE appointments (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    client_id BIGINT NOT NULL, -- FK para users (cliente que solicita o serviço)
+    provider_id BIGINT NOT NULL, -- FK para service_providers
+    date DATE NOT NULL, -- data do agendamento
+    time TIME NOT NULL, -- hora do agendamento
+    status VARCHAR(30) DEFAULT 'pendente', -- pendente|confirmado|recusado|concluido|cancelado
+    valor DECIMAL(10,2) NULL, -- valor negociado/cobrado
+    observacoes TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (client_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (provider_id) REFERENCES service_providers(id) ON DELETE CASCADE,
+    INDEX idx_client_status (client_id, status),
+    INDEX idx_provider_status (provider_id, status),
+    INDEX idx_date_provider (date, provider_id)
+);
+```
+
+#### service_evaluations (Escopo B5 - avaliações mútuas cliente ↔ prestador)
+```sql
+CREATE TABLE service_evaluations (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    service_listing_id BIGINT NOT NULL, -- FK para service_listings
+    service_provider_id BIGINT NOT NULL, -- FK para service_providers (avaliado)
+    evaluator_id BIGINT NOT NULL, -- FK para users (avaliador/cliente)
+    rating TINYINT UNSIGNED NOT NULL, -- nota 1 a 5
+    comment TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (service_listing_id) REFERENCES service_listings(id) ON DELETE CASCADE,
+    FOREIGN KEY (service_provider_id) REFERENCES service_providers(id) ON DELETE CASCADE,
+    FOREIGN KEY (evaluator_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_evaluator_per_listing (evaluator_id, service_listing_id),
+    INDEX idx_provider_created (service_provider_id, created_at),
+    INDEX idx_evaluator (evaluator_id)
+);
+```
+
+#### chat_conversations (Escopo B4 - chat interno cliente ↔ prestador)
+```sql
+CREATE TABLE chat_conversations (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    client_id BIGINT NOT NULL, -- FK para users
+    provider_id BIGINT NOT NULL, -- FK para service_providers
+    appointment_id BIGINT NULL, -- FK para appointments (opcional)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (client_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (provider_id) REFERENCES service_providers(id) ON DELETE CASCADE,
+    FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE SET NULL,
+    UNIQUE KEY unique_conversation (client_id, provider_id, appointment_id),
+    INDEX idx_client_provider (client_id, provider_id),
+    INDEX idx_appointment (appointment_id)
+);
+```
+
+#### chat_messages (Escopo B4 - chat interno cliente ↔ prestador)
+```sql
+CREATE TABLE chat_messages (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    conversation_id BIGINT NOT NULL, -- FK para chat_conversations
+    sender_id BIGINT NOT NULL, -- FK para users (remetente)
+    body TEXT NOT NULL,
+    read_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (conversation_id) REFERENCES chat_conversations(id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_conversation_created (conversation_id, created_at),
+    INDEX idx_sender (sender_id)
+);
+```
+
+#### google_business_tokens (Escopo A2 - Google Business Profile)
+```sql
+CREATE TABLE google_business_tokens (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL, -- FK para users
+    google_account_id VARCHAR(255) NULL,
+    google_account_name VARCHAR(255) NULL,
+    access_token_encrypted TEXT NULL,
+    refresh_token_encrypted TEXT NULL,
+    token_type VARCHAR(50) NULL,
+    expires_at TIMESTAMP NULL,
+    scopes VARCHAR(500) NULL,
+    profile_data JSON NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_google_business_token_per_user (user_id)
 );
 ```
 
