@@ -108,6 +108,35 @@ A seguir, os escopos funcionais que o projeto se propõe a agregar em futuras ve
 
 ---
 
+## 🔄 Ciclo R2 — Progresso e entregáveis
+
+Status do ciclo R2 (escopos A2, B4, B5, B6, C3, C6), conforme `.hermes/escopo_r2.md`, `.hermes/kanban_r2.md` e `.hermes/delegacao_r2.md`.
+
+### Checklist de entregáveis
+
+| ID | Entregável | Status | PR | Merge na `main` |
+|----|------------|--------|----|-----------------|
+| A2 | Google Business Profile (OAuth, sincronização de perfis) | ⏳ Pendente — PR aberta, bloqueada (branch desatualizada, precisa de rebase sobre `main`) | [#29](https://github.com/vintalie/geovintalie/pull/29) | — |
+| B4 | Agendamento, negociação e chat interno | ✅ Concluído | [#24](https://github.com/vintalie/geovintalie/pull/24) | ✅ Mergeado |
+| B5 | Avaliações mútuas (cliente ↔ prestador) | ✅ Concluído | [#25](https://github.com/vintalie/geovintalie/pull/25) | ✅ Mergeado |
+| B6 | Mensageria com histórico e compartilhamento de arquivos | ❌ Não iniciado — sem branch nem PR | — | — |
+| C3 | LGPD: consentimento, anonimização e direito ao esquecimento | ✅ Concluído | [#27](https://github.com/vintalie/geovintalie/pull/27) | ✅ Mergeado |
+| C6 | Estratégia de testes (unit, integração, E2E, meta ≥ 80%) | ✅ Concluído (PR mergeada) | [#28](https://github.com/vintalie/geovintalie/pull/28) | ✅ Mergeado |
+
+> C6 define a estratégia e as suítes de teste, mas a suíte ainda não está 100% verde por causa do escopo A2 pendente (veja abaixo).
+
+### Status dos testes automatizados (branch `main`)
+
+| Suíte | Resultado | Detalhes |
+|-------|-----------|----------|
+| Backend (PHPUnit) | 80/87 passando (~92%) | 7 falhas em `GoogleBusinessTest` — escopo A2 não implementado (aguarda rebase/merge da PR #29) |
+| Frontend (Vitest) | 39/51 passando (~76%) | 12 falhas em 5 arquivos: Reviews, Scheduling, InternalChat, LgpdPages, DeleteAccount/Sidebar |
+
+### Observações do ciclo
+- PR #29 (A2) está aberta mas bloqueada: a branch precisa de rebase sobre `main` antes de poder ser revisada e mergeada.
+- B6 (mensageria) ainda não possui branch nem PR aberta.
+- Critérios de aceitação do R2: 100% dos testes (backend e frontend) verdes, cada funcionalidade com PR revisada e mergeada na `main`, CI (GitHub Actions) verde, nenhuma credencial commiteada.
+
 ## 🏗️ Arquitetura e Stack
 
 ```
