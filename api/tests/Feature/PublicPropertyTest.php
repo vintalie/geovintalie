@@ -84,20 +84,29 @@ class PublicPropertyTest extends TestCase
 
     public function test_listar_propriedades_publicas_filtra_por_cidade_estado_pais(): void
     {
-        $endereco = $this->criarCadeiaEndereco();
         $usuario = $this->criarUsuarioProprietario();
+
+        // Estado SP já existe (criado pelo DatabaseSeeder no setUp)
+        $estadoSP = State::where('abbreviation', 'SP')->first();
+        $cidadeSP = City::create(['name' => 'São Paulo', 'state_id' => $estadoSP->id]);
+        $bairroSP = Neighborhood::create(['name' => 'Jardins', 'city_id' => $cidadeSP->id]);
+        $ruaSP = Street::create(['name' => 'Rua dos Públicos', 'neighborhood_id' => $bairroSP->id]);
 
         Property::create([
             'name' => 'Loja SP',
-            'street_id' => $endereco['rua']->id,
+            'street_id' => $ruaSP->id,
             'user_id' => $usuario->id,
         ]);
 
-        $outro = $this->criarCadeiaEndereco();
-        $outro['estado']->update(['name' => 'Minas Gerais']);
+        // Estado MG já existe (criado pelo DatabaseSeeder no setUp)
+        $estadoMG = State::where('abbreviation', 'MG')->first();
+        $cidadeMG = City::create(['name' => 'Belo Horizonte', 'state_id' => $estadoMG->id]);
+        $bairroMG = Neighborhood::create(['name' => 'Savassi', 'city_id' => $cidadeMG->id]);
+        $ruaMG = Street::create(['name' => 'Rua Outra', 'neighborhood_id' => $bairroMG->id]);
+
         Property::create([
             'name' => 'Loja MG',
-            'street_id' => Street::create(['name' => 'Rua Outra', 'neighborhood_id' => $outro['bairro']->id])->id,
+            'street_id' => $ruaMG->id,
             'user_id' => $usuario->id,
         ]);
 
