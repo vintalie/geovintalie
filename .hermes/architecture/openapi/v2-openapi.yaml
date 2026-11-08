@@ -1428,7 +1428,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /google-business/redirect:
+  /google-business/auth/redirect:
     get:
       tags: [google-business]
       summary: Iniciar fluxo OAuth 2.0 (redireciona para consentimento do Google)
