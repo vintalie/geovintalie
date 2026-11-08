@@ -86,8 +86,11 @@ class PublicPropertyTest extends TestCase
     {
         $usuario = $this->criarUsuarioProprietario();
 
-        // Estado SP já existe (criado pelo DatabaseSeeder no setUp)
-        $estadoSP = State::where('abbreviation', 'SP')->first();
+        // Estado SP existe pelo seeder ou é criado aqui se não houver rede
+        $estadoSP = State::firstOrCreate(
+            ['abbreviation' => 'SP'],
+            ['name' => 'São Paulo', 'country_id' => Country::firstOrCreate(['name' => 'Brasil'])->id]
+        );
         $cidadeSP = City::create(['name' => 'São Paulo', 'state_id' => $estadoSP->id]);
         $bairroSP = Neighborhood::create(['name' => 'Jardins', 'city_id' => $cidadeSP->id]);
         $ruaSP = Street::create(['name' => 'Rua dos Públicos', 'neighborhood_id' => $bairroSP->id]);
@@ -98,8 +101,11 @@ class PublicPropertyTest extends TestCase
             'user_id' => $usuario->id,
         ]);
 
-        // Estado MG já existe (criado pelo DatabaseSeeder no setUp)
-        $estadoMG = State::where('abbreviation', 'MG')->first();
+        // Estado MG existe pelo seeder ou é criado aqui se não houver rede
+        $estadoMG = State::firstOrCreate(
+            ['abbreviation' => 'MG'],
+            ['name' => 'Minas Gerais', 'country_id' => Country::firstOrCreate(['name' => 'Brasil'])->id]
+        );
         $cidadeMG = City::create(['name' => 'Belo Horizonte', 'state_id' => $estadoMG->id]);
         $bairroMG = Neighborhood::create(['name' => 'Savassi', 'city_id' => $cidadeMG->id]);
         $ruaMG = Street::create(['name' => 'Rua Outra', 'neighborhood_id' => $bairroMG->id]);
@@ -110,7 +116,7 @@ class PublicPropertyTest extends TestCase
             'user_id' => $usuario->id,
         ]);
 
-        $this->get($this->base . '?city=Sao Paulo')
+        $this->get($this->base . '?city=São Paulo')
             ->assertStatus(200)
             ->assertJsonCount(1, 'data');
 
