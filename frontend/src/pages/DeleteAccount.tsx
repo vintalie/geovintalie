@@ -6,6 +6,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -13,17 +14,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import { deleteAccount } from '@/api/user-consent';
 import { Trash2 } from 'lucide-react';
 
@@ -33,6 +23,7 @@ const DeleteAccount = () => {
   const [password, setPassword] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -48,6 +39,7 @@ const DeleteAccount = () => {
       );
     } finally {
       setDeleting(false);
+      setOpen(false);
     }
   };
 
@@ -70,54 +62,60 @@ const DeleteAccount = () => {
                 <span>Conta: {user.email}</span>
               </div>
             )}
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="destructive"
-                  onClick={() => {}}
-                  disabled={deleting}
-                  className="w-full"
-                >
-                  {deleting ? 'Excluindo...' : 'Confirmar exclusão de conta'}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Deseja realmente excluir sua conta? Essa acao nao pode ser
-                    desfeita e todos os seus dados pessoais serao apagados.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-1">
-                    <Label htmlFor="password">Senha atual</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Digite sua senha para confirmar"
-                      required
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="confirm-delete"
-                      checked={confirmDelete}
-                      onCheckedChange={(checked) => setConfirmDelete(checked === true)}
-                    />
-                    <Label htmlFor="confirm-delete" className="text-sm">
-                      Confirmo que desejo excluir minha conta de forma
-                      definitiva
-                    </Label>
-                  </div>
-                </div>
-                <AlertDialogFooter>
-                  <AlertDialogCancel asChild>
-                    <Button variant="outline">Cancelar</Button>
-                  </AlertDialogCancel>
-                  <AlertDialogAction asChild>
+            {!open && (
+              <Button
+                variant="destructive"
+                onClick={() => setOpen(true)}
+                disabled={deleting}
+                className="w-full"
+              >
+                {deleting ? 'Excluindo...' : 'Confirmar exclusão de conta'}
+              </Button>
+            )}
+            {open && (
+              <div className="mt-4">
+                <Card className="shadow-card">
+                  <CardHeader>
+                    <CardTitle>Confirmar exclusão</CardTitle>
+                    <CardDescription>
+                      Deseja realmente excluir sua conta? Essa acao nao pode ser
+                      desfeita e todos os seus dados pessoais serao apagados.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex flex-col gap-1">
+                      <Label htmlFor="password">Senha atual</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Digite sua senha para confirmar"
+                        required
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="confirm-delete"
+                        checked={confirmDelete}
+                        onCheckedChange={(checked) =>
+                          setConfirmDelete(checked === true)
+                        }
+                      />
+                      <Label htmlFor="confirm-delete" className="text-sm">
+                        Confirmo que desejo excluir minha conta de forma
+                        definitiva
+                      </Label>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setOpen(false)}
+                      disabled={deleting}
+                    >
+                      Cancelar
+                    </Button>
                     <Button
                       variant="destructive"
                       onClick={handleDelete}
@@ -125,10 +123,10 @@ const DeleteAccount = () => {
                     >
                       {deleting ? 'Excluindo...' : 'Excluir conta'}
                     </Button>
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                  </CardFooter>
+                </Card>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
