@@ -28,8 +28,11 @@ class PublicPropertyTest extends TestCase
 
     private function criarCadeiaEndereco(): array
     {
-        $pais = Country::create(['name' => 'Brasil']);
-        $estado = State::create(['name' => 'São Paulo', 'abbreviation' => 'SP', 'country_id' => $pais->id]);
+        $pais = Country::firstOrCreate(['name' => 'Brasil']);
+        $estado = State::firstOrCreate(
+            ['abbreviation' => 'SP'],
+            ['name' => 'São Paulo', 'country_id' => $pais->id]
+        );
         $cidade = City::create(['name' => 'São Paulo', 'state_id' => $estado->id]);
         $bairro = Neighborhood::create(['name' => 'Jardins', 'city_id' => $cidade->id]);
         $rua = Street::create(['name' => 'Rua dos Publicos', 'neighborhood_id' => $bairro->id]);
