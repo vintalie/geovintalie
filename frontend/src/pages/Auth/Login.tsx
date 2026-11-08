@@ -24,7 +24,7 @@ const Login = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      navigate('/', { replace: true });
+      navigate('/');
     }
   }, [navigate]);
 
@@ -35,20 +35,17 @@ const Login = () => {
     try {
       if (mode === 'login') {
         const response = await login(email, password);
-        const { token } = response.data;
-        setAuth(token);
+        const { token, user } = response.data;
+        setAuth(token, user);
       } else {
         await registerApi(name, email, password);
         const response = await login(email, password);
-        const { token } = response.data;
-        setAuth(token);
+        const { token, user } = response.data;
+        setAuth(token, user);
       }
-      navigate('/', { replace: true });
+      navigate('/');
     } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-          (mode === 'login' ? 'Erro ao fazer login' : 'Erro no registro'),
-      );
+      setError(err.response?.data?.message || (mode === 'login' ? 'Erro ao fazer login' : 'Erro no registro'));
     } finally {
       setBusy(false);
     }

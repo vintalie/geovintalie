@@ -100,7 +100,7 @@ const PrivacyConsent = () => {
 
     try {
       if (next) {
-        await acceptConsent(tipo, next);
+        await acceptConsent(tipo, true);
       } else {
         await revokeConsent(tipo);
       }

@@ -3,7 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import { getProperties, getProperty, deleteProperty } from '../../api/location';
 import type { Property } from '../../types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { MapPin, Store, Phone, Mail, Trash2, Edit3 } from 'lucide-react';
 
@@ -66,9 +67,11 @@ const PropertyList = () => {
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline">{properties.length}</Badge>
-            <Link to="/property/new" className="btn btn-primary btn-sm">
-              <Store className="h-3 w-3 mr-1" aria-hidden="true" /> Nova Propriedade
-            </Link>
+            <Button asChild size="sm" variant="default">
+              <Link to="/property/new">
+                <Store className="h-3 w-3 mr-1" aria-hidden="true" /> Nova Propriedade
+              </Link>
+            </Button>
           </div>
         </CardHeader>
       </Card>
@@ -120,15 +123,14 @@ const PropertyList = () => {
                   </CardContent>
                   <CardFooter>
                     <div className="flex gap-2">
-                      <Link to={`/property/${property.id}/edit`} className="flex-1 btn btn-outline btn-sm">
-                        <Edit3 className="h-3 w-3 mr-1" aria-hidden="true" /> Editar
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(property.id)}
-                        className="flex-1 btn btn-error btn-sm"
-                      >
-                        <Trash2 className="h-3 w-3 mr-1" aria-hidden="true" /> Excluir
-                      </button>
+                      <Button asChild size="sm" variant="outline">
+                        <Link to={`/property/${property.id}/edit`}>
+                          <Edit3 className="h-3 w-3 mr-1" aria-hidden="true" /> Editar
+                        </Link>
+                      </Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleDelete(property.id)}>
+  <Trash2 className="h-3 w-3 mr-1" aria-hidden="true" /> Excluir
+</Button>
                     </div>
                   </CardFooter>
                 </Card>

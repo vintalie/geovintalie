@@ -175,7 +175,7 @@ export default function ImportExport() {
               Limpar pré-visualização
             </Button>
           </div>
-          {loading && <Alert><AlertTitle>Processando</AlertTitle><AlertDescription>Importação em andamento…</AlertDescription></Alert>}
+          {loading && <Alert variant="default"><AlertTitle>Processando</AlertTitle><AlertDescription>Importação em andamento…</AlertDescription></Alert>}
           {message.text && (
             <Alert variant={message.kind === 'error' ? 'destructive' : undefined}>
               <AlertTitle>{message.kind === 'success' ? 'Sucesso' : message.kind === 'error' ? 'Erro' : 'Info'}</AlertTitle>

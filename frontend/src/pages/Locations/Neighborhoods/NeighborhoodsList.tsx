@@ -1,11 +1,21 @@
+import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
 import { deleteNeighborhood, getNeighborhoods } from '../../../api/location';
 import PaginationControls from '../../../components/common/PaginationControls';
 import { usePaginatedResource } from '../../../hooks/usePaginatedResource';
 import type { Neighborhood } from '../../../types';
 
 const NeighborhoodsList = () => {
-  // Hook de paginação – definimos o extrator para pegar response.data.neighborhoods
+  const fetchNeighborhoods = useCallback(
+    (page: number, perPage: number) => getNeighborhoods({ page, per_page: perPage }),
+    []
+  );
+  const extractNeighborhoods = useCallback(
+    (response: any) => response.data,
+    []
+  );
+
   const {
     data: neighborhoods,
     meta,
@@ -17,11 +27,8 @@ const NeighborhoodsList = () => {
     prevPage,
     reload,
   } = usePaginatedResource<Neighborhood>(
-    (page, perPage) => getNeighborhoods({ page, per_page: perPage }),
-    (response) => {
-    return response.data;
-
-    }, // extrator da parte paginada
+    fetchNeighborhoods,
+    extractNeighborhoods,
     { perPage: 10 }
   );
   console.log(neighborhoods)
@@ -43,9 +50,9 @@ const NeighborhoodsList = () => {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Bairros</h1>
-        <Link to="/neighborhoods/new" className="bg-primary text-primary-foreground p-2 rounded hover:bg-primary/80">
-          Novo País
-        </Link>
+        <Button asChild variant="default" size="sm">
+          <span>Novo País</span>
+        </Button>
       </div>
 
       <table className="w-full border">

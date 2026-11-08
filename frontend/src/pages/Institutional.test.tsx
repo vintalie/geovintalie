@@ -9,12 +9,13 @@ beforeEach(() => {
 });
 
 describe('Institutional', () => {
-  it('renderiza a hero com título e descrição', () => {
+  it('renderiza a hero com título, descrição e imagem', () => {
     render(<Institutional />);
     expect(screen.getByText(/Comércio local, no mapa/i)).toBeInTheDocument();
-    // O h1 quebra o texto em dois nós ("Propriedades e produtos" + <span>no mapa</span>)
-    expect(screen.getByText(/Propriedades e produtos/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/no mapa/i).length).toBeGreaterThanOrEqual(1);
+    // O h1 mescla texto + <span>, então o nome acessível une as partes
+    expect(
+      screen.getByRole('heading', { name: /Propriedades e produtos no mapa/i }),
+    ).toBeInTheDocument();
     expect(
       screen.getByAltText(/Mapa urbano com propriedades marcadas/i),
     ).toBeInTheDocument();
@@ -22,26 +23,23 @@ describe('Institutional', () => {
 
   it('renderiza os 5 cards de "Como funciona"', () => {
     render(<Institutional />);
-    expect(screen.getByText('Cadastre lojas')).toBeInTheDocument();
-    expect(screen.getByText('Vincule produtos')).toBeInTheDocument();
-    expect(screen.getByText('Gere seu mapa')).toBeInTheDocument();
-    expect(screen.getByText('Incorpore')).toBeInTheDocument();
-    expect(screen.getByText('Importe / Exporte')).toBeInTheDocument();
+    expect(screen.getByText(/^Cadastre lojas$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Vincule produtos$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Gere seu mapa$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Incorpore$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Importe \/ Exporte$/i)).toBeInTheDocument();
   });
 
   it('renderiza a seção de contato com link do WhatsApp', () => {
     render(<Institutional />);
     expect(screen.getByText(/Vamos conversar\?/i)).toBeInTheDocument();
     const link = screen.getByRole('link', { name: /Chamar no WhatsApp/i });
-    expect(link.getAttribute('href')).toContain('wa.me/5513981412290');
+    expect(link.getAttribute('href')).toMatch(/wa\.me\/5513981412290/);
   });
 
   it('renderiza o cabeçalho do site com link Geovintalie e link Entrar', () => {
     render(<Institutional />);
     expect(screen.getByRole('link', { name: /Geovintalie/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /entrar/i })).toHaveAttribute(
-      'href',
-      '/login',
-    );
+    expect(screen.getByRole('link', { name: /entrar/i })).toHaveAttribute('href', '/login');
   });
 });

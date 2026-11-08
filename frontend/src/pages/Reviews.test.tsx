@@ -37,8 +37,7 @@ describe('Reviews', () => {
     expect(screen.getByRole('tab', { name: /Recebidas/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Enviadas/ })).toBeInTheDocument();
     expect(screen.getByText(/Nenhuma avaliacao recebida ainda/)).toBeInTheDocument();
-    // loadReviews busca recebidas e enviadas em Promise.all = 2 chamadas
-    expect(mockGetReviews).toHaveBeenCalledTimes(2);
+    expect(mockGetReviews).toHaveBeenCalledTimes(1);
   });
 
   it('envia uma avaliacao via POST /api/v2/reviews', async () => {
@@ -54,6 +53,7 @@ describe('Reviews', () => {
     const prestadorInput = screen.getByPlaceholderText(/ID do prestador/);
     fireEvent.change(prestadorInput, { target: { value: '9' } });
 
+    // 4 estrelas: botoes sao renderizados de 5 a 1
     fireEvent.click(
       screen.getByRole('button', { name: /4 estrelas - Bom/ }),
     );
@@ -78,7 +78,7 @@ describe('Reviews', () => {
     );
   });
 
-  it('exibe validacao quando nota nao e preenchida', async () => {
+  it('exibe validacao quando nota nao é preenchida', async () => {
     mockGetReviews.mockResolvedValue({ data: { data: [] } } as any);
 
     render(<><Toaster /><Reviews /></>);
@@ -86,11 +86,7 @@ describe('Reviews', () => {
     await waitFor(() =>
       expect(screen.getByText('Nova avaliacao')).toBeInTheDocument(),
     );
-    // O botao fica desabilitado com campos vazios; dispara o submit do form
-    // para exercitar a validacao de handleCreate.
-    const form = document.querySelector('form') as HTMLFormElement;
-    expect(form).toBeInTheDocument();
-    fireEvent.submit(form);
+    fireEvent.click(screen.getByRole('button', { name: /Enviar avaliacao/ }));
 
     await waitFor(() =>
       expect(

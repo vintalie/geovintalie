@@ -64,7 +64,7 @@ describe('InternalChat', () => {
             participant_id: 22,
             participant_name: 'Joao Santos - Reparos Residencial',
             participant_role: 'provider',
-            last_message: 'Conversa aberta',
+            last_message: 'Oi, tudo bem?',
             last_message_at: '2026-11-06T10:00:00Z',
             unread_count: 0,
           },
@@ -104,7 +104,7 @@ describe('InternalChat', () => {
     );
   });
 
-  it('nao envia mensagem sem conversa selecionada', async () => {
+  it('envia uma mensagem via POST .../messages', async () => {
     mockGetConversations.mockResolvedValue({
       data: { data: [] },
     } as any);

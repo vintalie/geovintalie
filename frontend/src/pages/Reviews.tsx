@@ -35,15 +35,10 @@ const formatDate = (iso: string) =>
     year: 'numeric',
   });
 
-const starsOf = (rating: number) => Array.from({ length: 5 }, (_, i) => i < rating);
+const starsOf = (rating: number) =>
+  Array.from({ length: 5 }, (_, i) => i < rating);
 
-const ReviewCard = ({
-  review,
-  role,
-}: {
-  review: Review;
-  role: 'client' | 'provider';
-}) => (
+const ReviewCard = ({ review, role }: { review: Review; role: 'client' | 'provider' }) => (
   <Card className="shadow-card">
     <CardContent className="p-4">
       <div className="flex items-center gap-3 mb-2">
@@ -194,7 +189,11 @@ const Reviews = () => {
                 </div>
               ) : (
                 tabFor.received.map((r) => (
-                  <ReviewCard key={r.id} review={r} role="provider" />
+                  <ReviewCard
+                    key={r.id}
+                    review={r}
+                    role="provider"
+                  />
                 ))
               )}
             </TabsContent>
@@ -230,9 +229,7 @@ const Reviews = () => {
               <Input
                 type="number"
                 value={String(revieweeId ?? '')}
-                onChange={(e) =>
-                  setRevieweeId(e.target.value ? Number(e.target.value) : '')
-                }
+                onChange={(e) => setRevieweeId(e.target.value ? Number(e.target.value) : '')}
                 placeholder="ID do prestador"
                 disabled={sending}
               />

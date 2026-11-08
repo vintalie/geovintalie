@@ -35,14 +35,7 @@ Object.defineProperty(window, 'sessionStorage', {
   value: createLocalStorage(),
 });
 
-// Mock scrollIntoView para evitar erros em jsdom em testes que usam elementos de ref em useEffect
-if (typeof window !== 'undefined') {
-  Object.defineProperty(Element.prototype, 'scrollIntoView', {
-    configurable: true,
-    writable: true,
-    value: vi.fn(),
-  });
-}
+// Polyfills de ambiente jsdom usados por componentes Radix/Router
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query) => ({

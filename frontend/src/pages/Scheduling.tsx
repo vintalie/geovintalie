@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -70,6 +71,9 @@ const generateTimes = (from: number, to: number): string[] => {
 };
 const TIMES = generateTimes(8, 18);
 
+const isSameDay = (a: Date, b: Date) =>
+  a.toDateString() === b.toDateString();
+
 const Scheduling = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,7 +109,10 @@ const Scheduling = () => {
     [],
   );
 
-  const isDayDisabled = useCallback((d: Date) => d < today, [today]);
+  const isDayDisabled = useCallback(
+    (d: Date) => d < today,
+    [today],
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

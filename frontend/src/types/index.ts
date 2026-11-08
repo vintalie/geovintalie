@@ -23,7 +23,7 @@ export interface Country {
 export interface AuthContextData {
   user: User | null;
   loading: boolean;
-  login: (token: string) => void;
+  login: (token: string, user: User) => void;
   logout: () => void;
   setUser: (user: User) => void;
 }
@@ -137,15 +137,14 @@ export interface Products {
 export interface UserConsent {
   id: number;
   user_id: number;
-  purpose: string;
+  purpose: string; // ex.: 'marketing', 'analytics', 'third_party', 'termo_uso', 'politica_privacidade'
   granted: boolean;
   granted_at?: string | null;
   withdrawn_at?: string | null;
-  tipo: string; // ex.: 'termo_uso', 'politica_privacidade', 'marketing', 'cookies'
-  aceito: boolean;
-  aceito_em?: string | null;
-  criado_em?: string;
-  atualizado_em?: string;
+  created_at?: string;
+  updated_at?: string;
+  ip_address?: string | null;
+  user_agent?: string | null;
   titulo?: string;
   descricao?: string | null;
 }

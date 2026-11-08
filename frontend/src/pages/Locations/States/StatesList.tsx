@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { Button } from "@/components/ui/button";
 import { Link, useParams } from 'react-router-dom';
 import { deleteState, getState, getStates } from '../../../api/location';
 import PaginationControls from '../../../components/common/PaginationControls';
@@ -82,9 +83,11 @@ const StatesList = () => {
       <div>
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Estado: {singleState.name}</h1>
-          <Link to="/states" className="bg-secondary text-secondary-foreground p-2 rounded hover:bg-secondary/80">
-            Voltar para lista
-          </Link>
+          <Button asChild variant="default" size="sm">
+            <Link to="/states">
+              <span>Voltar para lista</span>
+            </Link>
+          </Button>
         </div>
         <table className="w-full border">
           <thead>
@@ -125,9 +128,9 @@ const StatesList = () => {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Estados</h1>
-        <Link to="/states/new" className="bg-primary text-primary-foreground p-2 rounded hover:bg-primary/80">
-          Novo Estado
-        </Link>
+        <Button asChild variant="default" size="sm">
+          <span>Novo Estado</span>
+        </Button>
       </div>
 
       <table className="w-full border">

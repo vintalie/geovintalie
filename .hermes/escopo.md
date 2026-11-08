@@ -44,6 +44,6 @@
 
 **Regras de parada (perguntar ao humano):** (a) conflito entre escopos A e B no modelo de dados; (b) esforço de um requisito exceder o estimado em >50%; (c) requisitos não listados surgirem.
 
-**Prazo relativo:** Imediato (reconhecimento entregue). Implementação de features liberada pelo usuário.
+**Prazo relativo:** Imediato (reconhecimento entregue). Implementação de features autorizada a partir de agora.
 
 **Responsável:** Orquestrador (planejamento e delegação). Execução via EXECUTOR; validação via VALIDADOR; publicação via PUBLICADOR somente após receber `APROVADO`.

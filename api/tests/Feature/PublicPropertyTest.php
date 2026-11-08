@@ -90,22 +90,15 @@ class PublicPropertyTest extends TestCase
             'user_id' => $usuario->id,
         ]);
 
-        // Segunda cadeia de endereco com estado diferente (sigla unica em states).
-        $estadoMg = State::firstOrCreate(
-            ['abbreviation' => 'MG'],
-            ['name' => 'Minas Gerais', 'country_id' => $endereco['pais']->id]
-        );
-        $cidadeMg = City::create(['name' => 'Belo Horizonte', 'state_id' => $estadoMg->id]);
-        $bairroMg = Neighborhood::create(['name' => 'Savassi', 'city_id' => $cidadeMg->id]);
-        $ruaMg = Street::create(['name' => 'Rua Outra', 'neighborhood_id' => $bairroMg->id]);
-
+        $outro = $this->criarCadeiaEndereco();
+        $outro['estado']->update(['name' => 'Minas Gerais']);
         Property::create([
             'name' => 'Loja MG',
-            'street_id' => $ruaMg->id,
+            'street_id' => Street::create(['name' => 'Rua Outra', 'neighborhood_id' => $outro['bairro']->id])->id,
             'user_id' => $usuario->id,
         ]);
 
-        $this->get($this->base . '?city=São Paulo')
+        $this->get($this->base . '?city=Sao Paulo')
             ->assertStatus(200)
             ->assertJsonCount(1, 'data');
 

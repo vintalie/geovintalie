@@ -1,11 +1,21 @@
+import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
 import { deleteCountry, getCountries } from '../../../api/location';
 import PaginationControls from '../../../components/common/PaginationControls';
 import { usePaginatedResource } from '../../../hooks/usePaginatedResource';
 import type { Country } from '../../../types';
 
 const CountriesList = () => {
-  // Hook de paginação – definimos o extrator para pegar response.data.countries
+  const fetchCountries = useCallback(
+    (page: number, perPage: number) => getCountries({ page, per_page: perPage }),
+    []
+  );
+  const extractCountries = useCallback(
+    (response: any) => response.data.countries,
+    []
+  );
+
   const {
     data: countries,
     meta,
@@ -17,11 +27,8 @@ const CountriesList = () => {
     prevPage,
     reload,
   } = usePaginatedResource<Country>(
-    (page, perPage) => getCountries({ page, per_page: perPage }),
-    (response) => {
-    return response.data.countries;
-
-    }, // extrator da parte paginada
+    fetchCountries,
+    extractCountries,
     { perPage: 10 }
   );
   console.log(countries)
@@ -43,9 +50,9 @@ const CountriesList = () => {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Países</h1>
-        <Link to="/countries/new" className="bg-primary text-primary-foreground p-2 rounded hover:bg-primary/80">
-          Novo País
-        </Link>
+        <Button asChild variant="default" size="sm">
+          <span>Novo País</span>
+        </Button>
       </div>
 
       <table className="w-full border">

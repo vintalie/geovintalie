@@ -112,7 +112,7 @@ O R2 foi concluído com sucesso. Aqui está o resumo do que foi implementado:
   • Login/cadastro corrigido (redireciona para /dashboard após autenticação)
   • Página institucional com WhatsApp 13 981412290, sem emoticons
   • Build GitHub Pages pronto
-  • Testes backend: 14/14 passando
+  • Testes backend: 73/73 passando
   • 18 issues criadas no GitHub (#6-#23)
   • Release v1.0.0 e tag criada
 

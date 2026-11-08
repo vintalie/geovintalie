@@ -14,7 +14,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (token) {
       me()
         .then((response) => {
-          // A API retorna { message, user } ou { token, user } dependendo do endpoint
           const userData = response.data.user ?? response.data;
           setUser(userData);
         })
@@ -26,18 +25,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } else {
       setLoading(false);
     }
+
+    // Listen for unauthorized events from axios interceptor
+    const handleUnauthorized = () => {
+      localStorage.removeItem('token');
+      setUser(null);
+      setLoading(false);
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
   }, []);
 
   const login = (token: string) => {
     localStorage.setItem('token', token);
-    // Após salvar o token, buscar dados do usuário
     me()
       .then((response) => {
         const userData = response.data.user ?? response.data;
         setUser(userData);
       })
       .catch(() => {
-        // Se falhar, pelo menos definimos que há um token
         setUser({} as User);
       })
       .finally(() => setLoading(false));

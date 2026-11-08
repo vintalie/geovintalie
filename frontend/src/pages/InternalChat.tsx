@@ -103,6 +103,8 @@ const InternalChat = () => {
     }
   };
 
+  const myId = user?.id;
+
   if (loading) {
     return (
       <main className="min-h-screen bg-background p-4 md:p-8 flex items-center justify-center">
@@ -168,8 +170,8 @@ const InternalChat = () => {
                     </Badge>
                   )}
                 </button>
-              ))
-            )}
+              )
+            ))}
           </div>
         </div>
         <div className="flex-1 flex flex-col">
@@ -193,7 +195,9 @@ const InternalChat = () => {
                         ({active.participant_role})
                       </span>
                     </CardTitle>
-                    <CardDescription className="text-xs">Online</CardDescription>
+                    <CardDescription className="text-xs">
+                      Online
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -254,9 +258,7 @@ const InternalChat = () => {
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
               <MessageCircle className="h-10 w-10 opacity-20 mb-2" />
-              <p className="text-sm">
-                Selecione uma conversa para iniciar o chat.
-              </p>
+              <p className="text-sm">Selecione uma conversa para iniciar o chat.</p>
             </div>
           )}
         </div>

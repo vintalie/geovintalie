@@ -48,11 +48,7 @@ describe('Scheduling', () => {
     await waitFor(() =>
       expect(screen.getByText('Novo agendamento')).toBeInTheDocument(),
     );
-    // O botao fica desabilitado com campos vazios; dispara o submit do form
-    // para exercitar a validacao de handleSubmit.
-    const form = document.querySelector('form') as HTMLFormElement;
-    expect(form).toBeInTheDocument();
-    fireEvent.submit(form);
+    fireEvent.click(screen.getByRole('button', { name: /Agendar/ }));
 
     await waitFor(() =>
       expect(
@@ -83,7 +79,7 @@ describe('Scheduling', () => {
     render(<><Toaster /><Scheduling /></>);
 
     await waitFor(() =>
-      expect(screen.getByRole('cell', { name: /Ana Costa/ })).toBeInTheDocument(),
+      expect(screen.getByText('Ana Costa - Jardim e Paisagismo')).toBeInTheDocument(),
     );
     fireEvent.click(screen.getByRole('button', { name: /Cancelar/ }));
 

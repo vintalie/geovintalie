@@ -9,7 +9,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { Toaster } from '@/components/ui/sonner';
 
 vi.mock('@/api/user-consent');
-vi.mock('@/hooks/useAuth', () => ({ useAuth: vi.fn() }));
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: vi.fn(),
+}));
 
 const mockGetConsents = vi.mocked(consentApi.getConsents);
 const mockAcceptConsent = vi.mocked(consentApi.acceptConsent);
@@ -159,15 +161,14 @@ describe('DeleteAccount', () => {
       loading: false,
       logout: vi.fn(),
     } as any);
-
     render(<DeleteAccount />);
 
     fireEvent.click(
-      screen.getAllByRole('button', { name: /Confirmar/i })[0]
+      screen.getAllByRole('button', { name: /confirmar exclus/i })[0]
     );
-    await waitFor(() =>
-      expect(screen.getByText(/Confirmar exclusão/i)).toBeInTheDocument()
-    );
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /Confirmar exclusão/i })).toBeInTheDocument();
+    });
 
     fireEvent.input(screen.getByLabelText('Senha atual'), {
       target: { value: 'senha123' },
