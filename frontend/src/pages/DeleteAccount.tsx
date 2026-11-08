@@ -10,9 +10,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,21 +27,19 @@ import { Trash2 } from 'lucide-react';
 const DeleteAccount = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [password, setPassword] = useState('');
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await deleteAccount({ password, confirm_delete: confirmDelete });
+      await deleteAccount();
       logout();
       navigate('/login');
       toast.success('Sua conta foi excluída com sucesso.');
     } catch (error: any) {
       toast.error(
         error.response?.data?.message ||
-          'Nao foi possivel excluir a conta. Tente novamente.',
+          'Não foi possível excluir a conta. Tente novamente.'
       );
     } finally {
       setDeleting(false);
@@ -58,9 +53,8 @@ const DeleteAccount = () => {
           <CardHeader>
             <CardTitle className="text-lg font-bold">Excluir minha conta</CardTitle>
             <CardDescription>
-              Esta acao e irreversivel. Seus dados pessoais serao excluidos ou
-              anonimizados de forma definitiva da Geovintalie, conforme o
-              direito ao esquecimento da LGPD, e nao poderao ser recuperados.
+              Esta ação é irreversível. Todos os seus dados pessoais serão
+              removidos permanentemente da Geovintalie, conforme a LGPD.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -85,34 +79,10 @@ const DeleteAccount = () => {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Deseja realmente excluir sua conta? Essa acao nao pode ser
-                    desfeita e todos os seus dados pessoais serao apagados.
+                    Deseja realmente excluir sua conta? Essa ação não pode ser
+                    desfeita e todos os seus dados pessoais serão apagados.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-1">
-                    <Label htmlFor="password">Senha atual</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Digite sua senha para confirmar"
-                      required
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="confirm-delete"
-                      checked={confirmDelete}
-                      onCheckedChange={(checked) => setConfirmDelete(checked === true)}
-                    />
-                    <Label htmlFor="confirm-delete" className="text-sm">
-                      Confirmo que desejo excluir minha conta de forma
-                      definitiva
-                    </Label>
-                  </div>
-                </div>
                 <AlertDialogFooter>
                   <AlertDialogCancel asChild>
                     <Button variant="outline">Cancelar</Button>
@@ -121,7 +91,7 @@ const DeleteAccount = () => {
                     <Button
                       variant="destructive"
                       onClick={handleDelete}
-                      disabled={deleting || !password || !confirmDelete}
+                      disabled={deleting}
                     >
                       {deleting ? 'Excluindo...' : 'Excluir conta'}
                     </Button>

@@ -55,7 +55,7 @@ const DataExport = () => {
     } catch (error: any) {
       toast.error(
         error.response?.data?.message ||
-          'Nao foi possivel exportar os dados. Tente novamente.'
+          'Não foi possível exportar os dados. Tente novamente.'
       );
     } finally {
       setExporting(false);
@@ -69,18 +69,18 @@ const DataExport = () => {
           <CardHeader>
             <CardTitle className="text-lg font-bold flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Exportacao de Dados Pessoais
+              Exportação de Dados Pessoais
             </CardTitle>
             <CardDescription>
-              Solicite uma copia de todos os dados pessoais que a Geovintalie
+              Solicite uma cópia de todos os dados pessoais que a Geovintalie
               trata sobre a sua conta (LGPD - direito de acesso e portabilidade).
-              O arquivo e entregue no formato JSON.
+              O arquivo é entregue no formato JSON.
             </CardDescription>
           </CardHeader>
         </Card>
         {user && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Usuario: </span>
+            <span>Usuário: </span>
             <span className="font-medium">{user.email}</span>
           </div>
         )}
@@ -88,7 +88,7 @@ const DataExport = () => {
 
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle>Solicitar exportacao</CardTitle>
+          <CardTitle>Solicitar exportação</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button
@@ -96,10 +96,10 @@ const DataExport = () => {
             disabled={exporting}
             className="w-full md:w-auto"
           >
-            {exporting ? 'Gerando exportacao...' : 'Exportar meus dados'}
+            {exporting ? 'Gerando exportação...' : 'Exportar meus dados'}
           </Button>
           <p className="text-sm text-muted-foreground">
-            O download comeca automaticamente apos a geracao do arquivo.
+            O download começa automaticamente após a geração do arquivo.
           </p>
         </CardContent>
       </Card>
@@ -107,13 +107,13 @@ const DataExport = () => {
       {exported ? (
         <Card className="shadow-card">
           <CardHeader>
-            <CardTitle>Visualizacao dos dados exportados</CardTitle>
+            <CardTitle>Visualização dos dados exportados</CardTitle>
           </CardHeader>
           <CardContent>
             <Collapsible>
               <CollapsibleTrigger asChild>
                 <Button variant="outline" size="sm">
-                  Ocultar visualizacao
+                  Ocultar visualização
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent>

@@ -1,4 +1,4 @@
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { /*BrowserRouter,*/ Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Login from '../pages/Auth/Login';
 import Register from '../pages/Auth/Register';
@@ -22,9 +22,6 @@ import UserDashboard from '../pages/UserDashboard';
 import MapPage from '../pages/MapPage';
 import ImportExport from '../pages/ImportExport';
 import PrivacyConsent from '../pages/PrivacyConsent';
-import Scheduling from '../pages/Scheduling';
-import InternalChat from '../pages/InternalChat';
-import Reviews from '../pages/Reviews';
 import DataExport from '../pages/DataExport';
 import DeleteAccount from '../pages/DeleteAccount';
 import Layout from '../components/Layout/Layout';
@@ -36,13 +33,8 @@ import ProductsWithStocks from '../pages/Products/ProductsWithStocks';
 import type { JSX } from 'react';
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
   if (loading) return <div>Carregando...</div>;
-  if (!user) {
-    navigate('/login', { replace: true });
-    return null;
-  }
-  return children;
+  return user ? children : <Navigate to="/login" />;
 };
 
 export const AppRoutes = () => {
@@ -103,9 +95,6 @@ export const AppRoutes = () => {
 
           <Route path="institutional" element={<Institutional />} />
           <Route path="privacy-consent" element={<PrivacyConsent />} />
-          <Route path="scheduling" element={<Scheduling />} />
-          <Route path="chat" element={<InternalChat />} />
-          <Route path="reviews" element={<Reviews />} />
           <Route path="data-export" element={<DataExport />} />
           <Route path="delete-account" element={<DeleteAccount />} />
           <Route path="admin" element={<AdminDashboard />} />
