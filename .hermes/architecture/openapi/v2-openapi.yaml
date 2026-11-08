@@ -2,30 +2,77 @@ openapi: 3.0.3
 info:
   title: GeoVintalie API
   version: 2.0.0
-  description: "API do GeoVintalie - Versao 2. Novos endpoints para escopos A (O2O/Varejo), B (Marketplace de Servicos) e C (Transversal). Endpoints existentes mantidos na versao v1 para retrocompatibilidade."
+  description: "API do GeoVintalie - Versao 2. Novos endpoints para escopos A (O2O/Varejo), B (Marketplace de Servicos) e C (Transversal). Endpoints existentes mantidos na versao v1 para retrocompatibilidade. Este contrato e a pré-condicao de aprovacao do Arquiteto: nenhuma implementacao de features inicia antes dele ser aprovado."
 servers:
   - url: http://localhost:8000/api/v2
     description: Servidor de desenvolvimento local
   - url: https://api.geovintalie.com/v2
     description: Servidor de producao
 tags:
+  - name: observability
+    description: Health check e metricas (Escopo C2)
   - name: auth
-    description: Autenticacao e autorizacao
+    description: Autenticacao e dados do usuario autenticado (Escopo C1)
   - name: users
-    description: Gestao de usuarios e papeis
+    description: Gestao de usuarios e papeis (Escopo C1)
   - name: feature-flags
-    description: Gerenciamento de feature flags
+    description: Gerenciamento de feature flags (Escopo C4)
   - name: service-providers
     description: Cadastro e gestao de prestadores de servico (Escopo B1)
   - name: service-categories
     description: Categorias de servico (Escopo B1, B2)
   - name: service-listings
     description: Anuncios de servicos (Escopo B1, B2)
+  - name: service-evaluations
+    description: Avaliacoes mutuas cliente-prestador (Escopo B5)
+  - name: reviews
+    description: Avaliacoes publicas de prestadores (Escopo B5)
   - name: product-locator
-    description: Localizador de produtos por proximidade (Escopo A1)
+    description: Localizador de produtos por proximidade geografica (Escopo A1)
   - name: service-search
-    description: Busca com filtros de servico (Escopo B2)
+    description: Busca de servicos com filtros (Escopo B2)
+  - name: appointments
+    description: Agendamentos de servico (Escopo B4)
+  - name: agendamentos
+    description: Agendamentos de servico (alias, Escopo B4)
+  - name: conversations
+    description: Conversas de chat interno (Escopo B4)
+  - name: messages
+    description: Mensagens de chat interno (Escopo B4)
+  - name: conversas
+    description: Conversas de chat interno (alias, Escopo B4)
+  - name: user-consents
+    description: Consentimentos LGPD e direito ao esquecimento (Escopo C3)
+  - name: google-business
+    description: Integracao Google Business Profile OAuth 2.0 (Escopo A2, mock/sandbox)
+  - name: public-properties
+    description: Vitrine digital publica de propriedades/lojas (Escopo A3)
 paths:
+  # ------------------------------------------------------------------ Observability (C2)
+  /health:
+    get:
+      tags: [observability]
+      summary: Health check da API
+      responses:
+        '200':
+          description: Servidor operacional
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+  /metrics:
+    get:
+      tags: [observability]
+      summary: Metricas da aplicacao
+      responses:
+        '200':
+          description: Metricas em formato texto/JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metrics'
+
+  # ------------------------------------------------------------------ Auth / Users (C1)
   /auth/me:
     get:
       tags: [auth]
@@ -38,9 +85,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResource'
+                $ref: '#/components/schemas/UserAuthResponse'
         '401':
           description: Nao autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /auth/users:
     get:
       tags: [users]
@@ -70,6 +121,10 @@ paths:
                     $ref: '#/components/schemas/Meta'
         '403':
           description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /auth/users/{id}:
     get:
       tags: [users]
@@ -91,6 +146,12 @@ paths:
                 $ref: '#/components/schemas/UserResource'
         '404':
           description: Usuario nao encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ------------------------------------------------------------------ Feature flags (C4)
   /feature-flags:
     get:
       tags: [feature-flags]
@@ -130,10 +191,24 @@ paths:
       responses:
         '200':
           description: Flag atualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlag'
         '403':
           description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
           description: Flag nao encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ------------------------------------------------------------------ Service Providers (B1)
   /service-providers:
     get:
       tags: [service-providers]
@@ -174,6 +249,10 @@ paths:
                 $ref: '#/components/schemas/ServiceProviderResource'
         '422':
           description: Erro de validacao
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /service-providers/{id}:
     get:
       tags: [service-providers]
@@ -195,6 +274,10 @@ paths:
                 $ref: '#/components/schemas/ServiceProviderResource'
         '404':
           description: Prestador nao encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     put:
       tags: [service-providers]
       summary: Atualizar prestador
@@ -215,21 +298,56 @@ paths:
       responses:
         '200':
           description: Prestador atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceProviderResource'
         '404':
           description: Prestador nao encontrado
-  /service-categories:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ------------------------------------------------------------------ Service Evaluations (B5)
+  /service-evaluations:
+    post:
+      tags: [service-evaluations]
+      summary: Criar avaliacao mutua cliente-prestador
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceEvaluationCreate'
+      responses:
+        '201':
+          description: Avaliacao criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceEvaluationResource'
+        '422':
+          description: Erro de validacao
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /service-providers/{provider_id}/evaluations:
     get:
-      tags: [service-categories]
-      summary: Listar categorias de servico
+      tags: [service-evaluations]
+      summary: Listar avaliacoes de um prestador
       parameters:
-        - in: query
-          name: parent_id
+        - in: path
+          name: provider_id
+          required: true
           schema:
             type: integer
-          description: ID da categoria pai (para subcategorias)
       responses:
         '200':
-          description: Lista de categorias
+          description: Lista de avaliacoes do prestador
           content:
             application/json:
               schema:
@@ -238,7 +356,11 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/ServiceCategoryResource'
+                      $ref: '#/components/schemas/ServiceEvaluationResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+
+  # ------------------------------------------------------------------ Service Listings (B1, B2)
   /service-listings:
     get:
       tags: [service-listings]
@@ -258,7 +380,7 @@ paths:
           name: is_active
           schema:
             type: boolean
-            description: Filtrar por ativo/inativo
+          description: Filtrar por ativo/inativo
       responses:
         '200':
           description: Lista de anuncios
@@ -291,6 +413,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServiceListingResource'
+        '422':
+          description: Erro de validacao
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /service-listings/{id}:
     get:
       tags: [service-listings]
@@ -310,43 +438,143 @@ paths:
                 $ref: '#/components/schemas/ServiceListingResource'
         '404':
           description: Anuncio nao encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ------------------------------------------------------------------ Reviews (B5)
+  /reviews:
+    get:
+      tags: [reviews]
+      summary: Listar avaliacoes publicas de prestadores
+      responses:
+        '200':
+          description: Lista de avaliacoes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReviewResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+    post:
+      tags: [reviews]
+      summary: Criar avaliacao publica de prestador
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewCreate'
+      responses:
+        '201':
+          description: Avaliacao criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewResource'
+        '422':
+          description: Erro de validacao
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /service-providers/{provider_id}/reviews:
+    get:
+      tags: [reviews]
+      summary: Listar avaliacoes publicas de um prestador
+      parameters:
+        - in: path
+          name: provider_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de avaliacoes do prestador
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReviewResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+
+  # ------------------------------------------------------------------ Service Categories (B1, B2)
+  /service-categories:
+    get:
+      tags: [service-categories]
+      summary: Listar categorias de servico
+      parameters:
+        - in: query
+          name: parent_id
+          schema:
+            type: integer
+          description: ID da categoria pai (para subcategorias)
+      responses:
+        '200':
+          description: Lista de categorias
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ServiceCategoryResource'
+
+  # ------------------------------------------------------------------ Product Locator (A1)
   /product-locator:
     get:
       tags: [product-locator]
       summary: Localizar produtos por proximidade geografica (Escopo A1)
+      security:
+        - bearerAuth: []
       parameters:
         - in: query
           name: lat
           schema:
             type: number
             format: float
-            required: true
-            description: Latitude do ponto de referencia
+          required: true
+          description: Latitude do ponto de referencia
         - in: query
           name: lng
           schema:
             type: number
             format: float
-            required: true
-            description: Longitude do ponto de referencia
+          required: true
+          description: Longitude do ponto de referencia
         - in: query
           name: radius
           schema:
             type: number
             format: float
             default: 10
-            description: Raio de busca em km
+          description: Raio de busca em km
         - in: query
           name: product_name
           schema:
             type: string
-            description: Nome do produto para buscar
+          description: Nome do produto para buscar
         - in: query
           name: limit
           schema:
             type: integer
             default: 20
-            description: Limite de resultados
+          description: Limite de resultados
       responses:
         '200':
           description: Produtos proximos encontrados
@@ -361,6 +589,8 @@ paths:
                       $ref: '#/components/schemas/ProductLocationResource'
                   meta:
                     $ref: '#/components/schemas/Meta'
+
+  # ------------------------------------------------------------------ Service Search (B2)
   /service-search:
     get:
       tags: [service-search]
@@ -370,17 +600,17 @@ paths:
           name: category_id
           schema:
             type: integer
-            description: ID da categoria
+          description: ID da categoria
         - in: query
           name: city
           schema:
             type: string
-            description: Cidade para filtrar
+          description: Cidade para filtrar
         - in: query
           name: state
           schema:
             type: string
-            description: Estado para filtrar
+          description: Estado para filtrar
         - in: query
           name: min_rating
           schema:
@@ -388,30 +618,30 @@ paths:
             format: float
             minimum: 0
             maximum: 5
-            description: Avaliacao minima (estrelas)
+          description: Avaliacao minima (estrelas)
         - in: query
           name: min_price
           schema:
             type: number
             format: float
-            description: Preco minimo
+          description: Preco minimo
         - in: query
           name: max_price
           schema:
             type: number
             format: float
-            description: Preco maximo
+          description: Preco maximo
         - in: query
           name: q
           schema:
             type: string
-            description: Busca por texto (titulo/descricao)
+          description: Busca por texto (titulo/descricao)
         - in: query
           name: limit
           schema:
             type: integer
             default: 20
-            description: Limite de resultados
+          description: Limite de resultados
       responses:
         '200':
           description: Resultados da busca
@@ -426,6 +656,1022 @@ paths:
                       $ref: '#/components/schemas/ServiceListingSearchResource'
                   meta:
                     $ref: '#/components/schemas/Meta'
+
+  # ------------------------------------------------------------------ Appointments (B4)
+  /appointments:
+    get:
+      tags: [appointments]
+      summary: Listar agendamentos do usuario autenticado
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: role
+          schema:
+            type: string
+            enum: [client, provider]
+          description: Perspectiva de consulta
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pendente, confirmado, recusado, concluido, cancelado]
+          description: Filtrar por status
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Lista de agendamentos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AppointmentResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+    post:
+      tags: [appointments]
+      summary: Criar agendamento (cliente solicita servico a um prestador)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentCreate'
+      responses:
+        '201':
+          description: Agendamento criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentResource'
+        '403':
+          description: Funcionalidade desabilitada ou acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Erro de validacao
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /appointments/{appointment}:
+    get:
+      tags: [appointments]
+      summary: Obter agendamento por ID (apenas participantes)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: appointment
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados do agendamento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentResource'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Agendamento nao encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [appointments]
+      summary: Atualizar agendamento (status/valor/observacoes)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: appointment
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentUpdate'
+      responses:
+        '200':
+          description: Agendamento atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentResource'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Agendamento nao encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [appointments]
+      summary: Cancelar agendamento pendente (cliente)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: appointment
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Agendamento cancelado
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Agendamento nao encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ------------------------------------------------------------------ Agendamentos (B4, alias)
+  /agendamentos:
+    get:
+      tags: [agendamentos]
+      summary: Listar agendamentos (alias)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de agendamentos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AppointmentResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+    post:
+      tags: [agendamentos]
+      summary: Criar agendamento (alias)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentCreate'
+      responses:
+        '201':
+          description: Agendamento criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentResource'
+        '422':
+          description: Erro de validacao
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /agendamentos/{appointment}:
+    get:
+      tags: [agendamentos]
+      summary: Obter agendamento por ID (alias)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: appointment
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados do agendamento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentResource'
+        '404':
+          description: Agendamento nao encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags: [agendamentos]
+      summary: Atualizar agendamento (alias)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: appointment
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentUpdate'
+      responses:
+        '200':
+          description: Agendamento atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentResource'
+        '404':
+          description: Agendamento nao encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [agendamentos]
+      summary: Cancelar agendamento (alias)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: appointment
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Agendamento cancelado
+        '404':
+          description: Agendamento nao encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ------------------------------------------------------------------ Conversations (B4)
+  /conversations:
+    get:
+      tags: [conversations]
+      summary: Listar conversas do usuario autenticado
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de conversas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConversationResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+    post:
+      tags: [conversations]
+      summary: Abrir/criar conversa com um prestador
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationCreate'
+      responses:
+        '201':
+          description: Conversa criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResource'
+        '422':
+          description: Erro de validacao
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /conversations/{conversation}:
+    get:
+      tags: [conversations]
+      summary: Obter conversa por ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: conversation
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados da conversa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResource'
+        '404':
+          description: Conversa nao encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /conversations/{conversation}/messages:
+    post:
+      tags: [messages]
+      summary: Enviar mensagem em uma conversa
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: conversation
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageCreate'
+      responses:
+        '201':
+          description: Mensagem enviada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResource'
+        '422':
+          description: Erro de validacao
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /messages:
+    get:
+      tags: [messages]
+      summary: Listar mensagens
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: conversation_id
+          schema:
+            type: integer
+          description: ID da conversa
+      responses:
+        '200':
+          description: Lista de mensagens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MessageResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+  /messages/{message}/read:
+    post:
+      tags: [messages]
+      summary: Marcar mensagem como lida
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: message
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Mensagem marcada como lida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResource'
+        '404':
+          description: Mensagem nao encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ------------------------------------------------------------------ Conversas (B4, alias)
+  /conversas:
+    get:
+      tags: [conversas]
+      summary: Listar conversas (alias)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de conversas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConversationResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+    post:
+      tags: [conversas]
+      summary: Criar conversa (alias)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationCreate'
+      responses:
+        '201':
+          description: Conversa criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResource'
+        '422':
+          description: Erro de validacao
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /conversas/open:
+    post:
+      tags: [conversas]
+      summary: Abrir conversa existente entre cliente e prestador (alias)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - provider_id
+              properties:
+                provider_id:
+                  type: integer
+      responses:
+        '200':
+          description: Conversa aberta/encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResource'
+        '422':
+          description: Erro de validacao
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /conversas/{conversation}:
+    get:
+      tags: [conversas]
+      summary: Obter conversa por ID (alias)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: conversation
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados da conversa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResource'
+        '404':
+          description: Conversa nao encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /conversas/{conversation}/mensagens:
+    get:
+      tags: [conversas]
+      summary: Listar mensagens de uma conversa (alias)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: conversation
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de mensagens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MessageResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+    post:
+      tags: [conversas]
+      summary: Enviar mensagem em uma conversa (alias)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: conversation
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageCreate'
+      responses:
+        '201':
+          description: Mensagem enviada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResource'
+        '422':
+          description: Erro de validacao
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ------------------------------------------------------------------ User Consents / LGPD (C3)
+  /user-consents:
+    get:
+      tags: [user-consents]
+      summary: Listar consentimentos do usuario autenticado
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de consentimentos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserConsentResource'
+    post:
+      tags: [user-consents]
+      summary: Registrar/atualizar consentimento (LGPD)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserConsentCreate'
+      responses:
+        '201':
+          description: Consentimento atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserConsentResource'
+        '422':
+          description: Erro de validacao
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /user-consents/account:
+    delete:
+      tags: [user-consents]
+      summary: Excluir conta do titular (direito ao esquecimento - LGPD)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+                - confirm_delete
+              properties:
+                password:
+                  type: string
+                confirm_delete:
+                  type: boolean
+      responses:
+        '200':
+          description: Conta excluida e dados anonimizados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Confirmacao obrigatoria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Senha incorreta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /user-consents/{purpose}:
+    delete:
+      tags: [user-consents]
+      summary: Revogar consentimento por finalidade
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: purpose
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Consentimento revogado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Consentimento nao encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /user-consents/export:
+    get:
+      tags: [user-consents]
+      summary: Exportar dados pessoais do titular (LGPD - acesso e portabilidade)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Exportacao dos dados pessoais
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserConsentExport'
+
+  # ------------------------------------------------------------------ Google Business Profile (A2, mock/sandbox)
+  /google-business/callback:
+    get:
+      tags: [google-business]
+      summary: Callback do fluxo OAuth 2.0 do Google (chamado pelo navegador)
+      parameters:
+        - in: query
+          name: code
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: state
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: error
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Autorizacao concluida, tokens salvos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Estado invalido ou erro do Google
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Erro de validacao (code/state obrigatorios)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: OAuth nao configurado no servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /google-business/redirect:
+    get:
+      tags: [google-business]
+      summary: Iniciar fluxo OAuth 2.0 (redireciona para consentimento do Google)
+      security:
+        - bearerAuth: []
+      responses:
+        '302':
+          description: Redireciona para tela de consentimento do Google
+        '500':
+          description: OAuth nao configurado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /google-business/accounts:
+    get:
+      tags: [google-business]
+      summary: Listar contas do Google Business Profile do usuario
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de contas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: array
+        '401':
+          description: Nao autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Nenhuma integracao vinculada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Falha ao comunicar com o Google
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /google-business/accounts/{account}/locations:
+    get:
+      tags: [google-business]
+      summary: Listar locais de uma conta do Google Business Profile
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: account
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de locais
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  account:
+                    type: string
+                  data:
+                    type: array
+        '401':
+          description: Nao autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Token nao encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Falha ao comunicar com o Google
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /google-business/accounts/{account}/locations/{location}:
+    get:
+      tags: [google-business]
+      summary: Sincronizar dados do perfil empresarial de um local
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: account
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: location
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Perfil sincronizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+        '401':
+          description: Nao autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Token nao encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Falha ao comunicar com o Google
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /google-business/disconnect:
+    delete:
+      tags: [google-business]
+      summary: Revogar integracao com o Google Business Profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Integracao removida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Nao autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ------------------------------------------------------------------ Public Properties / Vitrine (A3)
+  /public/properties:
+    get:
+      tags: [public-properties]
+      summary: Listar propriedades publicas (vitrine digital)
+      parameters:
+        - in: query
+          name: city
+          schema:
+            type: string
+          description: Filtrar por cidade
+        - in: query
+          name: state
+          schema:
+            type: string
+          description: Filtrar por estado
+        - in: query
+          name: country
+          schema:
+            type: string
+          description: Filtrar por pais
+        - in: query
+          name: lat
+          schema:
+            type: number
+            format: float
+          description: Latitude para busca por proximidade
+        - in: query
+          name: lng
+          schema:
+            type: number
+            format: float
+          description: Longitude para busca por proximidade
+        - in: query
+          name: radius
+          schema:
+            type: number
+            format: float
+            default: 10
+          description: Raio de busca em km
+      responses:
+        '200':
+          description: Lista de propriedades publicas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PublicPropertyResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+  /public/properties/{id}:
+    get:
+      tags: [public-properties]
+      summary: Obter propriedade publica por ID com produtos
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados da propriedade
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/PublicPropertyResource'
+        '404':
+          description: Propriedade nao encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -433,6 +1679,49 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    Health:
+      type: object
+      properties:
+        status:
+          type: string
+        checked_at:
+          type: string
+          format: date-time
+        service:
+          type: string
+        environment:
+          type: string
+        correlation_id:
+          type: string
+        trace_id:
+          type: string
+        checks:
+          type: object
+          properties:
+            database:
+              type: string
+            cache:
+              type: string
+            logs:
+              type: string
+            external_services:
+              type: string
+    Metrics:
+      type: object
+      properties:
+        service:
+          type: string
+        environment:
+          type: string
+        metrics:
+          type: object
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        flag:
+          type: string
     UserResource:
       type: object
       properties:
@@ -454,6 +1743,13 @@ components:
         updated_at:
           type: string
           format: date-time
+    UserAuthResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserResource'
     Meta:
       type: object
       properties:
@@ -657,33 +1953,6 @@ components:
         longitude:
           type: number
           format: float
-    ProductLocationResource:
-      type: object
-      properties:
-        id:
-          type: integer
-        product_id:
-          type: integer
-        property_id:
-          type: integer
-        property_name:
-          type: string
-        product_name:
-          type: string
-        price:
-          type: number
-          format: float
-        stock_quantity:
-          type: integer
-        latitude:
-          type: number
-          format: float
-        longitude:
-          type: number
-        distance_km:
-          type: number
-          format: float
-          description: Distancia calculada do ponto de referencia
     ServiceListingSearchResource:
       type: object
       properties:
@@ -714,4 +1983,302 @@ components:
         distance_km:
           type: number
           format: float
-          description: Distancia calculada do ponto de referencia (se lat/lng fornecidos)
+    ServiceEvaluationResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        service_listing_id:
+          type: integer
+        service_provider_id:
+          type: integer
+        evaluator_id:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    ServiceEvaluationCreate:
+      type: object
+      required:
+        - service_listing_id
+        - service_provider_id
+        - rating
+      properties:
+        service_listing_id:
+          type: integer
+        service_provider_id:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+    ReviewResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        service_listing_id:
+          type: integer
+        service_provider_id:
+          type: integer
+        evaluator_id:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    ReviewCreate:
+      type: object
+      required:
+        - service_provider_id
+        - rating
+      properties:
+        service_provider_id:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+    ProductLocationResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        product_id:
+          type: integer
+        property_id:
+          type: integer
+        property_name:
+          type: string
+        product_name:
+          type: string
+        price:
+          type: number
+          format: float
+        stock_quantity:
+          type: integer
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        distance_km:
+          type: number
+          format: float
+          description: Distancia calculada do ponto de referencia
+    AppointmentResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        client_id:
+          type: integer
+        provider_id:
+          type: integer
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+        status:
+          type: string
+          enum: [pendente, confirmado, recusado, concluido, cancelado]
+        valor:
+          type: number
+          format: float
+        observacoes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AppointmentCreate:
+      type: object
+      required:
+        - provider_id
+        - date
+        - time
+      properties:
+        provider_id:
+          type: integer
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+        valor:
+          type: number
+          format: float
+          minimum: 0
+        observacoes:
+          type: string
+          maxLength: 1000
+    AppointmentUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pendente, confirmado, recusado, concluido, cancelado]
+        valor:
+          type: number
+          format: float
+          minimum: 0
+        observacoes:
+          type: string
+          maxLength: 1000
+    ConversationResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        client_id:
+          type: integer
+        provider_id:
+          type: integer
+        appointment_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+    ConversationCreate:
+      type: object
+      required:
+        - provider_id
+      properties:
+        provider_id:
+          type: integer
+        appointment_id:
+          type: integer
+    MessageResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversation_id:
+          type: integer
+        sender_id:
+          type: integer
+        body:
+          type: string
+        read_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    MessageCreate:
+      type: object
+      required:
+        - body
+      properties:
+        body:
+          type: string
+    UserConsentResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        purpose:
+          type: string
+        granted:
+          type: boolean
+        granted_at:
+          type: string
+          format: date-time
+        withdrawn_at:
+          type: string
+          format: date-time
+        ip_address:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    UserConsentCreate:
+      type: object
+      required:
+        - purpose
+        - granted
+      properties:
+        purpose:
+          type: string
+          maxLength: 100
+        granted:
+          type: boolean
+    UserConsentExport:
+      type: object
+      properties:
+        message:
+          type: string
+        exported_at:
+          type: string
+          format: date-time
+        data:
+          type: object
+    PublicPropertyResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        n_property:
+          type: string
+        complement:
+          type: string
+        address:
+          type: string
+        neighborhood:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        country:
+          type: string
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        distance_km:
+          type: number
+          format: float
+        contact1_email:
+          type: string
+        contact2_email:
+          type: string
+        number1:
+          type: string
+        number2:
+          type: string
+        number3:
+          type: string
+        owner_name:
+          type: string
+        owner_tipo:
+          type: string
+        products:
+          type: array
+          items:
+            type: object
