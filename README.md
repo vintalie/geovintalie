@@ -116,12 +116,12 @@ Status do ciclo R2 (escopos A2, B4, B5, B6, C3, C6), conforme `.hermes/escopo_r2
 
 | ID | Entregável | Status | PR | Merge na `main` | Testes |
 |----|------------|--------|----|-----------------|--------|
-| A2 | Google Business Profile (OAuth, sincronização de perfis) | ✅ Concluído | [#47](https://github.com/vintalie/geovintalie/pull/47) | ✅ Mergeado | Backend: passando (inclui `GoogleBusinessTest`) |
-| B4 | Agendamento, negociação e chat interno | ✅ Concluído | [#24](https://github.com/vintalie/geovintalie/pull/24) | ✅ Mergeado | Backend + frontend: passando |
-| B5 | Avaliações mútuas (cliente ↔ prestador) | ✅ Concluído | [#25](https://github.com/vintalie/geovintalie/pull/25) | ✅ Mergeado | Backend + frontend: passando |
+| A2 | Google Business Profile (OAuth, sincronização de perfis) | ✅ Concluído | [#47](https://github.com/vintalie/geovintalie/pull/47) / [#50](https://github.com/vintalie/geovintalie/pull/50) | ✅ Mergeado | Backend: passando (inclui `GoogleBusinessTest`) |
+| B4 | Agendamento, negociação e chat interno | ✅ Concluído | [#52](https://github.com/vintalie/geovintalie/pull/52) | ✅ Mergeado | Backend + frontend: passando |
+| B5 | Avaliações mútuas (cliente ↔ prestador) | ✅ Concluído | [#51](https://github.com/vintalie/geovintalie/pull/51) | ✅ Mergeado | Backend + frontend: passando |
 | B6 | Mensageria com histórico e compartilhamento de arquivos | ❌ Não iniciado — sem branch nem PR aberta | — | — | — |
-| C3 | LGPD: consentimento, anonimização e direito ao esquecimento | ✅ Concluído | [#27](https://github.com/vintalie/geovintalie/pull/27) | ✅ Mergeado | Backend + frontend: passando |
-| C6 / QA | Estratégia de testes e suítes automatizadas (meta ≥ 80%) | ✅ Concluído (PR mergeada) | [#28](https://github.com/vintalie/geovintalie/pull/28) | ✅ Mergeado | Backend 91/91 • Frontend 44/51 — 7 falhas em correção na branch `fix/testes-r2` |
+| C3 | LGPD: consentimento, anonimização e direito ao esquecimento | ✅ Concluído | [#48](https://github.com/vintalie/geovintalie/pull/48) | ✅ Mergeado | Backend + frontend: passando |
+| C6 / QA | Estratégia de testes e suítes automatizadas (meta ≥ 80%) | ✅ Concluído (PR mergeada) | [#53](https://github.com/vintalie/geovintalie/pull/53) | ✅ Mergeado | Backend 98/98 • Frontend 51/51 — 100% verde |
 
 ### Documentação de suporte do ciclo
 - `.hermes/escopo_r2.md` — escopo, entregáveis e critérios de aceitação do R2.
@@ -136,8 +136,8 @@ Status do ciclo R2 (escopos A2, B4, B5, B6, C3, C6), conforme `.hermes/escopo_r2
 
 | Suíte | Resultado | Detalhes |
 |-------|-----------|----------|
-| Backend (PHPUnit) | 91/91 passando (100%) | 629 asserções; `GoogleBusinessTest` do escopo A2 agora verde |
-| Frontend (Vitest) | 44/51 passando (~86%) | 7 falhas em 5 arquivos: `Reviews`, `Scheduling`, `InternalChat`, `LgpdPages`, `UserSidebar` — correções em andamento na branch `fix/testes-r2` |
+| Backend (PHPUnit) | 98/98 passando (100%) | Todas as suites verdes, incluindo `GoogleBusinessTest` do escopo A2 |
+| Frontend (Vitest) | 51/51 passando (100%) | Todas as suites verdes, incluindo Reviews, Scheduling, InternalChat, LgpdPages, UserSidebar |
 
 ### Observações do ciclo
 - A2 (PR #47) foi rebaseada sobre `main` e mergeada; o bloqueio do ciclo foi desbloqueado.
