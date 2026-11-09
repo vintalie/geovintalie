@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { render } from '@/test/render';
 import Reviews from './Reviews';
 import * as reviewsApi from '@/api/reviews';
@@ -16,13 +16,17 @@ const mockCreateReview = vi.mocked(reviewsApi.createReview);
 const mockUseAuth = vi.mocked(useAuth);
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
   localStorage.clear();
   mockUseAuth.mockReturnValue({
     user: { id: 7, name: 'Usuario Teste', email: 'usuario@test.com' },
     loading: false,
     logout: vi.fn(),
   } as any);
+});
+
+afterEach(() => {
+  cleanup();
 });
 
 describe('Reviews', () => {
@@ -36,8 +40,13 @@ describe('Reviews', () => {
     );
     expect(screen.getByRole('tab', { name: /Recebidas/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Enviadas/ })).toBeInTheDocument();
-    expect(screen.getByText(/Nenhuma avaliacao recebida ainda/)).toBeInTheDocument();
-    expect(mockGetReviews).toHaveBeenCalledTimes(1);
+    expect(
+      screen.getByText(/Nenhuma avaliacao recebida ainda/),
+    ).toBeInTheDocument();
+    // Uma chamada para 'received' e outra para 'sent'
+    expect(mockGetReviews).toHaveBeenCalledTimes(2);
+    expect(mockGetReviews).toHaveBeenCalledWith({ role: 'received' });
+    expect(mockGetReviews).toHaveBeenCalledWith({ role: 'sent' });
   });
 
   it('envia uma avaliacao via POST /api/v2/reviews', async () => {
@@ -49,6 +58,9 @@ describe('Reviews', () => {
     await waitFor(() =>
       expect(screen.getByText('Nova avaliacao')).toBeInTheDocument(),
     );
+
+    const servicoInput = screen.getByPlaceholderText(/ID do servico/);
+    fireEvent.change(servicoInput, { target: { value: '3' } });
 
     const prestadorInput = screen.getByPlaceholderText(/ID do prestador/);
     fireEvent.change(prestadorInput, { target: { value: '9' } });
@@ -65,8 +77,8 @@ describe('Reviews', () => {
 
     await waitFor(() =>
       expect(mockCreateReview).toHaveBeenCalledWith({
-        appointment_id: 0,
-        reviewee_id: 9,
+        service_listing_id: 3,
+        service_provider_id: 9,
         rating: 4,
         comment: 'Otimo atendimento!',
       }),
@@ -78,7 +90,7 @@ describe('Reviews', () => {
     );
   });
 
-  it('exibe validacao quando nota nao é preenchida', async () => {
+  it('bloqueia o envio quando servico ou nota estao faltando', async () => {
     mockGetReviews.mockResolvedValue({ data: { data: [] } } as any);
 
     render(<><Toaster /><Reviews /></>);
@@ -86,13 +98,9 @@ describe('Reviews', () => {
     await waitFor(() =>
       expect(screen.getByText('Nova avaliacao')).toBeInTheDocument(),
     );
-    fireEvent.click(screen.getByRole('button', { name: /Enviar avaliacao/ }));
 
-    await waitFor(() =>
-      expect(
-        screen.getByText(/Informe o prestador e uma nota de 1 a 5 estrelas/),
-      ).toBeInTheDocument(),
-    );
+    const btn = screen.getByRole('button', { name: /Enviar avaliacao/ });
+    expect(btn).toBeDisabled();
     expect(mockCreateReview).not.toHaveBeenCalled();
   });
 });

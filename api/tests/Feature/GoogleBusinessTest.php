@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\FeatureFlag;
 use App\Models\GoogleBusinessToken;
 use App\Models\User;
 use App\Models\UserType;
@@ -59,6 +60,16 @@ class GoogleBusinessTest extends TestCase
         return base64_encode($payload . '.' . hash_hmac('sha256', $payload, config('app.key')));
     }
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        FeatureFlag::create([
+            'name'               => 'ff_o2o_locator',
+            'enabled'            => true,
+            'rollout_percentage' => 100,
+        ]);
+    }
+
     private function vincularTokenDoUsuario(User $user): void
     {
         GoogleBusinessToken::create([
@@ -92,10 +103,11 @@ class GoogleBusinessTest extends TestCase
 
     public function test_autorizacao_redireciona_para_tela_de_consentimento_google(): void
     {
-        $this->autenticar();
+        $dados = $this->autenticar();
         $this->serviceDeTeste();
 
-        $resposta = $this->get("{$this->base}/auth/redirect");
+        $resposta = $this->withHeader('Authorization', "Bearer {$dados['token']}")
+            ->get("{$this->base}/auth/redirect");
 
         $resposta->assertStatus(302);
         $this->assertStringStartsWith(
