@@ -141,3 +141,58 @@ export interface UserConsent {
   ip_address?: string | null;
   user_agent?: string | null;
 }
+
+export interface Appointment {
+  id: number;
+  client_id: number;
+  provider_id: number;
+  date: string;
+  time: string;
+  status: 'pendente' | 'confirmado' | 'recusado' | 'concluido' | 'cancelado';
+  valor: number | null;
+  observacoes: string | null;
+  created_at: string;
+  updated_at: string;
+  client: { id: number; name: string; email: string };
+  provider: {
+    id: number;
+    business_name: string;
+    user: { id: number; name: string; email: string };
+  };
+}
+
+export interface ChatConversation {
+  id: number;
+  client_id: number;
+  provider_id: number;
+  appointment_id: number | null;
+  created_at: string;
+  updated_at: string;
+  client: { id: number; name: string; email: string };
+  provider: {
+    id: number;
+    business_name: string;
+    user: { id: number; name: string; email: string };
+  };
+  messages?: ChatMessage[];
+  unread_count?: number;
+  participant_id?: number;
+  participant_name?: string;
+  participant_role?: string;
+  last_message?: string;
+  last_message_at?: string;
+}
+
+export interface ChatMessage {
+  id: number;
+  conversation_id: number;
+  sender_id: number;
+  body: string;
+  read_at: string | null;
+  created_at: string;
+  updated_at: string;
+  sender: { id: number; name: string; email: string };
+  is_mine?: boolean;
+  mine?: boolean;
+  sender_name?: string;
+}

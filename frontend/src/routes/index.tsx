@@ -24,6 +24,8 @@ import ImportExport from '../pages/ImportExport';
 import PrivacyConsent from '../pages/PrivacyConsent';
 import DataExport from '../pages/DataExport';
 import DeleteAccount from '../pages/DeleteAccount';
+import Scheduling from '../pages/Scheduling';
+import InternalChat from '../pages/InternalChat';
 import Layout from '../components/Layout/Layout';
 import LayoutProducts from '../components/Layout/LayoutProducts';
 import ProductsWithStocks from '../pages/Products/ProductsWithStocks';
@@ -101,6 +103,8 @@ export const AppRoutes = () => {
           <Route path="user" element={<UserDashboard />} />
           <Route path="map" element={<MapPage />} />
           <Route path="import-export" element={<ImportExport />} />
+          <Route path="agendamentos" element={<Scheduling />} />
+          <Route path="chat" element={<InternalChat />} />
           <Route path="/products" element={<ProductsWithStocks />} />
 
         </Route>

@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Calendar, Clock } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
+import { Controller, useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -12,14 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -32,14 +26,24 @@ import {
   TableCaption,
 } from '@/components/ui/table';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   getAppointments,
   createAppointment,
   cancelAppointment,
   type Appointment,
 } from '@/api/scheduling';
+import { agendamentoSchema } from '@/lib/validations';
+
+type AgendamentoForm = z.infer<typeof agendamentoSchema>;
 
 const STATUS_LABEL: Record<
-  Appointment['status'],
+  AppointmentView['status'],
   { label: string; variant: 'default' | 'destructive' | 'outline' | 'secondary' }
 > = {
   pending: { label: 'Pendente', variant: 'secondary' },
@@ -71,19 +75,74 @@ const generateTimes = (from: number, to: number): string[] => {
 };
 const TIMES = generateTimes(8, 18);
 
-const isSameDay = (a: Date, b: Date) =>
-  a.toDateString() === b.toDateString();
+const isDayDisabled = (d: Date) => {
+  const today = new Date(new Date().setHours(0, 0, 0, 0));
+  return d < today;
+};
+
+interface AppointmentView {
+  id: number;
+  provider_name: string;
+  client_name: string;
+  service: string;
+  scheduled_at: string;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  created_at: string;
+}
+
+const STATUS_PT_TO_EN: Record<string, AppointmentView['status']> = {
+  pendente: 'pending',
+  confirmado: 'confirmed',
+  concluido: 'completed',
+  cancelado: 'cancelled',
+};
+
+const toView = (a: Appointment): AppointmentView => ({
+  id: a.id,
+  provider_name: a.provider.business_name,
+  client_name: a.client.name,
+  service: a.observacoes ?? 'Servico',
+  scheduled_at: `${a.date}T${a.time}:00`,
+  status: STATUS_PT_TO_EN[a.status] ?? 'pending',
+  created_at: a.created_at,
+});
+
+const campoErro = (
+  nome: keyof AgendamentoForm,
+  errors: ReturnType<typeof formErrorsEmpty>,
+) => {
+  const erro = errors[nome];
+  return erro ? (
+    <p className="text-[0.8rem] font-medium text-destructive">
+      {erro.message}
+    </p>
+  ) : null;
+};
+
+const formErrorsEmpty = () => ({} as Record<keyof AgendamentoForm, { message: string } | undefined>);
 
 const Scheduling = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [cancelling, setCancelling] = useState<Set<number>>(new Set());
+  const submitting = useRef(false);
 
-  const [providerId, setProviderId] = useState<string>('');
-  const [service, setService] = useState('');
-  const [day, setDay] = useState<Date | undefined>(undefined);
-  const [time, setTime] = useState('');
+  const form = useForm<AgendamentoForm>({
+    defaultValues: {
+      provider_id: '',
+      service: '',
+      day: undefined as unknown as Date,
+      time: '',
+    },
+  });
+  const { control, reset, getValues, formState } = form;
+  const errors = formState.errors;
+
+  const viewAppointments = useMemo(
+    () => appointments.map(toView),
+    [appointments],
+  );
 
   const loadAppointments = useCallback(async () => {
     try {
@@ -104,35 +163,37 @@ const Scheduling = () => {
     loadAppointments();
   }, [loadAppointments]);
 
-  const today = useMemo(
-    () => new Date(new Date().setHours(0, 0, 0, 0)),
-    [],
-  );
-
-  const isDayDisabled = useCallback(
-    (d: Date) => d < today,
-    [today],
-  );
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!providerId || !service || !day || !time) {
-      toast.error('Preencha prestador, servico, data e horario.');
+  const onSubmitForm = async () => {
+    if (submitting.current) {
       return;
     }
+    submitting.current = true;
     setSaving(true);
     try {
-      const scheduled_at = `${day.toISOString().slice(0, 10)}T${time}:00`;
+      const resultado = agendamentoSchema.safeParse(getValues());
+      if (!resultado.success) {
+        for (const issue of resultado.error.issues) {
+          const campo = (issue.path[0] ?? 'form') as keyof AgendamentoForm;
+          form.setError(campo, { type: 'manual', message: issue.message });
+        }
+        toast.error('Preencha prestador, servico, data e horario.');
+        return;
+      }
+      const data = getValues();
+      const date = data.day.toISOString().slice(0, 10);
       await createAppointment({
-        provider_id: Number(providerId),
-        service,
-        scheduled_at,
+        provider_id: Number(data.provider_id),
+        date,
+        time: data.time,
+        observacoes: data.service,
       });
       toast.success('Agendamento criado com sucesso.');
-      setProviderId('');
-      setService('');
-      setDay(undefined);
-      setTime('');
+      reset({
+        provider_id: '',
+        service: '',
+        day: undefined as unknown as Date,
+        time: '',
+      });
       await loadAppointments();
     } catch (error: any) {
       toast.error(
@@ -140,6 +201,7 @@ const Scheduling = () => {
           'Nao foi possivel criar o agendamento.',
       );
     } finally {
+      submitting.current = false;
       setSaving(false);
     }
   };
@@ -165,16 +227,26 @@ const Scheduling = () => {
     }
   };
 
-  const statusOf = (status: Appointment['status']) => STATUS_LABEL[status];
+  const statusOf = (status: AppointmentView['status']) => STATUS_LABEL[status];
 
-  const formatDateTime = (iso: string) =>
-    new Date(iso).toLocaleString('pt-BR', {
+  const formatDateTime = (iso: string) => {
+    return new Date(iso).toLocaleString('pt-BR', {
       weekday: 'short',
       day: '2-digit',
       month: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const dataSelecionadaLabel = (day: Date | undefined) => {
+    if (!day) return null;
+    return day.toLocaleDateString('pt-BR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    });
+  };
 
   if (loading) {
     return (
@@ -211,91 +283,141 @@ const Scheduling = () => {
                   <CardTitle>Novo agendamento</CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
-                  <form onSubmit={handleSubmit} className="space-y-4">
+                  <form
+                    onSubmit={(evento) => {
+                      evento.preventDefault();
+                      onSubmitForm();
+                    }}
+                    className="space-y-4"
+                  >
                     <div className="space-y-2">
                       <Label>Prestador</Label>
-                      <Select
-                        value={providerId}
-                        onValueChange={(value) => setProviderId(value ?? '')}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Selecionar" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {PROVIDERS.map((p) => (
-                            <SelectItem key={p.id} value={String(p.id)}>
-                              {p.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Controller
+                        name="provider_id"
+                        control={control}
+                        render={({ field }) => (
+                          <>
+                            <Select
+                              onValueChange={(value) =>
+                                field.onChange(value ?? '')
+                              }
+                              value={field.value}
+                              disabled={saving}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Selecionar" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {PROVIDERS.map((p) => (
+                                  <SelectItem
+                                    key={p.id}
+                                    value={String(p.id)}
+                                  >
+                                    {p.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {campoErro('provider_id', errors)}
+                          </>
+                        )}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Servico</Label>
-                      <Select value={service} onValueChange={setService}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Tipo de servico" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SERVICES.map((s) => (
-                            <SelectItem key={s} value={s}>
-                              {s}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Controller
+                        name="service"
+                        control={control}
+                        render={({ field }) => (
+                          <>
+                            <Select
+                              onValueChange={(value) =>
+                                field.onChange(value ?? '')
+                              }
+                              value={field.value}
+                              disabled={saving}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Tipo de servico" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {SERVICES.map((s) => (
+                                  <SelectItem key={s} value={s}>
+                                    {s}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {campoErro('service', errors)}
+                          </>
+                        )}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         Data <Clock className="h-4 w-4" />
                       </Label>
-                      <DayPicker
-                        mode="single"
-                        selected={day}
-                        onSelect={setDay}
-                        disabled={isDayDisabled}
-                        showOutsideDays={false}
-                        className="w-full"
+                      <Controller
+                        name="day"
+                        control={control}
+                        render={({ field }) => {
+                          const selected = field.value as Date | undefined;
+                          return (
+                            <>
+                              <DayPicker
+                                mode="single"
+                                selected={selected}
+                                onSelect={(d) => field.onChange(d ?? undefined)}
+                                disabled={isDayDisabled}
+                                showOutsideDays={false}
+                                className="w-full"
+                              />
+                              {selected && (
+                                <p className="text-[0.8rem] text-muted-foreground">
+                                  {dataSelecionadaLabel(selected)}
+                                </p>
+                              )}
+                              {campoErro('day', errors)}
+                            </>
+                          );
+                        }}
                       />
-                      {day && (
-                        <p className="text-xs text-muted-foreground">
-                          {day.toLocaleDateString('pt-BR', {
-                            weekday: 'long',
-                            day: 'numeric',
-                            month: 'long',
-                          })}
-                        </p>
-                      )}
                     </div>
                     <div className="space-y-2">
                       <Label>Horario</Label>
-                      <div className="grid grid-cols-4 gap-2">
-                        {TIMES.map((t) => {
-                          const active = time === t;
-                          return (
-                            <Button
-                              key={t}
-                              type="button"
-                              variant={active ? 'default' : 'outline'}
-                              size="sm"
-                              onClick={() => setTime(t)}
-                              disabled={saving}
-                            >
-                              {t}
-                            </Button>
-                          );
-                        })}
-                      </div>
+                      <Controller
+                        name="time"
+                        control={control}
+                        render={({ field }) => (
+                          <>
+                            <div className="grid grid-cols-4 gap-2">
+                              {TIMES.map((t) => (
+                                <Button
+                                  key={t}
+                                  type="button"
+                                  variant={
+                                    field.value === t ? 'default' : 'outline'
+                                  }
+                                  size="sm"
+                                  onClick={() => field.onChange(t)}
+                                  disabled={saving}
+                                >
+                                  {t}
+                                </Button>
+                              ))}
+                            </div>
+                            {campoErro('time', errors)}
+                          </>
+                        )}
+                      />
                     </div>
                     <Button
                       type="submit"
-                      disabled={
-                        saving ||
-                        !providerId ||
-                        !service ||
-                        !day ||
-                        !time
-                      }
+                      onClick={(evento) => {
+                        evento.preventDefault();
+                        onSubmitForm();
+                      }}
+                      disabled={saving}
                       className="w-full"
                     >
                       {saving ? 'Agendando...' : 'Agendar'}
@@ -309,8 +431,8 @@ const Scheduling = () => {
                 <CardHeader>
                   <CardTitle>Meus agendamentos</CardTitle>
                   <CardDescription>
-                    {appointments.length} agendamento(
-                    {appointments.length !== 1 ? 's' : ''})
+                    {viewAppointments.length} agendamento(
+                    {viewAppointments.length !== 1 ? 's' : ''})
                   </CardDescription>
                 </CardHeader>
                 <Table>
@@ -324,7 +446,7 @@ const Scheduling = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {appointments.length === 0 ? (
+                    {viewAppointments.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={4}>
                           <div className="p-4 text-center text-sm text-muted-foreground">
@@ -333,7 +455,7 @@ const Scheduling = () => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      appointments.map((a) => (
+                      viewAppointments.map((a) => (
                         <TableRow key={a.id}>
                           <TableCell className="font-medium">
                             {a.provider_name}

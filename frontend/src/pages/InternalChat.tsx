@@ -22,6 +22,7 @@ import {
   type ChatConversation,
   type ChatMessage,
 } from '@/api/chat';
+import { mensagemSchema } from '@/lib/validations';
 
 const formatTime = (iso: string) =>
   new Date(iso).toLocaleTimeString('pt-BR', {
@@ -74,22 +75,32 @@ const InternalChat = () => {
   };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView?.({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!body.trim() || !active) return;
+    if (!active) return;
+    const corpo = body.trim();
+    const validacao = mensagemSchema.safeParse({ body: corpo });
+    if (!validacao.success) return;
     setSending(true);
     try {
-      await sendMessage(active.id, body.trim());
+      await sendMessage(active.id, corpo);
       const optimistic: ChatMessage = {
         id: Date.now(),
         conversation_id: active.id,
         sender_id: user?.id ?? 0,
         sender_name: user?.name ?? 'Voce',
-        body: body.trim(),
+        body: corpo,
         created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        read_at: null,
+        sender: {
+          id: user?.id ?? 0,
+          name: user?.name ?? 'Voce',
+          email: user?.email ?? '',
+        },
         mine: true,
       };
       setMessages((prev) => [...prev, optimistic]);
@@ -102,8 +113,6 @@ const InternalChat = () => {
       setSending(false);
     }
   };
-
-  const myId = user?.id;
 
   if (loading) {
     return (
@@ -149,29 +158,29 @@ const InternalChat = () => {
                 >
                   <Avatar className="h-10 w-10 shrink-0">
                     <AvatarImage
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${c.participant_name}`}
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${c.participant_name ?? ''}`}
                     >
                       <AvatarFallback>
-                        {c.participant_name.charAt(0).toUpperCase()}
+                        {(c.participant_name ?? '').charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </AvatarImage>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">
-                      {c.participant_name}
+                      {c.participant_name ?? 'Sem nome'}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">
-                      {c.last_message}
+                      {c.last_message ?? ''}
                     </div>
                   </div>
-                  {c.unread_count > 0 && (
+                  {(c.unread_count ?? 0) > 0 && (
                     <Badge variant="secondary" className="shrink-0">
-                      {c.unread_count}
+                      {c.unread_count ?? 0}
                     </Badge>
                   )}
                 </button>
-              )
-            ))}
+              ))
+            )}
           </div>
         </div>
         <div className="flex-1 flex flex-col">
@@ -181,23 +190,21 @@ const InternalChat = () => {
                 <div className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
                     <AvatarImage
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${active.participant_name}`}
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${active.participant_name ?? ''}`}
                     >
                       <AvatarFallback>
-                        {active.participant_name.charAt(0).toUpperCase()}
+                        {(active.participant_name ?? '').charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </AvatarImage>
                   </Avatar>
                   <div>
                     <CardTitle className="text-base">
-                      {active.participant_name}
+                      {active.participant_name ?? 'Sem nome'}
                       <span className="text-xs font-normal ml-2">
-                        ({active.participant_role})
+                        ({active.participant_role ?? ''})
                       </span>
                     </CardTitle>
-                    <CardDescription className="text-xs">
-                      Online
-                    </CardDescription>
+                    <CardDescription className="text-xs">Online</CardDescription>
                   </div>
                 </div>
               </CardHeader>
