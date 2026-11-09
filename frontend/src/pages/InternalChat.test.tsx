@@ -100,7 +100,7 @@ describe('InternalChat', () => {
       expect(mockGetMessages).toHaveBeenCalledWith(1),
     );
     await waitFor(() =>
-      expect(screen.getByText('Oi, tudo bem?')).toBeInTheDocument(),
+      expect(screen.getAllByText('Oi, tudo bem?')).toHaveLength(2),
     );
   });
 

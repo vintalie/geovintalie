@@ -64,7 +64,7 @@ describe('Scheduling', () => {
         id: 10,
         client_id: 7,
         provider_id: 3,
-        provider_name: 'Ana Costa - Jardim e Paisagismo',
+        provider_name: 'Ana Paula - Jardim e Paisagismo',
         client_name: 'Usuario Teste',
         service: 'Manutencao de jardim',
         scheduled_at: '2026-11-20T14:00:00',
@@ -79,7 +79,7 @@ describe('Scheduling', () => {
     render(<><Toaster /><Scheduling /></>);
 
     await waitFor(() =>
-      expect(screen.getByText('Ana Costa - Jardim e Paisagismo')).toBeInTheDocument(),
+      expect(screen.getByText('Ana Paula - Jardim e Paisagismo')).toBeInTheDocument(),
     );
     fireEvent.click(screen.getByRole('button', { name: /Cancelar/ }));
 

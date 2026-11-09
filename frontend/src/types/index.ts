@@ -25,7 +25,6 @@ export interface AuthContextData {
   setUser: (user: User) => void;
 }
 
-
 export interface State {
   id: number;
   name: string;
@@ -65,20 +64,19 @@ export interface Property {
   id: number;
   name: string;
   n_property: string;
-  complement?:string,
-  main_image:string;
-  cover_image?:string;
-  content_html?:string;
-  additional_info:string;
-  contact1_email:string;
-  contact2_email?:string;
-  number1:string;
-  number2?:string;
-  number3?:string;
-  street_id:number,
-  created_at:string;
-  updated_at:string;
-
+  complement?: string;
+  main_image: string;
+  cover_image?: string;
+  content_html?: string;
+  additional_info: string;
+  contact1_email: string;
+  contact2_email?: string;
+  number1: string;
+  number2?: string;
+  number3?: string;
+  street_id: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Stocks {
@@ -134,12 +132,67 @@ export interface Products {
 export interface UserConsent {
   id: number;
   user_id: number;
-  purpose: string; // ex.: 'marketing', 'analytics', 'third_party'
+  purpose: string;
   granted: boolean;
   granted_at?: string | null;
   withdrawn_at?: string | null;
   ip_address?: string | null;
   user_agent?: string | null;
+}
+
+export interface Appointment {
+  id: number;
+  client_id: number;
+  provider_id: number;
+  date: string;
+  time: string;
+  status: 'pendente' | 'confirmado' | 'recusado' | 'concluido' | 'cancelado';
+  valor: number | null;
+  observacoes: string | null;
+  created_at: string;
+  updated_at: string;
+  client: { id: number; name: string; email: string };
+  provider: {
+    id: number;
+    business_name: string;
+    user: { id: number; name: string; email: string };
+  };
+}
+
+export interface ChatConversation {
+  id: number;
+  client_id: number;
+  provider_id: number;
+  appointment_id: number | null;
+  created_at: string;
+  updated_at: string;
+  client: { id: number; name: string; email: string };
+  provider: {
+    id: number;
+    business_name: string;
+    user: { id: number; name: string; email: string };
+  };
+  messages?: ChatMessage[];
+  unread_count?: number;
+  participant_id?: number;
+  participant_name?: string;
+  participant_role?: string;
+  last_message?: string;
+  last_message_at?: string;
+}
+
+export interface ChatMessage {
+  id: number;
+  conversation_id: number;
+  sender_id: number;
+  body: string;
+  read_at: string | null;
+  created_at: string;
+  updated_at: string;
+  sender: { id: number; name: string; email: string };
+  is_mine?: boolean;
+  mine?: boolean;
+  sender_name?: string;
 }
 
 export interface Review {

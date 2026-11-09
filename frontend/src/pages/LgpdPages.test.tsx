@@ -144,7 +144,7 @@ describe('DataExport', () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText(/Visualizacao dos dados exportados/i),
+        screen.getByText(/Visualiza[cç]ão dos dados exportados/i),
       ).toBeInTheDocument()
     );
     expect(mockExportData).toHaveBeenCalledTimes(1);
