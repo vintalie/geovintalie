@@ -61,6 +61,8 @@ class MessagesController extends Controller
 
     /**
      * Envia uma nova mensagem na conversa.
+     * Aceita corpo de texto (opcional) e um anexo de arquivo (opcional).
+     * Pelo menos um dos dois deve ser informado.
      */
     public function store(Request $request, ChatConversation $conversation)
     {
@@ -71,16 +73,74 @@ class MessagesController extends Controller
         $this->authorizeParticipant($request, $conversation);
 
         $request->validate([
-            'body' => 'required|string|max:4000',
+            'body' => 'nullable|string|max:4000',
+            'file' => 'nullable|file|max:10240|mimes:pdf,doc,docx,txt,csv,rtf,odt,zip,jpg,jpeg,png,webp,gif,mp3,wav,ogg,m4a,xlsx,xls',
         ]);
+
+        if (empty((string) $request->body) && !$request->hasFile('file')) {
+            return response()->json([
+                'message' => 'Informe uma mensagem ou anexe um arquivo.',
+            ], 422);
+        }
+
+        $filePath = null;
+        $fileName = null;
+        $fileMime = null;
+        $fileSize = null;
+
+        if ($request->hasFile('file')) {
+            $uploaded = $request->file('file');
+            $filePath = $uploaded->store('chat/messages', 'public');
+            $fileName = $uploaded->getClientOriginalName();
+            $fileMime = $uploaded->getMimeType();
+            $fileSize = (int) $uploaded->getSize();
+        }
 
         $message = ChatMessage::create([
             'conversation_id' => $conversation->id,
             'sender_id' => $request->user()->id,
-            'body' => $request->body,
+            'body' => $request->body ?? '',
+            'file_path' => $filePath,
+            'file_name' => $fileName,
+            'file_mime' => $fileMime,
+            'file_size' => $fileSize,
         ]);
 
         return (new MessageResource($message->load('sender')))->response($request)->setStatusCode(201);
+    }
+
+    /**
+     * Faz o download do anexo de uma mensagem (somente participantes da conversa).
+     */
+    public function download(Request $request, ChatMessage $message)
+    {
+        if (!FeatureFlag::isEnabled('ff_agendamentos_chat')) {
+            abort(403, 'Funcionalidade nao habilitada.');
+        }
+
+        $conversation = $message->loadMissing('conversation.provider')->conversation;
+        $this->authorizeParticipant($request, $conversation);
+
+        if (!$message->hasAttachment()) {
+            abort(404, 'Esta mensagem nao possui anexo.');
+        }
+
+        $path = storage_path('app/public/' . $message->file_path);
+
+        if (!file_exists($path)) {
+            abort(404, 'Arquivo nao encontrado no servidor.');
+        }
+
+        $contents = file_get_contents($path);
+
+        if ($contents === false) {
+            abort(404, 'Nao foi possivel ler o arquivo.');
+        }
+
+        return response($contents, 200, [
+            'Content-Type' => $message->file_mime ?: 'application/octet-stream',
+            'Content-Disposition' => 'attachment; filename="' . $message->file_name . '"',
+        ]);
     }
 
     /**

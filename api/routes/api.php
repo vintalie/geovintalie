@@ -144,6 +144,8 @@ Route::prefix('v2')->group(function () {
         // Mensagens (Escopo B4)
         Route::get('conversas/{conversation}/mensagens', [MessagesController::class, 'index']);
         Route::post('conversas/{conversation}/mensagens', [MessagesController::class, 'store']);
+        // Download de anexo de mensagem (Escopo B6)
+        Route::get('messages/{message}/file', [MessagesController::class, 'download']);
     });
 
     // Service Categories - publico (Escopo B1, B2)

@@ -118,4 +118,61 @@ describe('InternalChat', () => {
     );
     expect(mockSendMessage).not.toHaveBeenCalled();
   });
+
+  it('envia mensagem com anexo e exibe o arquivo na lista', async () => {
+    const file = new File(['conteudo do anexo'], 'proposta.pdf', {
+      type: 'application/pdf',
+    });
+
+    mockGetConversations.mockResolvedValue({
+      data: {
+        data: [
+          {
+            id: 1,
+            participant_id: 22,
+            participant_name: 'Joao Santos - Reparos Residencial',
+            participant_role: 'provider',
+            last_message: '',
+            last_message_at: null,
+            unread_count: 0,
+          },
+        ],
+      },
+    } as any);
+    mockGetMessages.mockResolvedValue({ data: { data: [] } } as any);
+    mockSendMessage.mockResolvedValue({} as any);
+
+    render(<><Toaster /><InternalChat /></>);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText('Joao Santos - Reparos Residencial'),
+      ).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Joao Santos/ }));
+
+    const input = screen.getByPlaceholderText('Escreva uma mensagem...');
+    fireEvent.change(input, { target: { value: 'Veja o anexo.' } });
+
+    fireEvent.change(screen.getByTestId('chat-file-input'), {
+      target: { files: [file] },
+    });
+
+    fireEvent.click(screen.getByTestId('chat-send'));
+
+    await waitFor(() =>
+      expect(mockSendMessage).toHaveBeenCalledWith(
+        1,
+        'Veja o anexo.',
+        file,
+      ),
+    );
+    await waitFor(() =>
+      expect(screen.getByText(/proposta\.pdf/)).toBeInTheDocument(),
+    );
+    await waitFor(() =>
+      expect(screen.getByText(/0 KB/)).toBeInTheDocument(),
+    );
+  });
 });

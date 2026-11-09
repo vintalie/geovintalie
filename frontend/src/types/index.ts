@@ -193,6 +193,13 @@ export interface ChatMessage {
   is_mine?: boolean;
   mine?: boolean;
   sender_name?: string;
+  // Anexo de arquivo (Escopo B6) - opcional; mensagem pode conter apenas texto,
+  // apenas anexo ou ambos.
+  file_name?: string | null;
+  file_mime?: string | null;
+  file_size?: number | null;
+  file_url?: string | null;
+  has_attachment?: boolean;
 }
 
 export interface Review {
