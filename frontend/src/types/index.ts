@@ -141,3 +141,17 @@ export interface UserConsent {
   ip_address?: string | null;
   user_agent?: string | null;
 }
+
+export interface Review {
+  id: number;
+  service_listing_id: number;
+  service_provider_id: number;
+  evaluator_id: number;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  updated_at: string;
+  evaluator?: { id: number; name: string; email: string };
+  provider?: { id: number; business_name: string };
+  reviewer_name?: string;
+}
