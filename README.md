@@ -141,8 +141,42 @@ Status do ciclo R2 (escopos A2, B4, B5, B6, C3, C6), conforme `.hermes/escopo_r2
 
 ### Observações do ciclo
 - A2 (PR #47) foi rebaseada sobre `main` e mergeada; o bloqueio do ciclo foi desbloqueado.
-- B6 (mensageria) ainda não possui branch nem PR aberta — fica para o próximo ciclo.
+- B6 (mensageria) concluído e mergeado na `main` via PR #54 — escopo R2 fechado.
 - Critérios de aceitação do R2: 100% dos testes (backend e frontend) verdes, cada funcionalidade com PR revisada e mergeada na `main`, CI (GitHub Actions) verde, nenhuma credencial commiteada.
+
+## 🔄 Ciclo R3 — Progresso e entregáveis
+
+Status do ciclo R3 (escopos C4, C1, B2, B3, A4, A5, A6 + QA), conforme `.hermes/escopo_r3.md`, `.hermes/kanban_r3.md` e `.hermes/delegacao_r3.md`.
+
+### Checklist de entregáveis
+
+| ID | Entregável | Issue | Status | PR | Merge na `main` | Testes |
+|----|------------|-------|--------|----|-----------------|--------|
+| C4 | Feature flags para liberação gradual dos novos módulos | #21 | 🟡 Em desenvolvimento | — | — | — |
+| C1 | Autenticação e autorização com papéis | #18 | 🟡 Em desenvolvimento | — | — | — |
+| B2 | Busca com filtros (categoria, localização, avaliação, preço) | #13 | 🟡 Em desenvolvimento | — | — | — |
+| B3 | Recomendação por IA a partir da descrição do problema | #14 | 🟡 Em desenvolvimento | — | — | — |
+| A4 | Geração automática de sites/landing pages SEO local | #9 | 🟡 Em desenvolvimento | — | — | — |
+| A5 | Relatórios de inteligência (mapas de calor oferta × demanda) | #10 | 🟡 Em desenvolvimento | — | — | — |
+| A6 | Módulo "Quero Revender" (leads B2B indústria → lojista) | #11 | 🟡 Em desenvolvimento | — | — | — |
+| QA | Testes automatizados backend e frontend (meta ≥ 80%) | #45 | 🟡 Em desenvolvimento | — | — | — |
+
+### Documentação de suporte do ciclo
+- `.hermes/escopo_r3.md` — escopo, entregáveis e critérios de aceitação do R3.
+- `.hermes/kanban_r3.md` — kanban do sprint R3 (backlog, todo, em desenvolvimento, revisão, concluído).
+- `.hermes/delegacao_r3.md` — delegação por trilha e fluxo obrigatório por entregável.
+
+### Status dos testes automatizados (branch `main`, baseline antes do R3)
+
+| Suíte | Resultado | Detalhes |
+|-------|-----------|----------|
+| Backend (PHPUnit) | 105/105 passando (100%) | Suíte verde na `main` — verificado com `php vendor/bin/phpunit` |
+| Frontend (Vitest) | 52/52 passando (100%) | Suíte verde na `main` — verificado com `npx vitest run` |
+| CI (GitHub Actions) | Verde | `.github/workflows/ci.yml` ativo em todo push/PR na `main` |
+
+### Observações do ciclo
+- Nenhum entregável R3 possui PR aberta nem merge na `main` ainda — todos estão em desenvolvimento (kanban: "Em Desenvolvimento").
+- Critérios de aceitação do R3: 100% dos testes (backend e frontend) verdes, cada funcionalidade com PR revisada e mergeada na `main` (apenas o Orquestrador faz merge), CI verde, nenhuma credencial commiteada, e todas as novas funcionalidades de A e B entregues com feature flags (C4) sem quebrar contratos existentes da API.
 
 ## 🏗️ Arquitetura e Stack
 

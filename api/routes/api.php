@@ -27,6 +27,8 @@ use App\Http\Controllers\ConversationsController;
 use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\PublicPropertyController;
 use App\Http\Controllers\UserConsentController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\AiRecommendationController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -165,6 +167,11 @@ Route::prefix('v2')->group(function () {
     // Listagem publica de avaliacoes (reviews) de um prestador (Escopo B5)
     Route::get('service-providers/{provider_id}/reviews', [ReviewController::class, 'byProvider']);
 
+    // Recomendacao por IA a partir da descricao do problema (Escopo B3)
+    Route::middleware(['jwt.auth', 'feature.flag:ff_ai_recommendation'])->group(function () {
+        Route::post('ai-recommendations', [AiRecommendationController::class, 'store']);
+    });
+
     // User Consent - LGPD (Escopo C3) - autenticado
     Route::middleware(['jwt.auth'])->group(function () {
         Route::get('user-consents', [UserConsentController::class, 'index']);
@@ -174,6 +181,16 @@ Route::prefix('v2')->group(function () {
         Route::delete('user-consents/account', [UserConsentController::class, 'deleteAccount']);
         Route::delete('user-consents/{purpose}', [UserConsentController::class, 'destroy']);
         Route::get('user-consents/export', [UserConsentController::class, 'export']);
+    });
+
+    // Relatorios de inteligencia - mapas de calor oferta x demanda (Escopo A5)
+    // Protegidos por feature flag ff_reports (C4) e acesso de admin/usuario autenticado.
+    Route::middleware(['jwt.auth', 'feature.flag:ff_reports', 'role:admin,user'])->group(function () {
+        Route::get('reports', [ReportController::class, 'summary']);
+        Route::get('reports/supply', [ReportController::class, 'supply']);
+        Route::get('reports/demand', [ReportController::class, 'demand']);
+        Route::get('reports/heatmap', [ReportController::class, 'heatmap']);
+        Route::get('reports/export', [ReportController::class, 'export']);
     });
 
     // Google Business Profile (Escopo A2) - fluxo OAuth 2.0

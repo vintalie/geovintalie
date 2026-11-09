@@ -74,6 +74,18 @@ class FeatureFlagSeeder extends Seeder
                 'enabled' => true,
                 'rollout_percentage' => 100,
             ],
+            [
+                'name' => 'ff_reports',
+                'description' => 'Habilitar relatorios de inteligencia com mapas de calor oferta x demanda (Escopo A5)',
+                'enabled' => true,
+                'rollout_percentage' => 100,
+            ],
+            [
+                'name' => 'ff_ai_recommendation',
+                'description' => 'Habilitar recomendacao por IA a partir da descricao do problema (Escopo B3)',
+                'enabled' => false,
+                'rollout_percentage' => 0,
+            ],
         ];
 
         foreach ($flags as $flag) {
