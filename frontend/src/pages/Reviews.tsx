@@ -44,10 +44,10 @@ const ReviewCard = ({ review, role }: { review: Review; role: 'client' | 'provid
       <div className="flex items-center gap-3 mb-2">
         <Avatar className="h-9 w-9">
           <AvatarImage
-            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${review.reviewer_name}`}
+            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${review.reviewer_name ?? 'Avaliador'}`}
           >
             <AvatarFallback>
-              {review.reviewer_name.charAt(0).toUpperCase()}
+              {(review.reviewer_name ?? 'Avaliador').charAt(0).toUpperCase()}
             </AvatarFallback>
           </AvatarImage>
         </Avatar>
@@ -84,6 +84,12 @@ const Reviews = () => {
   const [rating, setRating] = useState<number>(0);
   const [comment, setComment] = useState('');
   const [revieweeId, setRevieweeId] = useState<number | ''>('');
+  const [listingId, setListingId] = useState<number | ''>('');
+
+  const normalize = (review: any): Review => ({
+    ...review,
+    reviewer_name: review.evaluator?.name ?? review.reviewer_name ?? 'Avaliador',
+  });
 
   const loadReviews = useCallback(async () => {
     try {
@@ -92,9 +98,15 @@ const Reviews = () => {
         getReviews({ role: 'sent' }),
       ]);
       setReceived(
-        Array.isArray(receivedRes.data?.data) ? receivedRes.data.data : [],
+        Array.isArray(receivedRes.data?.data)
+          ? receivedRes.data.data.map(normalize)
+          : [],
       );
-      setSent(Array.isArray(sentRes.data?.data) ? sentRes.data.data : []);
+      setSent(
+        Array.isArray(sentRes.data?.data)
+          ? sentRes.data.data.map(normalize)
+          : [],
+      );
     } catch (error: any) {
       toast.error(
         error.response?.data?.message ||
@@ -111,15 +123,23 @@ const Reviews = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!revieweeId || !rating || rating < 1 || rating > 5) {
-      toast.error('Informe o prestador e uma nota de 1 a 5 estrelas.');
+    if (
+      !listingId ||
+      !revieweeId ||
+      !rating ||
+      rating < 1 ||
+      rating > 5
+    ) {
+      toast.error(
+        'Informe o servico, o prestador e uma nota de 1 a 5 estrelas.',
+      );
       return;
     }
     setSending(true);
     try {
       await createReview({
-        appointment_id: 0,
-        reviewee_id: Number(revieweeId),
+        service_listing_id: Number(listingId),
+        service_provider_id: Number(revieweeId),
         rating,
         comment: comment.trim(),
       });
@@ -224,6 +244,18 @@ const Reviews = () => {
         </CardHeader>
         <CardContent className="p-6 space-y-4">
           <form onSubmit={handleCreate} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Servico (ID)</Label>
+              <Input
+                type="number"
+                value={String(listingId ?? '')}
+                onChange={(e) =>
+                  setListingId(e.target.value ? Number(e.target.value) : '')
+                }
+                placeholder="ID do servico"
+                disabled={sending}
+              />
+            </div>
             <div className="space-y-2">
               <Label>Prestador (ID)</Label>
               <Input

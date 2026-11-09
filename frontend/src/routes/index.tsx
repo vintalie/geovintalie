@@ -24,10 +24,11 @@ import ImportExport from '../pages/ImportExport';
 import PrivacyConsent from '../pages/PrivacyConsent';
 import DataExport from '../pages/DataExport';
 import DeleteAccount from '../pages/DeleteAccount';
+import Scheduling from '../pages/Scheduling';
+import InternalChat from '../pages/InternalChat';
+import Reviews from '../pages/Reviews';
 import Layout from '../components/Layout/Layout';
 import LayoutProducts from '../components/Layout/LayoutProducts';
-import ProductsWithStocks from '../pages/Products/ProductsWithStocks';
-
 // Dentro do <Routes>
 
 import type { JSX } from 'react';
@@ -101,6 +102,9 @@ export const AppRoutes = () => {
           <Route path="user" element={<UserDashboard />} />
           <Route path="map" element={<MapPage />} />
           <Route path="import-export" element={<ImportExport />} />
+          <Route path="agendamentos" element={<Scheduling />} />
+          <Route path="chat" element={<InternalChat />} />
+          <Route path="avaliacoes" element={<Reviews />} />
           <Route path="/products" element={<ProductsWithStocks />} />
 
         </Route>
