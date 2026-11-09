@@ -26,7 +26,9 @@ class CorrelationIdMiddleware
 
         $response = $next($request);
 
-        return $response->header(self::HEADER, $id);
+        $response->headers->set(self::HEADER, $id);
+
+        return $response;
     }
 
     public function terminate(Request $request, Response $response): void

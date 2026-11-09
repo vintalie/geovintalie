@@ -26,7 +26,9 @@ class TracingMiddleware
 
         $response = $next($request);
 
-        return $response->header(self::HEADER, TraceContext::id() ?? $traceId);
+        $response->headers->set(self::HEADER, TraceContext::id() ?? $traceId);
+
+        return $response;
     }
 
     public function terminate(Request $request, Response $response): void

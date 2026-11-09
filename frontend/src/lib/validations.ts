@@ -13,7 +13,7 @@ export const agendamentoSchema = z.object({
 });
 
 export const mensagemSchema = z.object({
-  body: z.string().min(1, 'Digite uma mensagem antes de enviar.').max(4000, 'Mensagem muito longa.'),
+  body: z.string().max(4000, 'Mensagem muito longa.').optional(),
 });
 
 export const conversaSchema = z.object({

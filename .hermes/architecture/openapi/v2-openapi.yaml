@@ -1028,7 +1028,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: '#/components/schemas/MessageCreate'
       responses:
@@ -1091,6 +1091,39 @@ paths:
                 $ref: '#/components/schemas/MessageResource'
         '404':
           description: Mensagem nao encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /messages/{message}/file:
+    get:
+      tags: [messages]
+      summary: Baixar o anexo de uma mensagem (somente participantes da conversa)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: message
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Arquivo anexo da mensagem para download
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Mensagem ou anexo nao encontrado
           content:
             application/json:
               schema:
@@ -1236,7 +1269,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: '#/components/schemas/MessageCreate'
       responses:
@@ -2186,13 +2219,33 @@ components:
         created_at:
           type: string
           format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        is_mine:
+          type: boolean
+        has_attachment:
+          type: boolean
+        file_name:
+          type: string
+        file_mime:
+          type: string
+        file_size:
+          type: integer
+        file_url:
+          type: string
+          format: uri
     MessageCreate:
       type: object
-      required:
-        - body
       properties:
         body:
           type: string
+          maxLength: 4000
+          description: Texto da mensagem. Opcional quando houver anexo.
+        file:
+          type: string
+          format: binary
+          description: Arquivo anexo. Opcional quando houver corpo de texto.
     UserConsentResource:
       type: object
       properties:

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { MessageCircle, Send } from 'lucide-react';
+import { Download, MessageCircle, Paperclip, Send } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -19,6 +19,7 @@ import {
   getConversations,
   getMessages,
   sendMessage,
+  downloadMessageFile,
   type ChatConversation,
   type ChatMessage,
 } from '@/api/chat';
@@ -30,6 +31,15 @@ const formatTime = (iso: string) =>
     minute: '2-digit',
   });
 
+const formatFileSize = (bytes: number | null | undefined) => {
+  if (!bytes) return '';
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${Math.round(kb)} KB`;
+  return `${(kb / 1024).toFixed(1)} MB`;
+};
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB, alinhado ao backend
+
 const InternalChat = () => {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
@@ -38,6 +48,7 @@ const InternalChat = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [body, setBody] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const loadConversations = useCallback(async () => {
@@ -68,8 +79,7 @@ const InternalChat = () => {
       setMessages(Array.isArray(data) ? data : []);
     } catch (error: any) {
       toast.error(
-        error.response?.data?.message ||
-          'Nao foi possivel carregar as mensagens.',
+        error.response?.data?.message || 'Nao foi possivel carregar as mensagens.',
       );
     }
   };
@@ -82,33 +92,69 @@ const InternalChat = () => {
     }
   }, [messages]);
 
+  const handleDownload = async (message: ChatMessage) => {
+    if (!message.has_attachment) return;
+    try {
+      const response = await downloadMessageFile(message.id);
+      const blob = response.data as Blob;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = message.file_name ?? 'anexo';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Nao foi possivel baixar o anexo.');
+    }
+  };
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!active) return;
     const corpo = body.trim();
     const validacao = mensagemSchema.safeParse({ body: corpo });
     if (!validacao.success) return;
+    if (!corpo && !selectedFile) {
+      toast.error('Digite uma mensagem ou selecione um arquivo para enviar.');
+      return;
+    }
+    if (selectedFile && selectedFile.size > MAX_FILE_SIZE) {
+      toast.error('O arquivo e muito grande. Limite: 10 MB.');
+      return;
+    }
     setSending(true);
+    const arquivoParaEnviar = selectedFile;
     try {
-      await sendMessage(active.id, corpo);
+      await sendMessage(active.id, corpo, arquivoParaEnviar ?? undefined);
+      const agora = new Date().toISOString();
       const optimistic: ChatMessage = {
         id: Date.now(),
         conversation_id: active.id,
         sender_id: user?.id ?? 0,
-        sender_name: user?.name ?? 'Voce',
         body: corpo,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
         read_at: null,
+        created_at: agora,
+        updated_at: agora,
         sender: {
           id: user?.id ?? 0,
           name: user?.name ?? 'Voce',
           email: user?.email ?? '',
         },
         mine: true,
+        ...(arquivoParaEnviar
+          ? {
+              has_attachment: true,
+              file_name: arquivoParaEnviar.name,
+              file_mime: arquivoParaEnviar.type,
+              file_size: arquivoParaEnviar.size,
+            }
+          : {}),
       };
       setMessages((prev) => [...prev, optimistic]);
       setBody('');
+      setSelectedFile(null);
     } catch (error: any) {
       toast.error(
         error.response?.data?.message || 'Nao foi possivel enviar a mensagem.',
@@ -232,38 +278,113 @@ const InternalChat = () => {
                             : 'bg-muted text-muted-foreground'
                         }`}
                       >
-                        {m.body}
+                        {m.body && <span>{m.body}</span>}
+                        {m.has_attachment && (
+                          <>
+                            {m.body && <br />}
+                            <span className="block text-[0.8rem] opacity-90">
+                              📎 {m.file_name ?? 'Anexo'}
+                              {m.file_size != null && (
+                                <span className="ml-1">({formatFileSize(m.file_size)})</span>
+                              )}
+                            </span>
+                          </>
+                        )}
                       </div>
-                      <time
-                        className={`text-xs text-muted-foreground mt-0.5 ${
-                          m.mine ? 'ml-auto' : ''
-                        }`}
-                      >
-                        {formatTime(m.created_at)}
-                      </time>
+                      <div className="flex items-center gap-1 mt-1">
+                        {m.has_attachment && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownload(m);
+                            }}
+                            className="text-xs underline underline-offset-2 hover:text-primary"
+                            title={`Baixar ${m.file_name ?? 'anexo'}`}
+                          >
+                            <Download className="h-3 w-3" /> Baixar
+                          </button>
+                        )}
+                        <time
+                          className={`text-xs text-muted-foreground ${
+                            m.mine ? 'ml-auto' : ''
+                          }`}
+                        >
+                          {formatTime(m.created_at)}
+                        </time>
+                      </div>
                     </div>
                   ))
                 )}
                 <div ref={messagesEndRef} />
               </div>
-              <form onSubmit={handleSend} className="border-t p-4 gap-2">
+              <form onSubmit={handleSend} className="border-t p-4 gap-3">
                 <div className="flex items-end gap-2">
-                  <Input
-                    value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                    placeholder="Escreva uma mensagem..."
-                    disabled={sending}
-                    className="flex-1 min-w-0"
-                  />
+                  <div className="flex-1 min-w-0 flex gap-2">
+                    <Input
+                      value={body}
+                      onChange={(e) => setBody(e.target.value)}
+                      placeholder="Escreva uma mensagem..."
+                      disabled={sending}
+                      className="flex-1 min-w-0"
+                    />
+                    <label
+                      htmlFor="chat-anexo"
+                      className={cn(
+                        'inline-flex items-center justify-center rounded-lg border border-muted px-2 py-1.5 text-xs font-medium transition-colors',
+                        sending
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'hover:bg-muted cursor-pointer',
+                      )}
+                      title="Anexar arquivo"
+                    >
+                      <Paperclip className="h-3 w-3 mr-1.5" />
+                      Anexar
+                      <input
+                        id="chat-anexo"
+                        type="file"
+                        accept=".pdf,.doc,.docx,.txt,.csv,.rtf,.odt,.zip,.jpg,.jpeg,.png,.webp,.gif,.mp3,.wav,.ogg,.m4a,.xlsx,.xls"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] ?? null;
+                          if (file && file.size > MAX_FILE_SIZE) {
+                            toast.error('O arquivo e muito grande. Limite: 10 MB.');
+                            return;
+                          }
+                          setSelectedFile(file);
+                        }}
+                        className="hidden"
+                        data-testid="chat-file-input"
+                      />
+                    </label>
+                    {selectedFile && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setSelectedFile(null)}
+                        disabled={sending}
+                        className="ml-1 h-9"
+                      >
+                        Remover
+                      </Button>
+                    )}
+                  </div>
                   <Button
                     type="submit"
-                    disabled={sending || !body.trim()}
+                    disabled={
+                      sending || (!body.trim() && !selectedFile)
+                    }
                     className="h-9"
                     aria-label="Enviar mensagem"
+                    data-testid="chat-send"
                   >
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
+                {selectedFile && !sending && (
+                  <p className="text-xs text-muted-foreground text-right">
+                    {selectedFile.name} ({formatFileSize(selectedFile.size)})
+                  </p>
+                )}
               </form>
             </>
           ) : (
