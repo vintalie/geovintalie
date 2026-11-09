@@ -77,13 +77,13 @@ describe('UserSidebar', () => {
   });
 
   it('alternar painel lateral muda a largura de 16rem para 3rem e vice-versa', () => {
-    const { container } = render(<UserSidebar />);
+    const { container, rerender } = render(<UserSidebar open={true} />);
     const aside = container.querySelector('aside')!;
     expect(aside.style.width).toBe('16rem');
-    const toggle = screen.getByRole('button', { name: /alternar painel lateral/i });
-    userEvent.setup().click(toggle).then(() => {
-      expect(aside.style.width).toBe('3rem');
-    });
+    rerender(<UserSidebar open={false} />);
+    expect(aside.style.width).toBe('3rem');
+    rerender(<UserSidebar open={true} />);
+    expect(aside.style.width).toBe('16rem');
   });
 
   it('clicar em Sair faz logout e navega para /login', async () => {
