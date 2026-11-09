@@ -41,12 +41,10 @@ describe('DeleteAccount', () => {
 
     fireEvent.click(triggers[0]);
     console.log('=== AFTER CLICK ===');
-    const triggersAfter = screen.getAllByRole('button', { name: /Confirmar/i });
-    console.log('Trigger count after:', triggersAfter.length);
-    console.log('Any open buttons:', screen.getAllByRole('button').map(b => ({text: b.textContent, role: b.role})));
-    console.log('Heading present?:', screen.queryByRole('heading', { name: /Confirmar exclusão/i })?.textContent);
     await waitFor(() =>
-      expect(screen.getByText(/Confirmar exclusão/i)).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /Confirmar exclusão/i }),
+      ).toBeInTheDocument()
     );
     console.log('=== AFTER WAITFOR ===');
     console.log('Heading after:', screen.getByRole('heading', { name: /Confirmar exclusão/i })?.textContent);
