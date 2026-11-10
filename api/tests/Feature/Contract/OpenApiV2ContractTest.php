@@ -34,6 +34,10 @@ class OpenApiV2ContractTest extends TestCase
     {
         parent::setUp();
         $this->spec = Yaml::parseFile(self::SPEC_PATH);
+
+        // Garante que as feature flags existam (especialmente ff_service_search)
+        // para que endpoints publicos gada por FF respondam 200 no contrato.
+        $this->artisan('db:seed', ['--class' => 'FeatureFlagSeeder']);
     }
 
     /* Contrato ----------------------------------------------------------------- */
