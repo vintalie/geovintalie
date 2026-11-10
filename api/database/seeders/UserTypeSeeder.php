@@ -17,10 +17,10 @@ class UserTypeSeeder extends Seeder
             ['nome' => 'admin'],
             ['nome' => 'user'],
             ['nome' => 'public'],
-            ['nome' => 'consumer'],
-            ['nome' => 'retailer'],
-            ['nome' => 'provider'],
-            ['nome' => 'industry'],
+            ['nome' => 'consumidor'],
+            ['nome' => 'lojista'],
+            ['nome' => 'prestador'],
+            ['nome' => 'indústria'],
         ];
 
         foreach ($roles as $role) {

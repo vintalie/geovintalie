@@ -41,39 +41,39 @@ class UserTypeManagementTest extends TestCase
             'password' => 'senha123',
         ]);
 
-        return ['Authorization', 'Bearer '.$login->json('token')];
+        return ['Authorization' => 'Bearer '.$login->json('token')];
     }
 
     /** CRUD de papéis -------------------------------------------------- */
 
     public function test_admin_lista_papeis_de_usuario(): void
     {
-        $header = $this->authHeader('admin');
+        [$key, $value] = $this->authHeader('admin');
 
-        $this->withHeader(...$header)
+        $this->withHeader($key, $value)
             ->get("{$this->base}/user-types")
             ->assertStatus(200)
             ->assertJsonFragment(['nome' => 'admin'])
-            ->assertJsonFragment(['nome' => 'consumer'])
-            ->assertJsonFragment(['nome' => 'retailer'])
-            ->assertJsonFragment(['nome' => 'provider'])
-            ->assertJsonFragment(['nome' => 'industry']);
+            ->assertJsonFragment(['nome' => 'consumidor'])
+            ->assertJsonFragment(['nome' => 'lojista'])
+            ->assertJsonFragment(['nome' => 'prestador'])
+            ->assertJsonFragment(['nome' => 'indústria']);
     }
 
     public function test_usuario_nao_admin_nao_pode_listar_papeis(): void
     {
-        $header = $this->authHeader('user');
+        [$key, $value] = $this->authHeader('user');
 
-        $this->withHeader(...$header)
+        $this->withHeader($key, $value)
             ->get("{$this->base}/user-types")
             ->assertStatus(403);
     }
 
     public function test_admin_cria_novo_papel(): void
     {
-        $header = $this->authHeader('admin');
+        [$key, $value] = $this->authHeader('admin');
 
-        $this->withHeader(...$header)
+        $this->withHeader($key, $value)
             ->post("{$this->base}/user-types", [
                 'nome' => 'assistente',
                 'descricao' => 'Suporte operacional',
@@ -86,19 +86,19 @@ class UserTypeManagementTest extends TestCase
 
     public function test_nao_cria_papel_com_nome_duplicado(): void
     {
-        $header = $this->authHeader('admin');
+        [$key, $value] = $this->authHeader('admin');
 
-        $this->withHeader(...$header)
+        $this->withHeader($key, $value)
             ->post("{$this->base}/user-types", ['nome' => 'admin'])
             ->assertStatus(422);
     }
 
     public function test_admin_atualiza_papel(): void
     {
-        $tipo = UserType::where('nome', 'industry')->first();
-        $header = $this->authHeader('admin');
+        $tipo = UserType::where('nome', 'indústria')->first();
+        [$key, $value] = $this->authHeader('admin');
 
-        $this->withHeader(...$header)
+        $this->withHeader($key, $value)
             ->patch("{$this->base}/user-types/{$tipo->id}", [
                 'nome' => 'indústria',
                 'descricao' => 'Setor industrial',
@@ -111,10 +111,10 @@ class UserTypeManagementTest extends TestCase
 
     public function test_admin_exclui_papel_sem_usuarios(): void
     {
-        $tipo = UserType::where('nome', 'retailer')->first();
-        $header = $this->authHeader('admin');
+        $tipo = UserType::where('nome', 'lojista')->first();
+        [$key, $value] = $this->authHeader('admin');
 
-        $this->withHeader(...$header)
+        $this->withHeader($key, $value)
             ->delete("{$this->base}/user-types/{$tipo->id}")
             ->assertStatus(204);
 
@@ -129,9 +129,9 @@ class UserTypeManagementTest extends TestCase
             'password' => bcrypt('senha123'),
             'tipo_id' => $tipo->id,
         ]);
-        $header = $this->authHeader('admin');
+        [$key, $value] = $this->authHeader('admin');
 
-        $this->withHeader(...$header)
+        $this->withHeader($key, $value)
             ->delete("{$this->base}/user-types/{$tipo->id}")
             ->assertStatus(409);
 
@@ -141,9 +141,9 @@ class UserTypeManagementTest extends TestCase
     public function test_com_flag_desabilitada_retorna_403(): void
     {
         FeatureFlag::where('name', 'ff_new_user_roles')->update(['enabled' => false]);
-        $header = $this->authHeader('admin');
+        [$key, $value] = $this->authHeader('admin');
 
-        $this->withHeader(...$header)
+        $this->withHeader($key, $value)
             ->post("{$this->base}/user-types", ['nome' => 'xpto'])
             ->assertStatus(403);
     }
@@ -156,15 +156,15 @@ class UserTypeManagementTest extends TestCase
             'email' => 'cliente@teste.com',
             'password' => bcrypt('senha123'),
         ]);
-        $tipo = UserType::where('nome', 'provider')->first();
-        $header = $this->authHeader('admin');
+        $tipo = UserType::where('nome', 'prestador')->first();
+        [$key, $value] = $this->authHeader('admin');
 
-        $this->withHeader(...$header)
+        $this->withHeader($key, $value)
             ->patch("{$this->base}/auth/users/{$usuario->id}/role", [
                 'tipo_id' => $tipo->id,
             ])
             ->assertStatus(200)
-            ->assertJsonFragment(['tipo_nome' => 'provider']);
+            ->assertJsonFragment(['tipo_nome' => 'prestador']);
 
         $this->assertDatabaseHas('users', ['id' => $usuario->id, 'tipo_id' => $tipo->id]);
     }
@@ -175,10 +175,10 @@ class UserTypeManagementTest extends TestCase
             'email' => 'cliente2@teste.com',
             'password' => bcrypt('senha123'),
         ]);
-        $tipo = UserType::where('nome', 'provider')->first();
-        $header = $this->authHeader('user');
+        $tipo = UserType::where('nome', 'prestador')->first();
+        [$key, $value] = $this->authHeader('user');
 
-        $this->withHeader(...$header)
+        $this->withHeader($key, $value)
             ->patch("{$this->base}/auth/users/{$usuario->id}/role", [
                 'tipo_id' => $tipo->id,
             ])

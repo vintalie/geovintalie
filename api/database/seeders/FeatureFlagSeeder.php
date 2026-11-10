@@ -29,14 +29,14 @@ class FeatureFlagSeeder extends Seeder
             [
                 'name' => 'ff_service_search',
                 'description' => 'Habilitar busca com filtros de serviço (Escopo B2)',
-                'enabled' => false,
-                'rollout_percentage' => 0,
+                'enabled' => true,
+                'rollout_percentage' => 100,
             ],
             [
                 'name' => 'ff_new_user_roles',
-                'description' => 'Habilitar novos papéis de usuário (consumer, retailer, provider, industry) (Escopo C1)',
-                'enabled' => false,
-                'rollout_percentage' => 0,
+                'description' => 'Habilitar gerenciamento de novos papéis de usuário (consumer, retailer, provider, industry) (Escopo C1)',
+                'enabled' => true,
+                'rollout_percentage' => 100,
             ],
             [
                 'name' => 'ff_lgpd_consent',
