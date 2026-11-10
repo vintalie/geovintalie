@@ -215,3 +215,58 @@ export interface Review {
   provider?: { id: number; business_name: string };
   reviewer_name?: string;
 }
+
+export interface ServiceCategory {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  parent_id?: number | null;
+  icon?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ServiceListing {
+  id: number;
+  provider_id: number;
+  category_id: number;
+  title: string;
+  description: string;
+  price: number;
+  price_type: string;
+  address: string;
+  city: string;
+  state: string;
+  zip_code?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  is_active: boolean;
+  average_rating: number;
+  total_reviews: number;
+  created_at: string;
+  updated_at: string;
+  provider?: {
+    id: number;
+    business_name: string;
+    user?: { id: number; name: string; email: string } | null;
+  } | null;
+  category?: {
+    id: number;
+    name: string;
+    slug: string;
+  } | null;
+}
+
+export interface SearchFilters {
+  q?: string;
+  category_id?: number;
+  city?: string;
+  state?: string;
+  min_rating?: number;
+  max_rating?: number;
+  min_price?: number;
+  max_price?: number;
+  limit?: number;
+  page?: number;
+}

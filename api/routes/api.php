@@ -156,8 +156,9 @@ Route::prefix('v2')->group(function () {
         Route::get('product-locator', [ProductLocatorController::class, 'index']);
     });
 
-    // Service Search - publico (Escopo B2)
-    Route::get('service-search', [ServiceSearchController::class, 'index']);
+    // Service Search - publico (Escopo B2) - protegido por feature flag ff_service_search (Escopo C4)
+    Route::middleware(['feature.flag:ff_service_search'])
+        ->get('service-search', [ServiceSearchController::class, 'index']);
 
     // Listar avaliacoes recebidas por um prestador (publico, Escopo B5)
     Route::get('service-providers/{provider_id}/evaluations', [ServiceEvaluationController::class, 'byProvider']);

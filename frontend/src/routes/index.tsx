@@ -27,6 +27,7 @@ import DeleteAccount from '../pages/DeleteAccount';
 import Scheduling from '../pages/Scheduling';
 import InternalChat from '../pages/InternalChat';
 import Reviews from '../pages/Reviews';
+import Search from '../pages/Search';
 import Layout from '../components/Layout/Layout';
 import LayoutProducts from '../components/Layout/LayoutProducts';
 // Dentro do <Routes>
@@ -105,6 +106,7 @@ export const AppRoutes = () => {
           <Route path="agendamentos" element={<Scheduling />} />
           <Route path="chat" element={<InternalChat />} />
           <Route path="avaliacoes" element={<Reviews />} />
+          <Route path="busca" element={<Search />} />
           <Route path="/products" element={<ProductsWithStocks />} />
 
         </Route>

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-#[Fillable(['nome'])]
+#[Fillable(['nome', 'descricao'])]
 class UserType extends Model
 {
     use HasFactory;
