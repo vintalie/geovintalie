@@ -22,10 +22,10 @@ use App\Http\Controllers\ProductLocatorController;
 use App\Http\Controllers\FeatureFlagController;
 use App\Http\Controllers\GoogleBusinessController;
 use App\Http\Controllers\ServiceSearchController;
-use App\Http\Controllers\AppointmentsController;
+use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\ReviewController;
-use App\Http\Controllers\ConversationsController;
-use App\Http\Controllers\MessagesController;
+use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PublicPropertyController;
 use App\Http\Controllers\UserConsentController;
 
@@ -114,39 +114,39 @@ Route::prefix('v2')->group(function () {
         // Escopo B4 - Agendamentos e Chat Interno
         // ============================================================================
 
-        // Agendamentos (cliente cria; prestador atualiza status) - implementacao unificada em AppointmentsController
-        Route::get('appointments', [AppointmentsController::class, 'index']);
-        Route::post('appointments', [AppointmentsController::class, 'store']);
-        Route::get('appointments/{appointment}', [AppointmentsController::class, 'show']);
-        Route::put('appointments/{appointment}', [AppointmentsController::class, 'update']);
-        Route::delete('appointments/{appointment}', [AppointmentsController::class, 'destroy']);
+        // Agendamentos (cliente cria; prestador aceita/recusa) - implementacao unificada em AppointmentController
+        Route::get('appointments', [AppointmentController::class, 'index']);
+        Route::post('appointments', [AppointmentController::class, 'store']);
+        Route::get('appointments/{appointment}', [AppointmentController::class, 'show']);
+        Route::put('appointments/{appointment}', [AppointmentController::class, 'update']);
+        Route::delete('appointments/{appointment}', [AppointmentController::class, 'destroy']);
 
-        // Conversas e mensagens de chat interno (cliente <-> prestador) - Escopo B4 (ff_chat) - implementacao unificada em ConversationsController/MessagesController
-        Route::get('conversations', [ConversationsController::class, 'index']);
-        Route::post('conversations', [ConversationsController::class, 'store']);
-        Route::get('conversations/{conversation}', [ConversationsController::class, 'show']);
-        Route::post('conversations/{conversation}/messages', [MessagesController::class, 'store']);
-        Route::get('messages', [MessagesController::class, 'index']);
-        Route::post('messages/{message}/read', [MessagesController::class, 'markRead']);
+        // Conversas e mensagens de chat interno (cliente <-> prestador) - Escopo B4 (ff_chat) - implementacao unificada em ConversationController/MessageController
+        Route::get('conversations', [ConversationController::class, 'index']);
+        Route::post('conversations', [ConversationController::class, 'store']);
+        Route::get('conversations/{conversation}', [ConversationController::class, 'show']);
+        Route::post('conversations/{conversation}/messages', [MessageController::class, 'store']);
+        Route::get('messages', [MessageController::class, 'index']);
+        Route::post('messages/{message}/read', [MessageController::class, 'markRead']);
 
         // Agendamentos e Chat Interno (Escopo B4) - autenticado
-        Route::get('agendamentos', [AppointmentsController::class, 'index']);
-        Route::post('agendamentos', [AppointmentsController::class, 'store']);
-        Route::get('agendamentos/{appointment}', [AppointmentsController::class, 'show']);
-        Route::patch('agendamentos/{appointment}', [AppointmentsController::class, 'update']);
-        Route::delete('agendamentos/{appointment}', [AppointmentsController::class, 'destroy']);
+        Route::get('agendamentos', [AppointmentController::class, 'index']);
+        Route::post('agendamentos', [AppointmentController::class, 'store']);
+        Route::get('agendamentos/{appointment}', [AppointmentController::class, 'show']);
+        Route::patch('agendamentos/{appointment}', [AppointmentController::class, 'update']);
+        Route::delete('agendamentos/{appointment}', [AppointmentController::class, 'destroy']);
 
         // Conversas (Escopo B4)
-        Route::get('conversas', [ConversationsController::class, 'index']);
-        Route::post('conversas', [ConversationsController::class, 'store']);
-        Route::post('conversas/open', [ConversationsController::class, 'open']);
-        Route::get('conversas/{conversation}', [ConversationsController::class, 'show']);
+        Route::get('conversas', [ConversationController::class, 'index']);
+        Route::post('conversas', [ConversationController::class, 'store']);
+        Route::post('conversas/open', [ConversationController::class, 'open']);
+        Route::get('conversas/{conversation}', [ConversationController::class, 'show']);
 
         // Mensagens (Escopo B4)
-        Route::get('conversas/{conversation}/mensagens', [MessagesController::class, 'index']);
-        Route::post('conversas/{conversation}/mensagens', [MessagesController::class, 'store']);
+        Route::get('conversas/{conversation}/mensagens', [MessageController::class, 'index']);
+        Route::post('conversas/{conversation}/mensagens', [MessageController::class, 'store']);
         // Download de anexo de mensagem (Escopo B6)
-        Route::get('messages/{message}/file', [MessagesController::class, 'download']);
+        Route::get('messages/{message}/file', [MessageController::class, 'download']);
     });
 
     // Service Categories - publico (Escopo B1, B2)

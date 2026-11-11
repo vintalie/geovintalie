@@ -51,6 +51,12 @@ class FeatureFlagSeeder extends Seeder
                 'rollout_percentage' => 100,
             ],
             [
+                'name' => 'ff_agendamento',
+                'description' => 'Habilitar agendamentos de servico (Escopo B4)',
+                'enabled' => true,
+                'rollout_percentage' => 100,
+            ],
+            [
                 'name' => 'ff_appointment',
                 'description' => 'Habilitar agendamentos de servico (Escopo B4)',
                 'enabled' => true,
