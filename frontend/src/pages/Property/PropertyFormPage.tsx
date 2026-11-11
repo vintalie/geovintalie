@@ -38,7 +38,7 @@ interface LocationOption {
 }
 
 const LocationFormPage = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ string }>();
   const navigate = useNavigate();
   const [form, setForm] = useState<Partial<Property> & {
     country_id?: number | null;
@@ -81,10 +81,10 @@ const LocationFormPage = () => {
     streets: [],
   });
   const [locationsLoading, setLocationsLoading] = useState(false);
+  const [openField, setOpenField] = useState<string | null>(null);
 
   const isEdit = !!id;
 
-  // Opções disponíveis em cada nível, filtradas pelo contexto (país → estado → cidade → bairro → rua).
   const availableStates = useMemo(
     () =>
       form.country_id == null
@@ -175,7 +175,7 @@ const LocationFormPage = () => {
         })),
       });
     } catch (err) {
-      setError('Erro ao carregar localizações.');
+      setError('Não foi possível carregar países, estados e cidades.');
     } finally {
       setLocationsLoading(false);
     }
@@ -198,7 +198,7 @@ const LocationFormPage = () => {
         street_id: data.street_id ?? 0,
       });
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Não foi possível carregar a propriedade.');
     }
   };
 
@@ -208,6 +208,7 @@ const LocationFormPage = () => {
 
   const handleLocationChange = (field: string, id: number | null) => {
     setForm((prev) => ({ ...prev, [field]: id }));
+    setOpenField(null);
     if (field === 'country_id') {
       setForm((prev) => ({
         ...prev,
@@ -236,12 +237,10 @@ const LocationFormPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
     try {
       const payload: any = { ...form };
-      // Os ids de país/estado/cidade/bairro ficam no formulário apenas como
-      // contexto de cascata; o vínculo salvo na propriedade é o da rua selecionada,
-      // que carrega a cadeia completa (bairro → cidade → estado → país).
       delete payload.country_id;
       delete payload.state_id;
       delete payload.city_id;
@@ -254,7 +253,10 @@ const LocationFormPage = () => {
       }
       navigate('/properties');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao salvar propriedade.');
+      setError(
+        err.response?.data?.message ||
+          'Não foi possível salvar a propriedade. Verifique os dados e tente novamente.',
+      );
     } finally {
       setLoading(false);
     }
@@ -265,23 +267,23 @@ const LocationFormPage = () => {
   }
 
   return (
-    <main className="min-h-screen bg-background p-4 md:p-8 space-y-6">
+    <main className="min-h-screen bg-background p-4 md:p-8 space-y-8">
       <div className="fade-in" style={{ animation: 'fadeIn 0.3s ease-out' }}>
         <Card className="shadow-card border">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
             <div>
-              <CardTitle className="text-xl font-bold">
-                {isEdit ? 'Editar Propriedade' : 'Nova Propriedade'}
+              <CardTitle className="text-xl font-bold tracking-tight">
+                {isEdit ? 'Editar propriedade' : 'Nova propriedade'}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="mt-1 text-sm">
                 {isEdit
                   ? 'Atualize os dados da propriedade.'
-                  : 'Cadastre uma nova propriedade no sistema.'}
+                  : 'Preencha os dados para cadastrar uma nova propriedade.'}
               </CardDescription>
             </div>
             <Button asChild variant="outline" size="sm">
               <a href="/properties">
-                <MapPin className="h-4 w-4 mr-2" /> Voltar
+                <MapPin className="h-4 w-4 mr-2" /> Voltar à lista
               </a>
             </Button>
           </CardHeader>
@@ -291,9 +293,10 @@ const LocationFormPage = () => {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="pt-0">
+            <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
+              {/* Dados principais */}
+              <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="name">Nome da propriedade</Label>
                   <Input
@@ -304,6 +307,7 @@ const LocationFormPage = () => {
                     value={form.name || ''}
                     onChange={handleChange}
                     required
+                    className="focus:ring-2 focus:ring-ring"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -316,14 +320,21 @@ const LocationFormPage = () => {
                     value={form.n_property || ''}
                     onChange={handleChange}
                     required
+                    className="focus:ring-2 focus:ring-ring"
                   />
                 </div>
-              </div>
+              </section>
 
-              <div className="border rounded-lg p-4 bg-muted/50">
-                <h3 className="text-sm font-semibold text-foreground mb-4">
-                  Localização
-                </h3>
+              {/* Localização */}
+              <section
+                className="border rounded-lg p-6 bg-muted/50 space-y-6"
+              >
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Localização
+                  </h3>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <LocationField
                     label="País"
@@ -332,7 +343,11 @@ const LocationFormPage = () => {
                     options={locations.countries}
                     isLoading={locationsLoading}
                     onCreate={(name) => createCountryAndSelect(name)}
-                    placeholder="Buscar país..."
+                    placeholder="Buscar país…"
+                    open={openField === 'country'}
+                    onOpenChange={(open) =>
+                      setOpenField(open ? 'country' : null)
+                    }
                   />
                   <LocationField
                     label="Estado"
@@ -341,8 +356,10 @@ const LocationFormPage = () => {
                     options={availableStates}
                     isLoading={locationsLoading}
                     disabled={!form.country_id}
-                    placeholder="Selecione o país primeiro..."
+                    placeholder="Selecione o país primeiro…"
                     onCreate={(name) => createStateAndSelect(name)}
+                    open={openField === 'state'}
+                    onOpenChange={(open) => setOpenField(open ? 'state' : null)}
                   />
                   <LocationField
                     label="Cidade"
@@ -351,8 +368,10 @@ const LocationFormPage = () => {
                     options={availableCities}
                     isLoading={locationsLoading}
                     disabled={!form.state_id}
-                    placeholder="Selecione o estado primeiro..."
+                    placeholder="Selecione o estado primeiro…"
                     onCreate={(name) => createCityAndSelect(name)}
+                    open={openField === 'city'}
+                    onOpenChange={(open) => setOpenField(open ? 'city' : null)}
                   />
                   <LocationField
                     label="Bairro"
@@ -363,8 +382,12 @@ const LocationFormPage = () => {
                     options={availableNeighborhoods}
                     isLoading={locationsLoading}
                     disabled={!form.city_id}
-                    placeholder="Selecione a cidade primeiro..."
+                    placeholder="Selecione a cidade primeiro…"
                     onCreate={(name) => createNeighborhoodAndSelect(name)}
+                    open={openField === 'neighborhood'}
+                    onOpenChange={(open) =>
+                      setOpenField(open ? 'neighborhood' : null)
+                    }
                   />
                   <LocationField
                     label="Rua"
@@ -373,13 +396,16 @@ const LocationFormPage = () => {
                     options={availableStreets}
                     isLoading={locationsLoading}
                     disabled={!form.neighborhood_id}
-                    placeholder="Selecione o bairro primeiro..."
+                    placeholder="Selecione o bairro primeiro…"
                     onCreate={(name) => createStreetAndSelect(name)}
+                    open={openField === 'street'}
+                    onOpenChange={(open) => setOpenField(open ? 'street' : null)}
                   />
                 </div>
-              </div>
+              </section>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Contato */}
+              <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="complement">Complemento</Label>
                   <Input
@@ -389,6 +415,7 @@ const LocationFormPage = () => {
                     placeholder="Ex: Apto 101"
                     value={form.complement || ''}
                     onChange={handleChange}
+                    className="focus:ring-2 focus:ring-ring"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -401,11 +428,11 @@ const LocationFormPage = () => {
                     value={form.contact1_email || ''}
                     onChange={handleChange}
                     required
+                    className="focus:ring-2 focus:ring-ring"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              </section>
+              <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="contact2_email">E-mail secundário</Label>
                   <Input
@@ -415,12 +442,11 @@ const LocationFormPage = () => {
                     placeholder="contato@exemplo.com"
                     value={form.contact2_email || ''}
                     onChange={handleChange}
+                    className="focus:ring-2 focus:ring-ring"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="additional_info">
-                    Informações adicionais
-                  </Label>
+                  <Label htmlFor="additional_info">Informações adicionais</Label>
                   <Input
                     id="additional_info"
                     name="additional_info"
@@ -428,13 +454,15 @@ const LocationFormPage = () => {
                     placeholder="Informações complementares"
                     value={form.additional_info || ''}
                     onChange={handleChange}
+                    className="focus:ring-2 focus:ring-ring"
                   />
                 </div>
-              </div>
+              </section>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Telefones */}
+              <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="number1">Telefone 1</Label>
+                  <Label htmlFor="number1">Telefone principal</Label>
                   <Input
                     id="number1"
                     name="number1"
@@ -443,6 +471,7 @@ const LocationFormPage = () => {
                     value={form.number1 || ''}
                     onChange={handleChange}
                     required
+                    className="focus:ring-2 focus:ring-ring"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -454,6 +483,7 @@ const LocationFormPage = () => {
                     placeholder="(11) 99999-9999"
                     value={form.number2 || ''}
                     onChange={handleChange}
+                    className="focus:ring-2 focus:ring-ring"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -465,11 +495,13 @@ const LocationFormPage = () => {
                     placeholder="(11) 99999-9999"
                     value={form.number3 || ''}
                     onChange={handleChange}
+                    className="focus:ring-2 focus:ring-ring"
                   />
                 </div>
-              </div>
+              </section>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Imagens */}
+              <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="main_image">Imagem principal (URL)</Label>
                   <Input
@@ -479,6 +511,7 @@ const LocationFormPage = () => {
                     placeholder="https://exemplo.com/imagem.jpg"
                     value={form.main_image || ''}
                     onChange={handleChange}
+                    className="focus:ring-2 focus:ring-ring"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -490,12 +523,14 @@ const LocationFormPage = () => {
                     placeholder="https://exemplo.com/capa.jpg"
                     value={form.cover_image || ''}
                     onChange={handleChange}
+                    className="focus:ring-2 focus:ring-ring"
                   />
                 </div>
-              </div>
+              </section>
 
+              {/* Conteúdo */}
               <div className="flex flex-col gap-2">
-                <Label htmlFor="content_html">Conteúdo HTML</Label>
+                <Label htmlFor="content_html">Conteúdo (HTML)</Label>
                 <Input
                   id="content_html"
                   name="content_html"
@@ -503,12 +538,17 @@ const LocationFormPage = () => {
                   placeholder="Descrição em HTML"
                   value={form.content_html || ''}
                   onChange={handleChange}
+                  className="focus:ring-2 focus:ring-ring"
                 />
               </div>
 
-              <CardFooter>
-                <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? 'Salvando...' : 'Salvar Propriedade'}
+              <CardFooter className="pt-6">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full"
+                >
+                  {loading ? 'Salvando…' : 'Salvar propriedade'}
                 </Button>
               </CardFooter>
             </form>
@@ -527,6 +567,8 @@ const LocationFormPage = () => {
     onCreate,
     disabled,
     placeholder,
+    open,
+    onOpenChange,
   }: {
     label: string;
     value: number | null;
@@ -536,8 +578,9 @@ const LocationFormPage = () => {
     onCreate?: (name: string) => void;
     disabled?: boolean;
     placeholder?: string;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
   }) {
-    const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredOptions = options.filter(
@@ -547,32 +590,36 @@ const LocationFormPage = () => {
     );
 
     const selectedOption = options.find((opt) => opt.id === value);
+    const isOpen = open ?? false;
 
     const handleCreate = () => {
       if (!searchTerm.trim() || !onCreate) return;
       onCreate(searchTerm.trim());
       setSearchTerm('');
-      setIsOpen(false);
     };
 
     return (
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-2">
         <Label htmlFor={`loc-${label.toLowerCase()}`}>{label}</Label>
         <div className="relative">
           <input
             id={`loc-${label.toLowerCase()}`}
             type="text"
-            placeholder={placeholder || `Buscar ${label.toLowerCase()}...`}
-            value={searchTerm}
+            placeholder={placeholder || `Buscar ${label.toLowerCase()}…`}
+            value={isOpen ? searchTerm : selectedOption?.name || ''}
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              setIsOpen(true);
+              onOpenChange?.(true);
             }}
-            onFocus={() => setIsOpen(true)}
+            onFocus={() => onOpenChange?.(true)}
+            onBlur={() => {
+              // Fecha só depois de dar tempo para clicar em uma opção
+              setTimeout(() => onOpenChange?.(false), 200);
+            }}
             disabled={disabled || isLoading}
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           />
-          {selectedOption && (
+          {selectedOption && !isOpen && (
             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
               {selectedOption.name}
             </span>
@@ -581,29 +628,28 @@ const LocationFormPage = () => {
             <Spinner size="sm" className="absolute right-2 top-1/2 -translate-y-1/2" />
           )}
           {isOpen && !isLoading && (
-            <div className="w-full max-h-60 overflow-y-auto border border-input rounded-md shadow-md z-50 bg-background">
-              {searchTerm.trim() && !filteredOptions.some((o) => o.id === value) && (
-                <div
-                  onClick={() => handleCreate()}
-                  className="cursor-pointer text-sm text-primary p-2 hover:bg-accent/50"
-                >
-                  <Plus className="mr-2 h-3 w-3 inline" />
-                  Criar "{searchTerm}" como novo {label.toLowerCase()}
-                </div>
-              )}
+            <div className="w-full max-h-60 overflow-y-auto border border-input rounded-md shadow-md z-50 bg-background mt-1">
+              {searchTerm.trim() &&
+                !filteredOptions.some((o) => o.id === value) && (
+                  <div
+                    onClick={handleCreate}
+                    className="cursor-pointer text-sm text-primary p-2 hover:bg-accent/50"
+                  >
+                    <Plus className="mr-2 h-3 w-3 inline" />
+                    Criar “{searchTerm}” como novo {label.toLowerCase()}
+                  </div>
+                )}
               <div className="-mx-1 my-1 h-px bg-muted" />
               {filteredOptions.map((opt) => (
                 <div
                   key={opt.id}
                   onMouseDown={(e) => {
-                    // Impede que o clique na opção tire o foco do input e feche
-                    // o dropdown antes da seleção ser confirmada.
-                    e.preventDefault();
+                    e.preventDefault(); // mantém o foco no input para o onClick disparar
                   }}
                   onClick={() => {
                     onChange(opt.id);
                     setSearchTerm(opt.name);
-                    setIsOpen(false);
+                    onOpenChange?.(false);
                   }}
                   className="cursor-pointer text-sm p-2 hover:bg-accent/50"
                 >
