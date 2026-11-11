@@ -37,9 +37,15 @@ interface LocationOption {
   parent_id?: number | null;
 }
 
+interface FieldError {
+  message: string;
+  anchor?: string;
+}
+
 const LocationFormPage = () => {
-  const { id } = useParams<{ string }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
   const [form, setForm] = useState<Partial<Property> & {
     country_id?: number | null;
     state_id?: number | null;
@@ -65,8 +71,9 @@ const LocationFormPage = () => {
     city_id: null,
     neighborhood_id: null,
   });
+
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<FieldError | null>(null);
   const [locations, setLocations] = useState<{
     countries: LocationOption[];
     states: LocationOption[];
@@ -85,6 +92,7 @@ const LocationFormPage = () => {
 
   const isEdit = !!id;
 
+  // Cascata real: cada nível filtra pelo pai selecionado.
   const availableStates = useMemo(
     () =>
       form.country_id == null
@@ -121,7 +129,7 @@ const LocationFormPage = () => {
     loadLocations();
   }, [isEdit]);
 
-  // Pré-seleciona Brasil ao abrir o formulário (cadastro novo).
+  // Pré-seleciona Brasil ao abrir o formulário de cadastro novo.
   useEffect(() => {
     if (isEdit || form.country_id || locations.countries.length === 0) return;
     const brazil = locations.countries.find(
@@ -138,6 +146,7 @@ const LocationFormPage = () => {
 
   const loadLocations = useCallback(async () => {
     setLocationsLoading(true);
+    setError(null);
     try {
       const [cResp, sResp, ciResp, nResp, stResp] = await Promise.all([
         getCountries({ page: 1, per_page: 100 }),
@@ -175,13 +184,17 @@ const LocationFormPage = () => {
         })),
       });
     } catch (err) {
-      setError('Não foi possível carregar países, estados e cidades.');
+      setError({
+        message: 'Não foi possível carregar países, estados e cidades. Tente novamente em instantes.',
+        anchor: 'country',
+      });
     } finally {
       setLocationsLoading(false);
     }
   }, []);
 
   const loadProperty = async () => {
+    setError(null);
     try {
       const response = await getProperty(Number(id));
       const data =
@@ -198,12 +211,19 @@ const LocationFormPage = () => {
         street_id: data.street_id ?? 0,
       });
     } catch (err: any) {
-      setError(err.message || 'Não foi possível carregar a propriedade.');
+      setError({
+        message: 'Não foi possível carregar os dados da propriedade. Verifique se ela ainda existe.',
+        anchor: 'name',
+      });
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    // Limpa erro de campo quando o usuário começa a digitar
+    if (error?.anchor === e.target.name) {
+      setError(null);
+    }
   };
 
   const handleLocationChange = (field: string, id: number | null) => {
@@ -237,8 +257,31 @@ const LocationFormPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError(null);
     setLoading(true);
+
+    // Validação básica com mensagens acionáveis
+    if (!form.name?.trim()) {
+      setError({ message: 'Informe o nome da propriedade.', anchor: 'name' });
+      setLoading(false);
+      return;
+    }
+    if (!form.number1?.trim()) {
+      setError({ message: 'Informe pelo menos um telefone de contato.', anchor: 'number1' });
+      setLoading(false);
+      return;
+    }
+    if (!form.contact1_email?.trim()) {
+      setError({ message: 'Informe o e-mail principal da loja.', anchor: 'contact1_email' });
+      setLoading(false);
+      return;
+    }
+    if (!form.street_id) {
+      setError({ message: 'Selecione a rua da propriedade.', anchor: 'street' });
+      setLoading(false);
+      return;
+    }
+
     try {
       const payload: any = { ...form };
       delete payload.country_id;
@@ -253,10 +296,12 @@ const LocationFormPage = () => {
       }
       navigate('/properties');
     } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
+      setError({
+        message:
+          err.response?.data?.message ||
           'Não foi possível salvar a propriedade. Verifique os dados e tente novamente.',
-      );
+        anchor: undefined,
+      });
     } finally {
       setLoading(false);
     }
@@ -267,38 +312,42 @@ const LocationFormPage = () => {
   }
 
   return (
-    <main className="min-h-screen bg-background p-4 md:p-8 space-y-8">
+    <main className="min-h-screen bg-background p-4 md:p-8 space-y-8 font-sans">
       <div className="fade-in" style={{ animation: 'fadeIn 0.3s ease-out' }}>
-        <Card className="shadow-card border">
+        <Card className="border shadow-card">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <div>
-              <CardTitle className="text-xl font-bold tracking-tight">
+              <CardTitle className="text-xl font-display font-bold tracking-tight">
                 {isEdit ? 'Editar propriedade' : 'Nova propriedade'}
               </CardTitle>
-              <CardDescription className="mt-1 text-sm">
+              <CardDescription className="mt-1 text-sm text-muted-foreground">
                 {isEdit
                   ? 'Atualize os dados da propriedade.'
                   : 'Preencha os dados para cadastrar uma nova propriedade.'}
               </CardDescription>
             </div>
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="sm" className="focus-visible:ring-2 focus-visible:ring-ring">
               <a href="/properties">
                 <MapPin className="h-4 w-4 mr-2" /> Voltar à lista
               </a>
             </Button>
           </CardHeader>
+
           {error && (
             <Alert variant="destructive" className="mb-4">
               <AlertTitle>Erro</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{error.message}</AlertDescription>
             </Alert>
           )}
+
           <CardContent className="pt-0">
-            <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
+            <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl">
               {/* Dados principais */}
               <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="name">Nome da propriedade</Label>
+                  <Label htmlFor="name" className="font-medium">
+                    Nome da propriedade <span className="text-destructive text-xs">*</span>
+                  </Label>
                   <Input
                     id="name"
                     name="name"
@@ -307,11 +356,13 @@ const LocationFormPage = () => {
                     value={form.name || ''}
                     onChange={handleChange}
                     required
-                    className="focus:ring-2 focus:ring-ring"
+                    className="focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="n_property">Número da propriedade</Label>
+                  <Label htmlFor="n_property" className="font-medium">
+                    Número da propriedade <span className="text-destructive text-xs">*</span>
+                  </Label>
                   <Input
                     id="n_property"
                     name="n_property"
@@ -320,15 +371,13 @@ const LocationFormPage = () => {
                     value={form.n_property || ''}
                     onChange={handleChange}
                     required
-                    className="focus:ring-2 focus:ring-ring"
+                    className="focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
               </section>
 
               {/* Localização */}
-              <section
-                className="border rounded-lg p-6 bg-muted/50 space-y-6"
-              >
+              <section className="border rounded-lg p-6 bg-muted/50 space-y-6">
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
                   <h3 className="text-sm font-semibold text-foreground">
@@ -415,11 +464,13 @@ const LocationFormPage = () => {
                     placeholder="Ex: Apto 101"
                     value={form.complement || ''}
                     onChange={handleChange}
-                    className="focus:ring-2 focus:ring-ring"
+                    className="focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="contact1_email">E-mail principal</Label>
+                  <Label htmlFor="contact1_email" className="font-medium">
+                    E-mail principal <span className="text-destructive text-xs">*</span>
+                  </Label>
                   <Input
                     id="contact1_email"
                     name="contact1_email"
@@ -428,11 +479,9 @@ const LocationFormPage = () => {
                     value={form.contact1_email || ''}
                     onChange={handleChange}
                     required
-                    className="focus:ring-2 focus:ring-ring"
+                    className="focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
-              </section>
-              <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="contact2_email">E-mail secundário</Label>
                   <Input
@@ -442,7 +491,7 @@ const LocationFormPage = () => {
                     placeholder="contato@exemplo.com"
                     value={form.contact2_email || ''}
                     onChange={handleChange}
-                    className="focus:ring-2 focus:ring-ring"
+                    className="focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -454,7 +503,7 @@ const LocationFormPage = () => {
                     placeholder="Informações complementares"
                     value={form.additional_info || ''}
                     onChange={handleChange}
-                    className="focus:ring-2 focus:ring-ring"
+                    className="focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
               </section>
@@ -462,7 +511,9 @@ const LocationFormPage = () => {
               {/* Telefones */}
               <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="number1">Telefone principal</Label>
+                  <Label htmlFor="number1" className="font-medium">
+                    Telefone principal <span className="text-destructive text-xs">*</span>
+                  </Label>
                   <Input
                     id="number1"
                     name="number1"
@@ -471,7 +522,7 @@ const LocationFormPage = () => {
                     value={form.number1 || ''}
                     onChange={handleChange}
                     required
-                    className="focus:ring-2 focus:ring-ring"
+                    className="focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -483,7 +534,7 @@ const LocationFormPage = () => {
                     placeholder="(11) 99999-9999"
                     value={form.number2 || ''}
                     onChange={handleChange}
-                    className="focus:ring-2 focus:ring-ring"
+                    className="focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -495,7 +546,7 @@ const LocationFormPage = () => {
                     placeholder="(11) 99999-9999"
                     value={form.number3 || ''}
                     onChange={handleChange}
-                    className="focus:ring-2 focus:ring-ring"
+                    className="focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
               </section>
@@ -511,7 +562,7 @@ const LocationFormPage = () => {
                     placeholder="https://exemplo.com/imagem.jpg"
                     value={form.main_image || ''}
                     onChange={handleChange}
-                    className="focus:ring-2 focus:ring-ring"
+                    className="focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -523,7 +574,7 @@ const LocationFormPage = () => {
                     placeholder="https://exemplo.com/capa.jpg"
                     value={form.cover_image || ''}
                     onChange={handleChange}
-                    className="focus:ring-2 focus:ring-ring"
+                    className="focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
               </section>
@@ -538,7 +589,7 @@ const LocationFormPage = () => {
                   placeholder="Descrição em HTML"
                   value={form.content_html || ''}
                   onChange={handleChange}
-                  className="focus:ring-2 focus:ring-ring"
+                  className="focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
 
@@ -546,7 +597,7 @@ const LocationFormPage = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full"
+                  className="w-full focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {loading ? 'Salvando…' : 'Salvar propriedade'}
                 </Button>
@@ -613,11 +664,15 @@ const LocationFormPage = () => {
             }}
             onFocus={() => onOpenChange?.(true)}
             onBlur={() => {
-              // Fecha só depois de dar tempo para clicar em uma opção
+              // Fecha só depois de dar tempo para o clique na opção registrar
               setTimeout(() => onOpenChange?.(false), 200);
             }}
             disabled={disabled || isLoading}
-            className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            className="
+              flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-ring
+              disabled:cursor-not-allowed disabled:opacity-50
+            "
           />
           {selectedOption && !isOpen && (
             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
@@ -628,10 +683,11 @@ const LocationFormPage = () => {
             <Spinner size="sm" className="absolute right-2 top-1/2 -translate-y-1/2" />
           )}
           {isOpen && !isLoading && (
-            <div className="w-full max-h-60 overflow-y-auto border border-input rounded-md shadow-md z-50 bg-background mt-1">
+            <div className="w-full max-h-60 overflow-y-auto border border-input rounded-md shadow-lg z-50 bg-background mt-1 animate-in fade-in slide-in-from-top-2 duration-100 ease-out">
               {searchTerm.trim() &&
                 !filteredOptions.some((o) => o.id === value) && (
                   <div
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={handleCreate}
                     className="cursor-pointer text-sm text-primary p-2 hover:bg-accent/50"
                   >
@@ -685,7 +741,7 @@ const LocationFormPage = () => {
         handleLocationChange('country_id', newId);
       }
     } catch (err) {
-      setError('Erro ao criar país.');
+      setError({ message: 'Não foi possível criar o país. Tente novamente.', anchor: 'country' });
     }
   }
 
@@ -701,7 +757,7 @@ const LocationFormPage = () => {
         handleLocationChange('state_id', newId);
       }
     } catch (err) {
-      setError('Erro ao criar estado.');
+      setError({ message: 'Não foi possível criar o estado. Tente novamente.', anchor: 'state' });
     }
   }
 
@@ -717,7 +773,7 @@ const LocationFormPage = () => {
         handleLocationChange('city_id', newId);
       }
     } catch (err) {
-      setError('Erro ao criar cidade.');
+      setError({ message: 'Não foi possível criar a cidade. Tente novamente.', anchor: 'city' });
     }
   }
 
@@ -739,7 +795,7 @@ const LocationFormPage = () => {
         handleLocationChange('neighborhood_id', newId);
       }
     } catch (err) {
-      setError('Erro ao criar bairro.');
+      setError({ message: 'Não foi possível criar o bairro. Tente novamente.', anchor: 'neighborhood' });
     }
   }
 
@@ -761,7 +817,7 @@ const LocationFormPage = () => {
         handleLocationChange('street_id', newId);
       }
     } catch (err) {
-      setError('Erro ao criar rua.');
+      setError({ message: 'Não foi possível criar a rua. Tente novamente.', anchor: 'street' });
     }
   }
 };
