@@ -2,11 +2,120 @@
 
 namespace App\Http\Controllers;
 
-/**
- * @deprecated Use ConversationsController (unica implementacao de conversas,
- * Escopo B4). Mantido por compatibilidade com rotas /conversations do contrato v2.
- */
-class ConversationController extends ConversationsController
+use App\Http\Resources\ConversationResource;
+use App\Http\Resources\MessageResource;
+use App\Models\Appointment;
+use App\Models\Conversation;
+use App\Models\FeatureFlag;
+use App\Models\ServiceProvider;
+use Illuminate\Http\Request;
+
+class ConversationController extends Controller
 {
-    // Implementacao unificada em ConversationsController.
+    /**
+     * Lista as conversas do usuario autenticado (cliente ou prestador).
+     */
+    public function index(Request $request)
+    {
+        if (!FeatureFlag::isEnabled('ff_chat')) {
+            abort(403, 'Chat interno nao habilitado.');
+        }
+
+        $conversations = Conversation::with(['client', 'provider.user'])
+            ->forParticipant($request->user()->id)
+            ->latest('updated_at')
+            ->paginate(20);
+
+        return ConversationResource::collection($conversations);
+    }
+
+    /**
+     * Cria (ou retorna existente) uma conversa entre cliente e prestador.
+     * Opcionalmente vincula a um agendamento do cliente.
+     */
+    public function store(Request $request)
+    {
+        if (!FeatureFlag::isEnabled('ff_chat')) {
+            abort(403, 'Chat interno nao habilitado.');
+        }
+
+        $request->validate([
+            'provider_id' => 'required|exists:service_providers,id',
+            'appointment_id' => 'nullable|exists:appointments,id',
+        ]);
+
+        $provider = ServiceProvider::find($request->provider_id);
+        if (!$provider || !$provider->is_active) {
+            abort(403, 'Prestador de servico nao disponível.');
+        }
+
+        $appointmentId = $request->appointment_id;
+        if ($appointmentId) {
+            $appointment = Appointment::where('id', $appointmentId)
+                ->where('client_id', $request->user()->id)
+                ->first();
+            if (!$appointment) {
+                abort(403, 'Agendamento invalido ou nao pertence a este cliente.');
+            }
+        }
+
+        // Retorna conversa existente para o mesmo par cliente x prestador x agendamento
+        $conversation = Conversation::where('client_id', $request->user()->id)
+            ->where('provider_id', $provider->id)
+            ->where('appointment_id', $appointmentId ?? null)
+            ->first();
+
+        if (!$conversation) {
+            $conversation = Conversation::create([
+                'client_id' => $request->user()->id,
+                'provider_id' => $provider->id,
+                'appointment_id' => $appointmentId,
+            ]);
+        }
+
+        return (new ConversationResource($conversation->load('client', 'provider.user')))->response($request)->setStatusCode(201);
+    }
+
+    /**
+     * Exibe uma conversa com suas mensagens (apenas participantes).
+     */
+    public function show(Request $request, Conversation $conversation)
+    {
+        if (!FeatureFlag::isEnabled('ff_chat')) {
+            abort(403, 'Chat interno nao habilitado.');
+        }
+
+        $this->authorizeParticipant($request, $conversation);
+
+        return new ConversationResource($conversation->load([
+            'client',
+            'provider.user',
+            'messages.sender',
+            'appointment.client',
+            'appointment.provider.user',
+        ]));
+    }
+
+    /**
+     * Inicia uma nova conversa vazia (sem agendamento vinculado).
+     * Atalho para o frontend abrir o chat direto com um prestador.
+     */
+    public function open(Request $request)
+    {
+        return $this->store($request);
+    }
+
+    /**
+     * Garante que o usuario autenticado participa da conversa.
+     */
+    private function authorizeParticipant(Request $request, Conversation $conversation): void
+    {
+        $user = $request->user();
+        $isClient = $conversation->client_id === $user->id;
+        $isProvider = $conversation->provider->user_id === $user->id;
+
+        if (!$isClient && !$isProvider) {
+            abort(403, 'Acesso negado. Voce nao participa desta conversa.');
+        }
+    }
 }

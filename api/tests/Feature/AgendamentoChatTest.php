@@ -335,4 +335,140 @@ class AgendamentoChatTest extends TestCase
             ->get("{$this->base}/conversas/999999/mensagens")
             ->assertStatus(404);
     }
+
+    public function test_prestador_pode_aceitar_agendamento(): void
+    {
+        $clientToken = $this->obterToken('user');
+        $prestador = $this->criarPrestadorAtivo();
+        $providerToken = $this->obterTokenParaUsuario($prestador['usuario']);
+
+        $agendamento = $this->criarAgendamento($clientToken, $prestador['provider']->id);
+        $id = $agendamento->json('data.id');
+
+        $this->withHeader('Authorization', "Bearer {$providerToken}")
+            ->patch("{$this->base}/agendamentos/{$id}", ['status' => 'aceito'])
+            ->assertStatus(200)
+            ->assertJsonFragment(['status' => 'aceito']);
+
+        $this->assertDatabaseHas('appointments', ['id' => $id, 'status' => 'aceito']);
+    }
+
+    public function test_prestador_pode_recusar_agendamento(): void
+    {
+        $clientToken = $this->obterToken('user');
+        $prestador = $this->criarPrestadorAtivo();
+        $providerToken = $this->obterTokenParaUsuario($prestador['usuario']);
+
+        $agendamento = $this->criarAgendamento($clientToken, $prestador['provider']->id);
+        $id = $agendamento->json('data.id');
+
+        $this->withHeader('Authorization', "Bearer {$providerToken}")
+            ->patch("{$this->base}/agendamentos/{$id}", ['status' => 'recusado'])
+            ->assertStatus(200)
+            ->assertJsonFragment(['status' => 'recusado']);
+
+        $this->assertDatabaseHas('appointments', ['id' => $id, 'status' => 'recusado']);
+    }
+
+    public function test_prestador_pode_concluir_agendamento_aceito(): void
+    {
+        $clientToken = $this->obterToken('user');
+        $prestador = $this->criarPrestadorAtivo();
+        $providerToken = $this->obterTokenParaUsuario($prestador['usuario']);
+
+        $agendamento = $this->criarAgendamento($clientToken, $prestador['provider']->id);
+        $id = $agendamento->json('data.id');
+
+        $this->withHeader('Authorization', "Bearer {$providerToken}")
+            ->patch("{$this->base}/agendamentos/{$id}", ['status' => 'aceito'])
+            ->assertStatus(200);
+
+        $this->withHeader('Authorization', "Bearer {$providerToken}")
+            ->patch("{$this->base}/agendamentos/{$id}", ['status' => 'concluido'])
+            ->assertStatus(200)
+            ->assertJsonFragment(['status' => 'concluido']);
+
+        $this->assertDatabaseHas('appointments', ['id' => $id, 'status' => 'concluido']);
+    }
+
+    public function test_cliente_nao_pode_aceitar_agendamento(): void
+    {
+        $clientToken = $this->obterToken('user');
+        $prestador = $this->criarPrestadorAtivo();
+
+        $agendamento = $this->criarAgendamento($clientToken, $prestador['provider']->id);
+        $id = $agendamento->json('data.id');
+
+        $this->withHeader('Authorization', "Bearer {$clientToken}")
+            ->patch("{$this->base}/agendamentos/{$id}", ['status' => 'aceito'])
+            ->assertStatus(403);
+    }
+
+    public function test_rotas_em_ingles_funcionam_para_agendamentos_e_conversas(): void
+    {
+        $clientToken = $this->obterToken('user');
+        $prestador = $this->criarPrestadorAtivo();
+
+        // Endpoint em ingles /api/v2/appointments
+        $criou = $this->withHeader('Authorization', "Bearer {$clientToken}")
+            ->post("{$this->base}/appointments", [
+                'provider_id' => $prestador['provider']->id,
+                'date' => now()->addDays(2)->toDateString(),
+                'time' => '14:00',
+                'valor' => 150.00,
+            ]);
+        $criou->assertStatus(201);
+        $id = $criou->json('data.id');
+
+        $this->withHeader('Authorization', "Bearer {$clientToken}")
+            ->get("{$this->base}/appointments/{$id}")
+            ->assertStatus(200);
+
+        // Conversa em ingles /api/v2/conversations
+        $conversa = $this->withHeader('Authorization', "Bearer {$clientToken}")
+            ->post("{$this->base}/conversations", ['provider_id' => $prestador['provider']->id])
+            ->assertStatus(201)
+            ->json('data.id');
+
+        // Mensagem via endpoint em ingles
+        $envio = $this->withHeader('Authorization', "Bearer {$clientToken}")
+            ->post("{$this->base}/conversations/{$conversa}/messages", ['body' => 'Oi, tudo bem?']);
+        $envio->assertStatus(201)
+            ->assertJsonFragment(['body' => 'Oi, tudo bem?', 'is_mine' => true]);
+
+        // Listagem geral de mensagens em ingles
+        $this->withHeader('Authorization', "Bearer {$clientToken}")
+            ->get("{$this->base}/messages")
+            ->assertStatus(200);
+    }
+
+    public function test_marcar_mensagem_como_lida_pelo_destinatario(): void
+    {
+        $clientToken = $this->obterToken('user');
+        $prestador = $this->criarPrestadorAtivo();
+        $providerToken = $this->obterTokenParaUsuario($prestador['usuario']);
+
+        $conversa = $this->withHeader('Authorization', "Bearer {$clientToken}")
+            ->post("{$this->base}/conversas", ['provider_id' => $prestador['provider']->id])
+            ->json('data.id');
+
+        $mensagem = $this->withHeader('Authorization', "Bearer {$clientToken}")
+            ->post("{$this->base}/conversas/{$conversa}/mensagens", ['body' => 'Mensagem para leitura'])
+            ->json('data.id');
+
+        // So o destinatario (prestador) pode marcar como lida
+        $resposta = $this->withHeader('Authorization', "Bearer {$providerToken}")
+            ->post("{$this->base}/messages/{$mensagem}/read")
+            ->assertStatus(200);
+        $this->assertNotNull($resposta->json('data.read_at'));
+
+        $this->assertNotNull(
+            \App\Models\Message::where('id', $mensagem)->value('read_at')
+        );
+
+        // O remetente nao pode marcar a propria mensagem
+        $this->withHeader('Authorization', "Bearer {$clientToken}")
+            ->post("{$this->base}/messages/{$mensagem}/read")
+            ->assertStatus(403);
+    }
 }

@@ -185,7 +185,7 @@ export interface Appointment {
   provider_id: number;
   date: string;
   time: string;
-  status: 'pendente' | 'confirmado' | 'recusado' | 'concluido' | 'cancelado';
+  status: 'pendente' | 'aceito' | 'confirmado' | 'recusado' | 'concluido' | 'cancelado';
   valor: number | null;
   observacoes: string | null;
   created_at: string;

@@ -13,6 +13,7 @@ class ServiceEvaluation extends Model
     protected $fillable = [
         'service_listing_id',
         'service_provider_id',
+        'service_client_id',
         'evaluator_id',
         'rating',
         'comment',
@@ -35,5 +36,10 @@ class ServiceEvaluation extends Model
     public function evaluator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'evaluator_id');
+    }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'service_client_id');
     }
 }

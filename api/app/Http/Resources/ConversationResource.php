@@ -41,6 +41,24 @@ class ConversationResource extends JsonResource
             'unread_count' => $this->whenLoaded('messages', function () {
                 return (int) $this->messages->whereNull('read_at')->where('sender_id', '!=', auth()->id())->count();
             }),
+            // Dados do participante oposto ao usuario autenticado, para o frontend exibir cabecalho da conversa.
+            'participant_name' => function () {
+                $isClient = auth()->id() ? (int) $this->client_id === (int) auth()->id() : null;
+                $participant = $isClient === true ? optional($this->provider) : optional($this->client);
+
+                return $participant?->name ?? $participant?->business_name ?? null;
+            },
+            'participant_role' => function () {
+                $isClient = auth()->id() ? (int) $this->client_id === (int) auth()->id() : null;
+
+                return $isClient === true ? 'provider' : ($isClient === false ? 'client' : null);
+            },
+            'last_message' => $this->whenLoaded('messages', function () {
+                return optional($this->messages->last())->body;
+            }),
+            'last_message_at' => $this->whenLoaded('messages', function () {
+                return optional($this->messages->last())->created_at;
+            }),
         ];
     }
 }

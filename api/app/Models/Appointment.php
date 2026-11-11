@@ -15,13 +15,15 @@ class Appointment extends Model
      * Status possiveis de um agendamento (Escopo B4).
      */
     public const STATUS_PENDENTE = 'pendente';
-    public const STATUS_CONFIRMADO = 'confirmado';
+    public const STATUS_ACEITO = 'aceito';
+    public const STATUS_CONFIRMADO = 'confirmado'; // alias mantido por retrocompatibilidade
     public const STATUS_RECUSADO = 'recusado';
     public const STATUS_CONCLUIDO = 'concluido';
     public const STATUS_CANCELADO = 'cancelado';
 
     public const STATUSES = [
         self::STATUS_PENDENTE,
+        self::STATUS_ACEITO,
         self::STATUS_CONFIRMADO,
         self::STATUS_RECUSADO,
         self::STATUS_CONCLUIDO,
