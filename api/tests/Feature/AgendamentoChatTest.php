@@ -463,7 +463,7 @@ class AgendamentoChatTest extends TestCase
         $this->assertNotNull($resposta->json('read_at'));
 
         $this->assertNotNull(
-            App\Models\Message::where('id', $mensagem)->value('read_at')
+            \App\Models\Message::where('id', $mensagem)->value('read_at')
         );
 
         // O remetente nao pode marcar a propria mensagem
