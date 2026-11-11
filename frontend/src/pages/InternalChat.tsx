@@ -264,20 +264,20 @@ const InternalChat = () => {
                     Nenhuma mensagem ainda.
                   </div>
                 ) : (
-                  messages.map((m) => (
-                    <div
-                      key={m.id}
-                      className={`flex ${
-                        m.mine ? 'justify-end' : 'justify-start'
-                      }`}
-                    >
+                  messages.map((m) => {
+                    const mine = m.mine ?? m.is_mine ?? false;
+                    return (
                       <div
-                        className={`max-w-[80%] rounded-lg px-3 py-2 text-sm break-words ${
-                          m.mine
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-muted-foreground'
-                        }`}
+                        key={m.id}
+                        className={`flex ${mine ? 'justify-end' : 'justify-start'}`}
                       >
+                        <div
+                          className={`max-w-[80%] rounded-lg px-3 py-2 text-sm break-words ${
+                            mine
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted text-muted-foreground'
+                          }`}
+                        >
                         {m.body && <span>{m.body}</span>}
                         {m.has_attachment && (
                           <>
@@ -306,7 +306,7 @@ const InternalChat = () => {
                         )}
                         <time
                           className={`text-xs text-muted-foreground ${
-                            m.mine ? 'ml-auto' : ''
+                            mine ? 'ml-auto' : ''
                           }`}
                         >
                           {formatTime(m.created_at)}
