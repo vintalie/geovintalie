@@ -26,15 +26,18 @@ class UserController extends Controller
     public function store () {}
     public function create () {}
     public function update (Request $request) {
-        $user = User::findOrFail($request->id);
-        $validated = $request->validate([
+        $request->validate([
+            'id' => 'required|exists:users,id',
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,',
+            'phone' => 'required|string|max:20',
+            'password' => 'required|string|min:8',
             'tipo_nome' => 'required|exists:user_types,nome',
             'updated_at' => 'required|date',
             'created_at' => 'required|date',
         ]);
-        $user->update($validated);
+        $user = User::findOrFail($request->id);
+        $user->update($request);
         return response()->json([
             'message' => 'User updated successfully',
             'user' => $user
