@@ -460,7 +460,7 @@ class AgendamentoChatTest extends TestCase
         $resposta = $this->withHeader('Authorization', "Bearer {$providerToken}")
             ->post("{$this->base}/messages/{$mensagem}/read")
             ->assertStatus(200);
-        $this->assertNotNull($resposta->json('read_at'));
+        $this->assertNotNull($resposta->json('data.read_at'));
 
         $this->assertNotNull(
             \App\Models\Message::where('id', $mensagem)->value('read_at')

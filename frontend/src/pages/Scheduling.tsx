@@ -48,7 +48,9 @@ const STATUS_LABEL: Record<
   { label: string; variant: 'default' | 'destructive' | 'outline' | 'secondary' }
 > = {
   pending: { label: 'Pendente', variant: 'secondary' },
+  accepted: { label: 'Aceito', variant: 'default' },
   confirmed: { label: 'Confirmado', variant: 'default' },
+  refused: { label: 'Recusado', variant: 'outline' },
   completed: { label: 'Concluido', variant: 'outline' },
   cancelled: { label: 'Cancelado', variant: 'destructive' },
 };
@@ -87,13 +89,15 @@ interface AppointmentView {
   client_name: string;
   service: string;
   scheduled_at: string;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  status: 'pending' | 'accepted' | 'confirmed' | 'refused' | 'completed' | 'cancelled';
   created_at: string;
 }
 
 const STATUS_PT_TO_EN: Record<string, AppointmentView['status']> = {
   pendente: 'pending',
-  confirmado: 'confirmed',
+  aceito: 'accepted',
+  confirmado: 'accepted',
+  recusado: 'refused',
   concluido: 'completed',
   cancelado: 'cancelled',
 };
@@ -182,8 +186,9 @@ const Scheduling = () => {
       const date = data.day.toISOString().slice(0, 10);
       await createAppointment({
         provider_id: Number(data.provider_id),
-        scheduled_at: `${date}T${data.time}:00`,
-        service: data.service,
+        date,
+        time: data.time,
+        observacoes: data.service ?? undefined,
       });
       toast.success('Agendamento criado com sucesso.');
       reset({
