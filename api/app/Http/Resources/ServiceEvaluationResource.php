@@ -13,6 +13,7 @@ class ServiceEvaluationResource extends JsonResource
             'id' => $this->id,
             'service_listing_id' => $this->service_listing_id,
             'service_provider_id' => $this->service_provider_id,
+            'service_client_id' => $this->service_client_id,
             'evaluator_id' => $this->evaluator_id,
             'rating' => (int) $this->rating,
             'comment' => $this->comment,
@@ -29,6 +30,13 @@ class ServiceEvaluationResource extends JsonResource
                 return [
                     'id' => $this->provider->id,
                     'business_name' => $this->provider->business_name,
+                ];
+            }),
+            'client' => $this->whenLoaded('client', function () {
+                return [
+                    'id' => $this->client->id,
+                    'name' => $this->client->name,
+                    'email' => $this->client->email,
                 ];
             }),
         ];

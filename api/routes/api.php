@@ -145,6 +145,11 @@ Route::prefix('v2')->group(function () {
         // Mensagens (Escopo B4)
         Route::get('conversas/{conversation}/mensagens', [MessageController::class, 'index']);
         Route::post('conversas/{conversation}/mensagens', [MessageController::class, 'store']);
+
+        // Mensagens de nivel raiz (Escopo B4) - listagem e envio sem caminho de conversa
+        Route::get('mensagens', [MessageController::class, 'index']);
+        Route::post('mensagens', [MessageController::class, 'store']);
+
         // Download de anexo de mensagem (Escopo B6)
         Route::get('messages/{message}/file', [MessageController::class, 'download']);
     });

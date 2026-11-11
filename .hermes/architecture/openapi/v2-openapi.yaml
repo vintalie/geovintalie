@@ -1237,6 +1237,64 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  # ------------------------------------------------------------------ Mensagens de nivel raiz (B4)
+  /mensagens:
+    get:
+      tags: [messages]
+      summary: Listar mensagens do usuario autenticado
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: conversation_id
+          schema:
+            type: integer
+          description: ID da conversa para filtrar
+      responses:
+        '200':
+          description: Lista de mensagens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MessageResource'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        '401':
+          description: Nao autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags: [messages]
+      summary: Enviar mensagem em uma conversa
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageCreate'
+      responses:
+        '201':
+          description: Mensagem enviada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResource'
+        '422':
+          description: Erro de validacao
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   # ------------------------------------------------------------------ Conversas (B4, alias)
   /conversas:
     get:
@@ -2346,6 +2404,9 @@ components:
     MessageCreate:
       type: object
       properties:
+        conversation_id:
+          type: integer
+          description: ID da conversa de destino. Obrigatorio na rota de nivel /mensagens.
         body:
           type: string
           maxLength: 4000

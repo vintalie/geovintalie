@@ -62,10 +62,18 @@ class MessageController extends Controller
      * Aceita corpo de texto (opcional) e um anexo de arquivo (opcional).
      * Pelo menos um dos dois deve ser informado.
      */
-    public function store(Request $request, Conversation $conversation)
+    public function store(Request $request, Conversation $conversation = null)
     {
         if (!FeatureFlag::isEnabled('ff_chat')) {
             abort(403, 'Chat interno nao habilitado.');
+        }
+
+        // Rota de nivel /mensagens: a conversa e informada no corpo da requisicao.
+        if (is_null($conversation)) {
+            $request->validate([
+                'conversation_id' => 'required|exists:chat_conversations,id',
+            ]);
+            $conversation = Conversation::findOrFail($request->conversation_id);
         }
 
         $this->authorizeParticipant($request, $conversation);

@@ -54,10 +54,13 @@ class ServiceListing extends Model
 
     public function recalculateRating(): void
     {
-        $average = $this->evaluations()->avg('rating');
+        // Somente avaliacoes recebidas pelo servico (direcao direta: cliente avalia prestador).
+        // Avaliacoes em que o prestador e o avaliador (direcao inversa) nao compoem a media do servico.
+        $evaluations = $this->evaluations()->whereNull('service_client_id');
+        $average = $evaluations->avg('rating');
 
         $this->average_rating = $average ? (float) round($average, 2) : 0.00;
-        $this->total_reviews = (int) $this->evaluations()->count();
+        $this->total_reviews = (int) $evaluations->count();
 
         $this->save();
     }
