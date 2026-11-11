@@ -27,17 +27,16 @@ class UserController extends Controller
     public function create () {}
     public function update (Request $request) {
         $request->validate([
-            'id' => 'required|exists:users,id',
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,',
-            'phone' => 'required|string|max:20',
-            'password' => 'required|string|min:8',
-            'tipo_nome' => 'required|exists:user_types,nome',
-            'updated_at' => 'required|date',
-            'created_at' => 'required|date',
+            'id' => 'exists:users,id',
+            'name' => 'string|max:255',
+            'email' => 'email|unique:users,email,',
+            'phone' => 'string|max:20',
+            'tipo_nome' => 'exists:user_types,nome',
+            'updated_at' => 'date',
+            'created_at' => 'date',
         ]);
         $user = User::findOrFail($request->id);
-        $user->update($request);
+        $user->update($request->only(['name', 'email', 'phone', 'tipo_nome', 'updated_at', 'created_at']));
         return response()->json([
             'message' => 'User updated successfully',
             'user' => $user
