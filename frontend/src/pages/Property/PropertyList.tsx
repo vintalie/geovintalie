@@ -68,7 +68,7 @@ const PropertyList = () => {
           <div className="flex items-center gap-2">
             <Badge variant="outline">{properties.length}</Badge>
             <Button asChild size="sm" variant="default">
-              <Link to="/property/new">
+              <Link to="/properties/new">
                 <Store className="h-3 w-3 mr-1" aria-hidden="true" /> Nova Propriedade
               </Link>
             </Button>
@@ -92,7 +92,7 @@ const PropertyList = () => {
           {properties.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-muted-foreground py-12">
               <p>Nenhuma propriedade cadastrada ainda.</p>
-              <Link to="/property/new" className="mt-4 text-primary underline underline-offset-4">
+              <Link to="/properties/new" className="mt-4 text-primary underline underline-offset-4">
                 Cadastrar primeira propriedade
               </Link>
             </div>
