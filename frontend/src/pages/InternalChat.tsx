@@ -313,7 +313,8 @@ const InternalChat = () => {
                         </time>
                       </div>
                     </div>
-                  ))
+                    );
+                  })
                 )}
                 <div ref={messagesEndRef} />
               </div>
