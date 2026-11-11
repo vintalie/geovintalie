@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import userEvent from '@testing-library/user-event';
 import { within } from '@testing-library/react';
 import Login from './Login';
 import * as authApi from '@/api/auth';
@@ -19,12 +18,10 @@ vi.mock('@/api/auth', () => ({
 }));
 
 const mockLogin = vi.mocked(authApi.login);
-let navigateFn: any;
 
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
-  navigateFn = vi.fn();
   mockLogin.mockResolvedValue({ data: { token: 'token-teste-123' } } as any);
 });
 

@@ -4,6 +4,7 @@ import { Calendar, Clock } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { Controller, useForm } from 'react-hook-form';
+import type { FieldErrors } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -109,7 +110,7 @@ const toView = (a: Appointment): AppointmentView => ({
 
 const campoErro = (
   nome: keyof AgendamentoForm,
-  errors: ReturnType<typeof formErrorsEmpty>,
+  errors: FieldErrors<AgendamentoForm>,
 ) => {
   const erro = errors[nome];
   return erro ? (
@@ -118,8 +119,6 @@ const campoErro = (
     </p>
   ) : null;
 };
-
-const formErrorsEmpty = () => ({} as Record<keyof AgendamentoForm, { message: string } | undefined>);
 
 const Scheduling = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -183,9 +182,8 @@ const Scheduling = () => {
       const date = data.day.toISOString().slice(0, 10);
       await createAppointment({
         provider_id: Number(data.provider_id),
-        date,
-        time: data.time,
-        observacoes: data.service,
+        scheduled_at: `${date}T${data.time}:00`,
+        service: data.service,
       });
       toast.success('Agendamento criado com sucesso.');
       reset({

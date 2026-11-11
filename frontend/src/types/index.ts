@@ -3,10 +3,49 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
+  role?: string;
+  tipo?: string;
   tipo_nome?: string;
+  is_admin?: boolean;
   email_verified_at?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface ServiceCategory {
+  id: number;
+  name: string;
+}
+
+export interface ServiceProvider {
+  id: number;
+  business_name: string;
+}
+
+export interface ServiceListing {
+  id: number;
+  title: string;
+  description?: string | null;
+  price: number;
+  city?: string | null;
+  state?: string | null;
+  average_rating: number;
+  total_reviews: number;
+  category: ServiceCategory | null;
+  provider: ServiceProvider;
+}
+
+export interface SearchFilters {
+  q?: string;
+  category_id?: number;
+  city?: string;
+  state?: string;
+  min_rating?: number;
+  max_rating?: number;
+  min_price?: number;
+  max_price?: number;
+  limit: number;
+  page: number;
 }
 
 export interface Country {

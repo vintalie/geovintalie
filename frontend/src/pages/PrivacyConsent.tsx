@@ -146,7 +146,7 @@ const PrivacyConsent = () => {
       {consents.length === 0 && (
         <Card className="shadow-card">
           <CardContent className="p-8 text-center">
-            <Alert variant="outline">
+            <Alert>
               <AlertTitle>Nenhum consentimento encontrado</AlertTitle>
               <AlertDescription>
                 Não há registros de consentimento para a sua conta no momento.

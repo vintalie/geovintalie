@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserTypeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\StateController;
@@ -189,6 +190,16 @@ Route::prefix('v2')->group(function () {
         Route::get('google-business/accounts/{account}/locations', [GoogleBusinessController::class, 'locations']);
         Route::get('google-business/accounts/{account}/locations/{location}', [GoogleBusinessController::class, 'sync']);
         Route::delete('google-business/disconnect', [GoogleBusinessController::class, 'disconnect']);
+    });
+
+    // User Types (Escopo C1) - gerenciamento de papéis de usuario.
+    // O UserTypeController e o UserTypeService ja estao implementados; so faltava o roteamento sob /api/v2.
+    Route::middleware(['jwt.auth', 'role:admin', 'feature.flag:ff_new_user_roles'])->group(function () {
+        Route::apiResource('user-types', UserTypeController::class);
+    });
+
+    Route::middleware(['jwt.auth', 'role:admin'])->group(function () {
+        Route::patch('auth/users/{id}/role', [UserController::class, 'updateRole']);
     });
 
     // Public Properties - Vitrine digital pública (Escopo A3) - sem autenticação

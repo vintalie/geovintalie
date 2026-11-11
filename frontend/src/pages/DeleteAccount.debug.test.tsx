@@ -52,11 +52,11 @@ describe('DeleteAccount', () => {
     fireEvent.input(screen.getByLabelText('Senha atual'), {
       target: { value: 'senha123' },
     });
-    console.log('Password set, any enabled buttons?:', screen.getAllByRole('button').map(b => ({text: b.textContent, disabled: b.disabled})));
+    console.log('Password set, any enabled buttons?:', screen.getAllByRole('button').map((b) => ({ text: b.textContent, disabled: (b as HTMLButtonElement).disabled })));
     
     fireEvent.click(screen.getByLabelText(/Confirmo que desejo excluir/));
     console.log('=== AFTER CHECKBOX CLICK ===');
-    console.log('Any buttons:', screen.getAllByRole('button').map(b => ({text: b.textContent, disabled: b.disabled})));
+    console.log('Any buttons:', screen.getAllByRole('button').map((b) => ({ text: b.textContent, disabled: (b as HTMLButtonElement).disabled })));
     
     fireEvent.click(screen.getByRole('button', { name: /excluir conta/i }));
     console.log('=== AFTER EXCLUIR CLICK ===');

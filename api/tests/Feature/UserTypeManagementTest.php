@@ -37,11 +37,11 @@ class UserTypeManagementTest extends TestCase
         ]);
 
         $login = $this->post('/api/login', [
-            'email' => $email,
+            'email'    => $email,
             'password' => 'senha123',
         ]);
 
-        return ['Authorization' => 'Bearer '.$login->json('token')];
+        return ['Authorization', 'Bearer '.$login->json('token')];
     }
 
     /** CRUD de papéis -------------------------------------------------- */
