@@ -29,6 +29,7 @@ import InternalChat from '../pages/InternalChat';
 import Reviews from '../pages/Reviews';
 import Layout from '../components/Layout/Layout';
 import LayoutProducts from '../components/Layout/LayoutProducts';
+import ProductsWithStocks from '../pages/Products/ProductsWithStocks';
 // Dentro do <Routes>
 
 import type { JSX } from 'react';
@@ -105,7 +106,7 @@ export const AppRoutes = () => {
           <Route path="agendamentos" element={<Scheduling />} />
           <Route path="chat" element={<InternalChat />} />
           <Route path="avaliacoes" element={<Reviews />} />
-          <Route path="/products" element={<ProductsWithStocks />} />
+          <Route path="products" element={<ProductsWithStocks />} />
 
         </Route>
       </Routes>
