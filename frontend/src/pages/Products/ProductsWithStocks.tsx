@@ -213,9 +213,9 @@ const ProductsWithStocks: React.FC = () => {
         </div>
 
         {loadingProducts && <p>Carregando...</p>}
-        {productError && <p className="text-red-500">{productError}</p>}
+        {productError && <p className="text-destructive">{productError}</p>}
         {!loadingProducts && !productError && products.length === 0 && (
-          <p className="text-gray-500">Nenhum produto cadastrado.</p>
+          <p className="text-muted-foreground">Nenhum produto cadastrado.</p>
         )}
 
         <ul className="space-y-2">
@@ -224,8 +224,8 @@ const ProductsWithStocks: React.FC = () => {
               key={product.id}
               className={`p-3 rounded cursor-pointer transition-colors border ${
                 selectedProductId === product.id
-                  ? 'bg-blue-100 border-blue-500'
-                  : 'bg-gray-50 hover:bg-gray-100 border-transparent'
+                  ? 'bg-accent border-accent'
+                  : 'bg-background hover:bg-muted border-transparent'
               }`}
             >
               <div
@@ -234,22 +234,16 @@ const ProductsWithStocks: React.FC = () => {
               >
                 <div>
                   <div className="font-medium">{product.name}</div>
-                  <div className="text-sm text-gray-600">Tipo: {product.tipo}</div>
-                  <div className="text-sm text-gray-600">Valor: {product.price}</div>
+                  <div className="text-sm text-muted-foreground">Tipo: {product.tipo}</div>
+                  <div className="text-sm text-muted-foreground">Valor: {product.price}</div>
                 </div>
                 <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => openEditProduct(product)}
-                    className="text-blue-600 hover:text-blue-800 text-sm"
-                  >
+                                    <Button variant="link" size="sm" onClick={() => openEditProduct(product)}>
                     Editar
-                  </button>
-                  <button
-                    onClick={() => handleDeleteProduct(product.id)}
-                    className="text-red-600 hover:text-red-800 text-sm"
-                  >
+                  </Button>
+                                    <Button variant="destructive" size="sm" onClick={() => handleDeleteProduct(product.id)}>
                     Excluir
-                  </button>
+                  </Button>
                 </div>
               </div>
             </li>
@@ -271,17 +265,17 @@ const ProductsWithStocks: React.FC = () => {
         </div>
 
         {!selectedProductId ? (
-          <p className="text-gray-500">Selecione um produto para ver seus estoques.</p>
+          <p className="text-muted-foreground">Selecione um produto para ver seus estoques.</p>
         ) : loadingStocks ? (
           <p>Carregando estoques...</p>
         ) : stockError ? (
-          <p className="text-red-500">{stockError}</p>
+          <p className="text-destructive">{stockError}</p>
         ) : stocks.length === 0 ? (
-          <p className="text-gray-500">Este produto não possui estoques.</p>
+          <p className="text-muted-foreground">Este produto não possui estoques.</p>
         ) : (
-          <table className="min-w-full bg-white border">
+          <table className="min-w-full bg-background border">
             <thead>
-              <tr className="bg-gray-100">
+              <tr className="bg-muted">
                 <th className="py-2 px-4 border">Valor</th>
                 <th className="py-2 px-4 border">Cor</th>
                 <th className="py-2 px-4 border">Tamanho</th>
@@ -291,24 +285,18 @@ const ProductsWithStocks: React.FC = () => {
             </thead>
             <tbody>
               {stocks.map((stock) => (
-                <tr key={stock.id} className="hover:bg-gray-50">
+                <tr key={stock.id} className="hover:bg-muted">
                   <td className="py-2 px-4 border text-center">{stock.value}</td>
                   <td className="py-2 px-4 border text-center">{stock.color}</td>
                   <td className="py-2 px-4 border text-center">{stock.size}</td>
                   <td className="py-2 px-4 border text-center">{stock.q_type}</td>
                   <td className="py-2 px-4 border text-center">
-                    <button
-                      onClick={() => openEditStock(stock)}
-                      className="text-blue-600 hover:text-blue-800 mr-2"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleDeleteStock(stock.id)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      Excluir
-                    </button>
+                                          <Button variant="link" size="sm" className="mr-2" onClick={() => openEditStock(stock)}>
+                        Editar
+                      </Button>
+                                          <Button variant="destructive" size="sm" onClick={() => handleDeleteStock(stock.id)}>
+                        Excluir
+                      </Button>
                   </td>
                 </tr>
               ))}
@@ -384,13 +372,9 @@ const ProductsWithStocks: React.FC = () => {
                 <input type="hidden" value={productForm.property_id || 1} />
               </div>
               <div className="flex justify-end gap-2 mt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowProductModal(false)}
-                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                >
+                                <Button type="button" variant="outline" size="sm" onClick={() => setShowProductModal(false)}>
                   Cancelar
-                </button>
+                </Button>
                 <Button type="submit" variant="default" size="sm">
                   Salvar
                 </Button>
@@ -443,13 +427,9 @@ const ProductsWithStocks: React.FC = () => {
                 />
               </div>
               <div className="flex justify-end gap-2 mt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowStockModal(false)}
-                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                >
+                                <Button type="button" variant="outline" size="sm" onClick={() => setShowStockModal(false)}>
                   Cancelar
-                </button>
+                </Button>
                 <Button type="submit" variant="default" size="sm">
                                   Salvar
                                 </Button>
