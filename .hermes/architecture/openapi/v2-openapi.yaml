@@ -150,8 +150,116 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /auth/users/{id}/role:
+    patch:
+      tags: [users]
+      summary: Atualizar papel de um usuario (apenas admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - role
+              properties:
+                role:
+                  type: string
+                  enum: [admin, user, public, consumer, retailer, provider, industry]
+      responses:
+        '200':
+          description: Papel atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResource'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Usuario nao encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
-  # ------------------------------------------------------------------ Feature flags (C4)
+  /user-types:
+    get:
+      tags: [users]
+      summary: Listar tipos de usuario (papéis)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de tipos de usuario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        nome:
+                          type: string
+                        descricao:
+                          type: string
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /user-types/{id}:
+    get:
+      tags: [users]
+      summary: Obter tipo de usuario por ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados do tipo de usuario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  nome:
+                    type: string
+                  descricao:
+                    type: string
+        '404':
+          description: Tipo de usuario nao encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /feature-flags:
     get:
       tags: [feature-flags]
