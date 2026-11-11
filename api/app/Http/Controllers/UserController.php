@@ -25,6 +25,7 @@ class UserController extends Controller
     }
     public function store () {}
     public function create () {}
+    public function update () {}
 public function show($id)
 {
 $user = User::with('userType')->findOrFail($id);
