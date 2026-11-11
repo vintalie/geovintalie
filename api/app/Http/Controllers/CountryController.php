@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Country;
+use App\Http\Resources\CountryResource;
+
 use Exception;
 use Illuminate\Http\Request;
 
@@ -16,11 +18,10 @@ class CountryController extends Controller
         $perPage = $request->input('per_page', 10);
         
         try{
-            return response()->json([
-                'message' => 'Countries retrieved successfully',
-                'countries' => Country::with('states')->paginate($perPage)
-        ], 200);
-            
+            $perPage = $request->input('per_page', 10);
+            $countries = Country::with('states')->paginate($perPage);
+            return CountryResource::collection($countries);
+
         }catch(Exception $err){
             return response()->json([
                 'message' => 'Erro Interno do servidor',

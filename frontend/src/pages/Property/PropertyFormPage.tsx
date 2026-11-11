@@ -157,9 +157,9 @@ const LocationFormPage = () => {
       ]);
 
       const extractData = (resp: any) => {
+        console.log('Response data:', resp.data);
         if (resp.data?.countries) return resp.data.countries.data;
         if (resp.data?.data) return resp.data.data;
-        console.log(resp.data)
         return resp.data || [];
       };
 
