@@ -404,6 +404,78 @@ class ServiceEvaluationTest extends TestCase
         $this->assertCount(2, $response->json('data'));
     }
 
+    public function test_prestador_avalia_cliente_apos_servico_concluido_retorna_201(): void
+    {
+        $tipo = UserType::firstOrCreate(['nome' => 'user'], ['nome' => 'user']);
+
+        $prestadorUser = User::factory()->create([
+            'email' => 'prestador.avalia.cliente.se@teste.com',
+            'password' => bcrypt('senha123'),
+            'tipo_id' => $tipo->id,
+        ]);
+        $prestador = ServiceProvider::create([
+            'user_id' => $prestadorUser->id,
+            'business_name' => 'Prestador Avalia Cliente SE',
+            'cnpj_cpf' => '12.345.678/0001-96',
+        ]);
+
+        $cliente = User::factory()->create([
+            'email' => 'cliente.avaliado.por.prestador.se@teste.com',
+            'password' => bcrypt('senha123'),
+            'tipo_id' => $tipo->id,
+        ]);
+
+        $categoria = ServiceCategory::create([
+            'name' => 'Limpeza',
+            'slug' => 'limpeza-prestador-avalia-cliente-se',
+        ]);
+
+        $servico = ServiceListing::create([
+            'provider_id' => $prestador->id,
+            'category_id' => $categoria->id,
+            'title' => 'Limpeza residencial',
+            'price' => 150.00,
+            'is_active' => true,
+        ]);
+
+        // O prestador atendeu o cliente em servico ja concluido.
+        Appointment::create([
+            'client_id' => $cliente->id,
+            'provider_id' => $prestador->id,
+            'date' => '2026-11-10',
+            'time' => '14:00',
+            'status' => Appointment::STATUS_CONCLUIDO,
+            'valor' => 150.00,
+        ]);
+
+        // Quem esta autenticado e o prestador: direcao inversa (prestador avalia cliente).
+        $token = $this->obterTokenDoUsuario($prestadorUser);
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->post("{$this->base}/v2/service-evaluations", [
+                'service_listing_id' => $servico->id,
+                'service_provider_id' => $prestador->id,
+                'service_client_id' => $cliente->id,
+                'rating' => 4,
+                'comment' => 'Cliente pontual e educado.',
+            ]);
+
+        $response->assertStatus(201);
+        $response->assertJsonFragment([
+            'rating' => 4,
+            'comment' => 'Cliente pontual e educado.',
+            'service_client_id' => $cliente->id,
+            'evaluator_id' => $prestadorUser->id,
+        ]);
+        $this->assertDatabaseHas('service_evaluations', [
+            'service_listing_id' => $servico->id,
+            'service_provider_id' => $prestador->id,
+            'evaluator_id' => $prestadorUser->id,
+            'service_client_id' => $cliente->id,
+            'rating' => 4,
+        ]);
+    }
+
     /* Helpers ----------------------------------------------------------- */
 
     private function obterTokenDoUsuario(User $user): string
