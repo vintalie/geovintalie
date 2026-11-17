@@ -26,7 +26,6 @@
 ## Em Desenvolvimento
 | ID | Item | Agente | Início | Previsão | PR |
 |----|------|--------|--------|----------|----|
-| R3-C4 | Feature flags (C4) | Executor Backend C4 / Frontend C4 | sessão atual | esta sessão | PR #55 (mergeado) |
 | R3-C1 | Auth e papéis (C1) | Executor Backend C1 / Frontend C1 | sessão atual | esta sessão | — |
 | R3-B2 | Busca com filtros (B2) | Executor Backend B2 / Frontend B2 | sessão atual | esta sessão | — |
 | R3-B3 | Recomendação IA (B3) | Executor Backend B3 / Frontend B3 | sessão atual | esta sessão | — |
@@ -48,7 +47,7 @@
 ## Concluído (Mergeado na main)
 | ID | Item | PR | Merge em | Testes |
 |----|------|-----|----------|--------|
-| — | — | — | — | — |
+| R3-C4 | Feature flags (C4) — backend (serviço, middleware, rotas, testes) | PR #58 | 2026-11-16 | 17 testes OK / 51 assertions |
 
 ---
 
