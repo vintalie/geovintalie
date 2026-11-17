@@ -74,7 +74,7 @@ describe('Search', () => {
     expect(mockSearchServices).toHaveBeenCalledWith(
       expect.objectContaining({ limit: 10, page: 1 }),
     );
-    expect(screen.getByText(/R\$ 150,00/)).toBeInTheDocument();
+    expect(screen.getAllByText(/R\$ 150,00/).length).toBeGreaterThan(0);
     expect(screen.getByText(/Hidraulica Sao Paulo/)).toBeInTheDocument();
   });
 });

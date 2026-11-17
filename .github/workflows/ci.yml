@@ -52,6 +52,7 @@ jobs:
       - name: Prepare .env for testing
         run: |
           cp .env.example .env
+          echo 'JWT_SECRET=ci-test-secret-key-1234567890abcdef' >> .env
           php artisan key:generate
           php artisan config:clear
 
@@ -66,7 +67,7 @@ jobs:
           DB_PASSWORD: root
 
       - name: Run tests (PHPUnit)
-        run: php artisan test --verbose
+        run: php artisan test
         env:
           DB_CONNECTION: mysql
           DB_HOST: 127.0.0.1
