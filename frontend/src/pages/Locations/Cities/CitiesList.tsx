@@ -44,7 +44,7 @@ const CitiesList = () => {
   };
 
   if (loading) return <div>Carregando...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
+  if (error) return <div className="text-destructive">{error}</div>;
 
   return (
     <div>
@@ -57,7 +57,7 @@ const CitiesList = () => {
 
       <table className="w-full border">
         <thead>
-          <tr className="bg-gray-100">
+          <tr className="bg-muted">
             <th className="p-2 text-left">ID</th>
             <th className="p-2 text-left">Nome</th>
             <th className="p-2 text-left">Id do Estado</th>
@@ -71,18 +71,12 @@ const CitiesList = () => {
               <td className="p-2">{city.name}</td>
               <td className="p-2">{city.state_id}</td>
               <td className="p-2">
-                <Link
-                  to={`/cities/${city.id}/edit`}
-                  className="text-blue-500 mr-2"
-                >
-                  Editar
-                </Link>
-                <button
-                  onClick={() => handleDelete(city.id)}
-                  className="text-red-500"
-                >
+                                <Button asChild variant="link" size="sm" className="mr-2">
+                  <Link to={`/cities/${city.id}/edit`}>Editar</Link>
+                </Button>
+                                <Button variant="destructive" size="sm" onClick={() => handleDelete(city.id)}>
                   Excluir
-                </button>
+                </Button>
               </td>
             </tr>
           ))}

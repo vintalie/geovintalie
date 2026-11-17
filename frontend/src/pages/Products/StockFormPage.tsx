@@ -60,7 +60,7 @@ const PropertyFormPage = () => {
       <h1 className="text-2xl font-bold mb-4">
         {isEdit ? 'Editar Propriedade' : 'Nova Propriedade'}
       </h1>
-      {error && <div className="text-red-500 mb-2">{error}</div>}
+      {error && <div className="text-destructive mb-2">{error}</div>}
       <form onSubmit={handleSubmit} className="max-w-md">
         <div className="mb-2">
           <label className="block">Nome</label>

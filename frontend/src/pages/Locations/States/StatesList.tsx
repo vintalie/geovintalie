@@ -76,7 +76,7 @@ const StatesList = () => {
   // --- Visualização individual ---
   if (id) {
     if (loadingSingle) return <div>Carregando estado...</div>;
-    if (singleError) return <div className="text-red-500">{singleError}</div>;
+    if (singleError) return <div className="text-destructive">{singleError}</div>;
     if (!singleState) return <div>Estado não encontrado</div>;
 
     return (
@@ -91,7 +91,7 @@ const StatesList = () => {
         </div>
         <table className="w-full border">
           <thead>
-            <tr className="bg-gray-100">
+            <tr className="bg-muted">
               <th className="p-2 text-left">ID</th>
               <th className="p-2 text-left">Nome</th>
               <th className="p-2 text-left">Sigla</th>
@@ -106,12 +106,12 @@ const StatesList = () => {
               <td className="p-2">{singleState.abbreviation}</td>
               <td className="p-2">{singleState.country_name}</td>
               <td className="p-2">
-                <Link to={`/states/${singleState.id}/edit`} className="text-blue-500 mr-2">
-                  Editar
-                </Link>
-                <button onClick={() => handleDelete(singleState.id)} className="text-red-500">
+                                <Button asChild variant="link" size="sm" className="mr-2">
+                  <Link to={`/states/${singleState.id}/edit`}>Editar</Link>
+                </Button>
+                                <Button variant="destructive" size="sm" onClick={() => handleDelete(singleState.id)}>
                   Excluir
-                </button>
+                </Button>
               </td>
             </tr>
           </tbody>
@@ -122,7 +122,7 @@ const StatesList = () => {
 
   // --- Lista paginada (quando não há id) ---
   if (loading) return <div>Carregando...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
+  if (error) return <div className="text-destructive">{error}</div>;
 
   return (
     <div>
@@ -135,7 +135,7 @@ const StatesList = () => {
 
       <table className="w-full border">
         <thead>
-          <tr className="bg-gray-100">
+          <tr className="bg-muted">
             <th className="p-2 text-left">ID</th>
             <th className="p-2 text-left">Nome</th>
             <th className="p-2 text-left">Sigla</th>
@@ -151,12 +151,12 @@ const StatesList = () => {
               <td className="p-2">{state.abbreviation}</td>
               <td className="p-2">{state.country_name}</td>
               <td className="p-2">
-                <Link to={`/states/${state.id}/edit`} className="text-blue-500 mr-2">
-                  Editar
-                </Link>
-                <button onClick={() => handleDelete(state.id)} className="text-red-500">
+                                <Button asChild variant="link" size="sm" className="mr-2">
+                  <Link to={`/states/${state.id}/edit`}>Editar</Link>
+                </Button>
+                                <Button variant="destructive" size="sm" onClick={() => handleDelete(state.id)}>
                   Excluir
-                </button>
+                </Button>
               </td>
             </tr>
           ))}
