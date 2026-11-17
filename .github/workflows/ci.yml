@@ -52,6 +52,7 @@ jobs:
       - name: Prepare .env for testing
         run: |
           cp .env.example .env
+          echo 'JWT_SECRET=ci-test-secret-key-1234567890abcdef' >> .env
           php artisan key:generate
           php artisan config:clear
 
