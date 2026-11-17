@@ -5,11 +5,13 @@ namespace Tests\Unit;
 use App\Models\FeatureFlag;
 use App\Http\Middleware\CheckFeatureFlag;
 use Illuminate\Http\Request;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class CheckFeatureFlagTest extends TestCase
 {
+    use RefreshDatabase;
     public function test_middleware_bloqueia_flag_desligada_com_403(): void
     {
         FeatureFlag::create([
